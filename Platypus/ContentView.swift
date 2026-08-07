@@ -11,15 +11,32 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+    
+    let fib = nativeFibonacci(n: 11)
+    let wow = nativeGreatAdd(a: 3, b: 10)
 
     var body: some View {
         NavigationViewWrapper {
             List {
+                if items.isEmpty {
+                    ContentUnavailableView(
+                        "No Items",
+                        systemImage: "tray",
+                        description: Text("Tap + to create one. num: \(fib), great add: \(wow)")
+                    )
+                }
+
                 ForEach(items) { item in
                     NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                        Text(
+                            "Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))"
+                        )
+                        .navigationTitle("Item")
                     } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                        Text(
+                            item.timestamp,
+                            format: Date.FormatStyle(date: .numeric, time: .standard)
+                        )
                     }
                 }
                 .onDelete(perform: deleteItems)
@@ -27,13 +44,15 @@ struct ContentView: View {
 #if os(macOS)
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
 #endif
+            .navigationTitle("Items")
             .toolbar {
 #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     EditButton()
                 }
 #endif
-                ToolbarItem {
+
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(action: addItem) {
                         Label("Add Item", systemImage: "plus")
                     }
@@ -58,18 +77,24 @@ struct ContentView: View {
     }
 }
 
-fileprivate struct NavigationViewWrapper<Content: View>: View {
-    let content: () -> Content
+private struct NavigationViewWrapper<Content: View>: View {
+    private let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
 
     var body: some View {
 #if os(macOS)
         NavigationSplitView {
-            content()
+            content
         } detail: {
             Text("Select an item")
         }
 #else
-        content()
+        NavigationStack {
+            content
+        }
 #endif
     }
 }

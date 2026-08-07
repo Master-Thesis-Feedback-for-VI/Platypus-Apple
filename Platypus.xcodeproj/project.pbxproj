@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B09126A630260A5E000E2487 /* Platypus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platypus.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		B09126B530260A5F000E2487 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B09126BF30260A5F000E2487 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B09126B530260A5F000E2487 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PlatypusTests.xctest; path = "/Users/yannbernard/Projects/Uni/Master/Platypus-Apple/build/Debug/Platypus.app/Contents/PlugIns/PlatypusTests.xctest"; sourceTree = "<absolute>"; };
+		B09126BF30260A5F000E2487 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PlatypusUITests.xctest; path = "/Users/yannbernard/Projects/Uni/Master/Platypus-Apple/build/Debug/PlatypusUITests-Runner.app/Contents/PlugIns/PlatypusUITests.xctest"; sourceTree = "<absolute>"; };
+		B0EE99503026376500008CA3 /* Platypus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platypus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,18 +72,8 @@
 				B09126A830260A5E000E2487 /* Platypus */,
 				B09126B830260A5F000E2487 /* PlatypusTests */,
 				B09126C230260A5F000E2487 /* PlatypusUITests */,
-				B09126A730260A5E000E2487 /* Products */,
+				B0EE99503026376500008CA3 /* Platypus.app */,
 			);
-			sourceTree = "<group>";
-		};
-		B09126A730260A5E000E2487 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B09126A630260A5E000E2487 /* Platypus.app */,
-				B09126B530260A5F000E2487 /* PlatypusTests.xctest */,
-				B09126BF30260A5F000E2487 /* PlatypusUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -93,6 +83,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B09126C730260A5F000E2487 /* Build configuration list for PBXNativeTarget "Platypus" */;
 			buildPhases = (
+				B0EE994F302631F700008CA3 /* [Image Flow] Build Rust bindings */,
 				B09126A230260A5E000E2487 /* Sources */,
 				B09126A330260A5E000E2487 /* Frameworks */,
 				B09126A430260A5E000E2487 /* Resources */,
@@ -104,7 +95,7 @@
 			);
 			name = Platypus;
 			productName = Platypus;
-			productReference = B09126A630260A5E000E2487 /* Platypus.app */;
+			productReference = B0EE99503026376500008CA3 /* Platypus.app */;
 			productType = "com.apple.product-type.application";
 		};
 		B09126B430260A5F000E2487 /* PlatypusTests */ = {
@@ -182,7 +173,7 @@
 			mainGroup = B091269D30260A5E000E2487;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = B09126A730260A5E000E2487 /* Products */;
+			productRefGroup = B091269D30260A5E000E2487;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -210,6 +201,42 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B0EE994F302631F700008CA3 /* [Image Flow] Build Rust bindings */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			name = "[Image Flow] Build Rust bindings";
+			shellPath = /bin/sh;
+			shellScript = (
+				"set -euxo pipefail",
+				"",
+				"export PATH=\"/opt/homebrew/bin:$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin\"",
+				"",
+				"RUST_ROOT=\"$(cd \"$SRCROOT/../image-flow\" && pwd)\"",
+				"APP_SOURCE_ROOT=\"$SRCROOT/Platypus\"",
+				"",
+				"echo \"SRCROOT: $SRCROOT\"",
+				"echo \"RUST_ROOT: $RUST_ROOT\"",
+				"echo \"APP_SOURCE_ROOT: $APP_SOURCE_ROOT\"",
+				"",
+				"cd \"$RUST_ROOT\"",
+				"",
+				"/opt/homebrew/bin/just swift-build-bindings",
+				"",
+				"mkdir -p \"$APP_SOURCE_ROOT/Frameworks\"",
+				"mkdir -p \"$APP_SOURCE_ROOT/Generated\"",
+				"",
+				"rm -rf \"$APP_SOURCE_ROOT/Frameworks/Mobile.xcframework\"",
+				"ditto \"$RUST_ROOT/ios/Mobile.xcframework\" \\",
+				"  \"$APP_SOURCE_ROOT/Frameworks/Mobile.xcframework\"",
+				"",
+				"cp \"$RUST_ROOT/bindings/image_flow.swift\" \\",
+				"  \"$APP_SOURCE_ROOT/Generated/image_flow.swift\"",
+				"",
+			);
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B09126A230260A5E000E2487 /* Sources */ = {
@@ -370,6 +397,7 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -414,6 +442,7 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

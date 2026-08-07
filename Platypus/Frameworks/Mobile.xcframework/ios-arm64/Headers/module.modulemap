@@ -1,0 +1,7 @@
+module image_flowFFI {
+    header "image_flowFFI.h"
+    export *
+    use "Darwin"
+    use "_Builtin_stdbool"
+    use "_Builtin_stdint"
+}
