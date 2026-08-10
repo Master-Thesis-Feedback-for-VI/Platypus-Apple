@@ -571,27 +571,27 @@ fileprivate struct FfiConverterString: FfiConverter {
         writeBytes(&buf, value.utf8)
     }
 }
-public func nativeFibonacci(n: UInt32) -> UInt64  {
+public func fibonacci(n: UInt32) -> UInt64  {
     return try!  FfiConverterUInt64.lift(try! rustCall() {
         uniffiCallStatus in
-    uniffi_image_flow_fn_func_native_fibonacci(
+    uniffi_image_flow_fn_func_fibonacci(
         FfiConverterUInt32.lower(n),uniffiCallStatus
     )
 })
 }
-public func nativeGreatAdd(a: Int32, b: Int32) -> Int64  {
+public func greatAdd(a: Int32, b: Int32) -> Int64  {
     return try!  FfiConverterInt64.lift(try! rustCall() {
         uniffiCallStatus in
-    uniffi_image_flow_fn_func_native_great_add(
+    uniffi_image_flow_fn_func_great_add(
         FfiConverterInt32.lower(a),
         FfiConverterInt32.lower(b),uniffiCallStatus
     )
 })
 }
-public func nativeGreet(name: String) -> String  {
+public func greet(name: String) -> String  {
     return try!  FfiConverterString.lift(try! rustCall() {
         uniffiCallStatus in
-    uniffi_image_flow_fn_func_native_greet(
+    uniffi_image_flow_fn_func_greet(
         FfiConverterString.lower(name),uniffiCallStatus
     )
 })
@@ -612,13 +612,13 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_image_flow_checksum_func_native_fibonacci() != 42487) {
+    if (uniffi_image_flow_checksum_func_fibonacci() != 46044) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_native_great_add() != 50728) {
+    if (uniffi_image_flow_checksum_func_great_add() != 56266) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_native_greet() != 34573) {
+    if (uniffi_image_flow_checksum_func_greet() != 29592) {
         return InitializationResult.apiChecksumMismatch
     }
 

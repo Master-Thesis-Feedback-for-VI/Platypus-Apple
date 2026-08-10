@@ -243,19 +243,19 @@ typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureRes
     );
 
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_FIBONACCI
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_FIBONACCI
-uint64_t uniffi_image_flow_fn_func_native_fibonacci(uint32_t n, RustCallStatus *_Nonnull out_status
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_FIBONACCI
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_FIBONACCI
+uint64_t uniffi_image_flow_fn_func_fibonacci(uint32_t n, RustCallStatus *_Nonnull out_status
 );
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_GREAT_ADD
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_GREAT_ADD
-int64_t uniffi_image_flow_fn_func_native_great_add(int32_t a, int32_t b, RustCallStatus *_Nonnull out_status
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_GREAT_ADD
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_GREAT_ADD
+int64_t uniffi_image_flow_fn_func_great_add(int32_t a, int32_t b, RustCallStatus *_Nonnull out_status
 );
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_GREET
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_NATIVE_GREET
-RustBuffer uniffi_image_flow_fn_func_native_greet(RustBuffer name, RustCallStatus *_Nonnull out_status
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_GREET
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_GREET
+RustBuffer uniffi_image_flow_fn_func_greet(RustBuffer name, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
@@ -518,21 +518,21 @@ void ffi_image_flow_rust_future_free_void(uint64_t handle
 void ffi_image_flow_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
 );
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_FIBONACCI
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_FIBONACCI
-uint16_t uniffi_image_flow_checksum_func_native_fibonacci(void
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_FIBONACCI
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_FIBONACCI
+uint16_t uniffi_image_flow_checksum_func_fibonacci(void
     
 );
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_GREAT_ADD
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_GREAT_ADD
-uint16_t uniffi_image_flow_checksum_func_native_great_add(void
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_GREAT_ADD
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_GREAT_ADD
+uint16_t uniffi_image_flow_checksum_func_great_add(void
     
 );
 #endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_GREET
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_NATIVE_GREET
-uint16_t uniffi_image_flow_checksum_func_native_greet(void
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_GREET
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_GREET
+uint16_t uniffi_image_flow_checksum_func_greet(void
     
 );
 #endif

@@ -12,8 +12,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
     
-    let fib = nativeFibonacci(n: 11)
-    let wow = nativeGreatAdd(a: 3, b: 10)
+    let fib = fibonacci(n: 11)
+    let wow = greatAdd(a: 3, b: 10)
 
     var body: some View {
         NavigationViewWrapper {
