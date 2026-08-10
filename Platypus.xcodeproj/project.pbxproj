@@ -24,8 +24,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B09126B530260A5F000E2487 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PlatypusTests.xctest; path = "/Users/yannbernard/Projects/Uni/Master/Platypus-Apple/build/Debug/Platypus.app/Contents/PlugIns/PlatypusTests.xctest"; sourceTree = "<absolute>"; };
-		B09126BF30260A5F000E2487 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = PlatypusUITests.xctest; path = "/Users/yannbernard/Projects/Uni/Master/Platypus-Apple/build/Debug/PlatypusUITests-Runner.app/Contents/PlugIns/PlatypusUITests.xctest"; sourceTree = "<absolute>"; };
+		B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0EE99503026376500008CA3 /* Platypus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platypus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -73,6 +73,8 @@
 				B09126B830260A5F000E2487 /* PlatypusTests */,
 				B09126C230260A5F000E2487 /* PlatypusUITests */,
 				B0EE99503026376500008CA3 /* Platypus.app */,
+				B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */,
+				B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -116,7 +118,7 @@
 			);
 			name = PlatypusTests;
 			productName = PlatypusTests;
-			productReference = B09126B530260A5F000E2487 /* PlatypusTests.xctest */;
+			productReference = B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		B09126BE30260A5F000E2487 /* PlatypusUITests */ = {
@@ -137,7 +139,7 @@
 			);
 			name = PlatypusUITests;
 			productName = PlatypusUITests;
-			productReference = B09126BF30260A5F000E2487 /* PlatypusUITests.xctest */;
+			productReference = B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -213,7 +215,7 @@
 				"",
 				"export PATH=\"/opt/homebrew/bin:$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin\"",
 				"",
-				"RUST_ROOT=\"$(cd \"$SRCROOT/../image-flow\" && pwd)\"",
+				"RUST_ROOT=\"$(cd \"$SRCROOT/image-flow\" && pwd)\"",
 				"APP_SOURCE_ROOT=\"$SRCROOT/Platypus\"",
 				"",
 				"echo \"SRCROOT: $SRCROOT\"",
@@ -222,7 +224,7 @@
 				"",
 				"cd \"$RUST_ROOT\"",
 				"",
-				"/opt/homebrew/bin/just swift-build-bindings",
+				"/opt/homebrew/bin/just swift-build-xcode-bindings",
 				"",
 				"mkdir -p \"$APP_SOURCE_ROOT/Frameworks\"",
 				"mkdir -p \"$APP_SOURCE_ROOT/Generated\"",
@@ -231,7 +233,7 @@
 				"ditto \"$RUST_ROOT/ios/Mobile.xcframework\" \\",
 				"  \"$APP_SOURCE_ROOT/Frameworks/Mobile.xcframework\"",
 				"",
-				"cp \"$RUST_ROOT/bindings/image_flow.swift\" \\",
+				"cp \"$RUST_ROOT/bindings/swift/image_flow.swift\" \\",
 				"  \"$APP_SOURCE_ROOT/Generated/image_flow.swift\"",
 				"",
 			);
