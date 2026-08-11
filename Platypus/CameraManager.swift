@@ -31,6 +31,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
     @Published var isRecording = false
     
     private let sessionQueue = DispatchQueue(label: CAMERA_DOMAIN)
+    var fileBundle = FileBundler(createDir: false)
     
     override init() {
         super.init()
@@ -113,15 +114,12 @@ class CameraManager: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
         sessionQueue.async { [weak self] in
             guard let self, !self.videoOutput.isRecording else { return }
 
-            let filename = "recording-\(Self.fileNameFormatter.string(from: Date()))"
-            let outputURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent(filename)
-                .appendingPathExtension("mov")
-
+            self.fileBundle = FileBundler()
+                
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 self.videoOutput.startRecording(
-                    to: outputURL,
+                    to: fileBundle.videoFile,
                     recordingDelegate: self
                 )
             }
@@ -132,6 +130,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
         sessionQueue.async { [weak self] in
             guard let self, self.videoOutput.isRecording else { return }
             self.videoOutput.stopRecording()
+            fileBundle.saveBundled()
         }
     }
     
