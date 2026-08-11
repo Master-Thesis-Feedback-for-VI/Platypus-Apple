@@ -8,11 +8,13 @@
 import SwiftUI
 import SwiftData
 
+let DOMAIN = "com.github.yannbernard.Platypus"
+
 @main
 struct PlatypusApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+//            Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
