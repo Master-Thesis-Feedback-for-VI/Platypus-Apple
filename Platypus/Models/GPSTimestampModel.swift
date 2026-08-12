@@ -13,8 +13,8 @@ import CodableCSV
 @CodingKeys(.snake_case)
 struct GPSTimestampModel {
     let timestamp: Double
-    let latitude: Float16
-    let longitude: Float16
+    let latitude: Double
+    let longitude: Double
 }
 
 @Codable
@@ -30,8 +30,8 @@ struct GPSTimestamps {
 extension GPSTimestampModel {
     init(location: CLLocationCoordinate2D) {
         self.timestamp = Date().timeIntervalSince1970
-        self.latitude = Float16(location.latitude)
-        self.longitude = Float16(location.longitude)
+        self.latitude = location.latitude
+        self.longitude = location.longitude
     }
 }
 
