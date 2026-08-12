@@ -22,6 +22,8 @@ enum CameraError: Error {
 /// and recording can never race with each other or with the main actor —
 /// the compiler enforces it, so the old `sessionQueue` is no longer needed.
 actor CameraSessionActor {
+    static let SLEEP_DURATION: TimeInterval = 1
+    
     // AVCaptureSession is documented by Apple as internally thread-safe,
     // which is exactly the situation `nonisolated(unsafe)` exists for:
     // we need synchronous, cross-actor access for an AVCaptureVideoPreviewLayer,
@@ -86,22 +88,22 @@ actor CameraSessionActor {
         
         fileBundler = FileBundler()
         let fileBundlerCpy = fileBundler
-        var gpsTimeStamps = GPSTimestamps()
+        var gpsTimeStamps = await GPSTimestamps()
         
         let (snapshotStream, snapshotContinuation) = AsyncStream<MessageSnapshot>.makeStream()
-        var work = Task {
+        let work = Task {
             await withTaskGroup(of: Void.self) { group in
                 group.addTask { [fileBundlerCpy] in
-                    let locationModel = LocationViewModel()
+                    let locationModel = await LocationViewModel()
                     
-                    for await msg in snapshotStream {
+                    messageLoop: for await msg in snapshotStream {
                         switch msg {
                         case .cancel:
-                            break
+                            break messageLoop
                             
                         case .sleepAwake:
-                            guard let location = locationModel.location else { continue }
-                            let stamp = GPSTimestampModel(location: location)
+                            guard let location = await locationModel.location else { continue }
+                            let stamp = await GPSTimestampModel(location: location)
                             
                             gpsTimeStamps.stamps.append(stamp)
                             if gpsTimeStamps.stamps.count > 10 {
@@ -109,24 +111,33 @@ actor CameraSessionActor {
                             }
                             
                         case .snapNowAndLeave:
-                            guard let location = locationModel.location else { break }
-                            let stamp = GPSTimestampModel(location: location)
+                            if let location = await locationModel.location {
+                                await gpsTimeStamps.stamps.append(GPSTimestampModel(location: location))
+                            }
                             try? await gpsTimeStamps.flush(to: fileBundlerCpy.gpsDataFile)
                             fileBundlerCpy.saveBundled()
+                            break messageLoop
                         }
                     }
                 }
                 
                 group.addTask {
                     while !Task.isCancelled {
-                        guard ((try? await Task.sleep(nanoseconds: 500_000)) != nil) else {
+                        guard ((try? await Task.sleep(nanoseconds: UInt64(Self.SLEEP_DURATION) * 1_000_000_000)) != nil) else {
                             continue
                         }
                         snapshotContinuation.yield(.sleepAwake)
                     }
                 }
+                
+                // Once the message loop exits (recording finished or cancelled),
+                // stop the timer task too instead of leaking it forever.
+                await group.next()
+                group.cancelAll()
+                snapshotContinuation.finish()
             }
         }
+        _ = work
         
         return try await withCheckedThrowingContinuation { continuation in
             recordingDelegate.continuation = continuation
