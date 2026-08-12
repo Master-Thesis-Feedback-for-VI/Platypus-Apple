@@ -8,7 +8,7 @@
 import Foundation
 import ZIPFoundation
 
-struct FileBundler {
+nonisolated struct FileBundler {
     private static let fileNameFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
@@ -19,7 +19,9 @@ struct FileBundler {
     }()
     
     let bundleDirPath: URL
+    
     let videoFile: URL
+    let gpsDataFile: URL
     
     let dirName: String
     
@@ -28,8 +30,6 @@ struct FileBundler {
         
         let path = "recording-\(Self.fileNameFormatter.string(from: Date()))"
         self.dirName = path
-//        let dirPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-//            .appendingPathComponent(path)
         let dirPath = fileManager.temporaryDirectory.appendingPathComponent(path)
         
         if createDir && !fileManager.fileExists(atPath: dirPath.path) {
@@ -38,6 +38,7 @@ struct FileBundler {
         
         self.bundleDirPath = dirPath
         self.videoFile = dirPath.appendingPathComponent(UUID().uuidString).appendingPathExtension("mov")
+        self.gpsDataFile = dirPath.appendingPathComponent("gps_timestamps").appendingPathExtension("csv")
     }
     
     func saveBundled() {

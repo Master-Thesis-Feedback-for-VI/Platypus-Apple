@@ -17,15 +17,14 @@ struct CameraView: View {
             VStack(spacing: 16) {
                 if cameraManager.isCamAuthorized {
                     CameraPreview(session: cameraManager.session)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 420)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
 
                     Button {
                         if cameraManager.isRecording {
-                            cameraManager.stopRecording()
+                            Task { await cameraManager.stopRecording() }
                         } else {
-                            cameraManager.startRecording()
+                            Task { await cameraManager.startRecording() }
                         }
                     } label: {
                         Label(
@@ -37,12 +36,6 @@ struct CameraView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(cameraManager.isRecording ? .red : .accentColor)
-
-                    if let url = cameraManager.capturedVideoURL {
-                        Text("Saved to: \(url.lastPathComponent)")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
 
                     if let error = cameraManager.recordingError {
                         Text(error.localizedDescription)
@@ -56,26 +49,19 @@ struct CameraView: View {
                         description: Text("Allow camera access in Settings to record video.")
                     )
                 }
-                
-                HStack(spacing: 16) {
-                    if let loc = locationViewModel.location {
-                        Text("Latitude: \(loc.latitude)").foregroundStyle(.secondary)
-                        Text("Longitude: \(loc.longitude)").foregroundStyle(.secondary)
-                    } else {
-                        Text("Error could not fetch coords")
-                    }
-                }.padding()
             }
             .padding()
             .navigationTitle("Camera")
             .onAppear {
-                cameraManager.startSession()
+                Task { await cameraManager.startSession() }
             }
             .onDisappear {
-                if cameraManager.isRecording {
-                    cameraManager.stopRecording()
+                Task {
+                    if cameraManager.isRecording {
+                        await cameraManager.stopRecording()
+                    }
+                    await cameraManager.stopSession()
                 }
-                cameraManager.stopSession()
             }
         }
     }
