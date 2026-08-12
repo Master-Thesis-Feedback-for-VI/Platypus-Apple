@@ -12,7 +12,7 @@ import CodableCSV
 @Codable
 @CodingKeys(.snake_case)
 struct GPSTimestampModel {
-    let timestamp: UInt64
+    let timestamp: Double
     let latitude: Float16
     let longitude: Float16
 }
@@ -29,7 +29,7 @@ struct GPSTimestamps {
 
 extension GPSTimestampModel {
     init(location: CLLocationCoordinate2D) {
-        self.timestamp = UInt64(Date().timeIntervalSince1970)
+        self.timestamp = Date().timeIntervalSince1970
         self.latitude = Float16(location.latitude)
         self.longitude = Float16(location.longitude)
     }
@@ -57,12 +57,18 @@ extension GPSTimestamps {
         guard !stamps.isEmpty else { return }
         
         let fileExists = FileManager.default.fileExists(atPath: url.path)
+        // The encoder always needs headers to map coding keys to columns;
+        // encoding with empty headers throws. When appending to an existing
+        // file, the header row is stripped from the encoded data instead.
         let encoder = CSVEncoder {
-            $0.headers = fileExists ? [] : ["timestamp", "latitude", "longitude"]
+            $0.headers = ["timestamp", "latitude", "longitude"]
         }
-        let newData = try encoder.encode(stamps, into: Data.self)
+        var newData = try encoder.encode(stamps, into: Data.self)
 
         if fileExists {
+            if let newlineIndex = newData.firstIndex(of: UInt8(ascii: "\n")) {
+                newData = newData.subdata(in: newData.index(after: newlineIndex)..<newData.endIndex)
+            }
             let handle = try FileHandle(forWritingTo: url)
             defer { handle.closeFile() }
             handle.seekToEndOfFile()
