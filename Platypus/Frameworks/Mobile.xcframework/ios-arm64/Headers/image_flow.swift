@@ -465,64 +465,16 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
-    typealias FfiType = UInt32
-    typealias SwiftType = UInt32
+fileprivate struct FfiConverterDouble: FfiConverterPrimitive {
+    typealias FfiType = Double
+    typealias SwiftType = Double
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
-        return try lift(readInt(&buf))
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Double {
+        return try lift(readDouble(&buf))
     }
 
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterInt32: FfiConverterPrimitive {
-    typealias FfiType = Int32
-    typealias SwiftType = Int32
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Int32 {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: Int32, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterUInt64: FfiConverterPrimitive {
-    typealias FfiType = UInt64
-    typealias SwiftType = UInt64
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt64 {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-fileprivate struct FfiConverterInt64: FfiConverterPrimitive {
-    typealias FfiType = Int64
-    typealias SwiftType = Int64
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Int64 {
-        return try lift(readInt(&buf))
-    }
-
-    public static func write(_ value: Int64, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
+    public static func write(_ value: Double, into buf: inout [UInt8]) {
+        writeDouble(&buf, lower(value))
     }
 }
 
@@ -571,30 +523,59 @@ fileprivate struct FfiConverterString: FfiConverter {
         writeBytes(&buf, value.utf8)
     }
 }
-public func fibonacci(n: UInt32) -> UInt64  {
-    return try!  FfiConverterUInt64.lift(try! rustCall() {
-        uniffiCallStatus in
-    uniffi_image_flow_fn_func_fibonacci(
-        FfiConverterUInt32.lower(n),uniffiCallStatus
-    )
-})
+
+
+public struct Coordinate: Equatable, Hashable {
+    public var lat: Double
+    public var lon: Double
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(lat: Double, lon: Double) {
+        self.lat = lat
+        self.lon = lon
+    }
+
+    
+
+    
 }
-public func greatAdd(a: Int32, b: Int32) -> Int64  {
-    return try!  FfiConverterInt64.lift(try! rustCall() {
-        uniffiCallStatus in
-    uniffi_image_flow_fn_func_great_add(
-        FfiConverterInt32.lower(a),
-        FfiConverterInt32.lower(b),uniffiCallStatus
-    )
-})
+
+#if compiler(>=6)
+extension Coordinate: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCoordinate: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Coordinate {
+        return
+            try Coordinate(
+                lat: FfiConverterDouble.read(from: &buf), 
+                lon: FfiConverterDouble.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Coordinate, into buf: inout [UInt8]) {
+        FfiConverterDouble.write(value.lat, into: &buf)
+        FfiConverterDouble.write(value.lon, into: &buf)
+    }
 }
-public func greet(name: String) -> String  {
-    return try!  FfiConverterString.lift(try! rustCall() {
-        uniffiCallStatus in
-    uniffi_image_flow_fn_func_greet(
-        FfiConverterString.lower(name),uniffiCallStatus
-    )
-})
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCoordinate_lift(_ buf: RustBuffer) throws -> Coordinate {
+    return try FfiConverterTypeCoordinate.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCoordinate_lower(_ value: Coordinate) -> RustBuffer {
+    return FfiConverterTypeCoordinate.lower(value)
 }
 
 private enum InitializationResult {
@@ -611,15 +592,6 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_image_flow_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
-    }
-    if (uniffi_image_flow_checksum_func_fibonacci() != 46044) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_image_flow_checksum_func_great_add() != 56266) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_image_flow_checksum_func_greet() != 29592) {
-        return InitializationResult.apiChecksumMismatch
     }
 
     return InitializationResult.ok
