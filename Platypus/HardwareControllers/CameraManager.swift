@@ -22,7 +22,7 @@ enum CameraError: Error {
 /// and recording can never race with each other or with the main actor —
 /// the compiler enforces it, so the old `sessionQueue` is no longer needed.
 actor CameraSessionActor {
-    static let SLEEP_DURATION: TimeInterval = 1
+    static let SLEEP_DURATION: TimeInterval = 0.5
     
     // AVCaptureSession is documented by Apple as internally thread-safe,
     // which is exactly the situation `nonisolated(unsafe)` exists for:
@@ -88,13 +88,13 @@ actor CameraSessionActor {
         
         fileBundler = FileBundler()
         let fileBundlerCpy = fileBundler
-        var gpsTimeStamps = await GPSTimestamps()
         
         let (snapshotStream, snapshotContinuation) = AsyncStream<MessageSnapshot>.makeStream()
         let work = Task {
             await withTaskGroup(of: Void.self) { group in
                 group.addTask { [fileBundlerCpy] in
-                    let locationModel = await LocationViewModel()
+                    let locationModel = await LocationRecorder()
+                    var gpsTimeStamps = await GPSTimestamps()
                     
                     messageLoop: for await msg in snapshotStream {
                         switch msg {
@@ -148,9 +148,11 @@ actor CameraSessionActor {
         }
     }
 
-    func stopRecording() {
-        guard videoOutput.isRecording else { return }
+    func stopRecording() -> FileBundler? {
+        guard videoOutput.isRecording else { return nil }
         videoOutput.stopRecording()
+        let cpy = self.fileBundler
+        return cpy
     }
 }
 
@@ -247,6 +249,6 @@ final class CameraManager: ObservableObject {
     }
 
     func stopRecording() async {
-        await cameraActor.stopRecording()
+        _ = await cameraActor.stopRecording()
     }
 }

@@ -9,7 +9,7 @@ import SwiftUI
 import AVFoundation
 
 struct CameraView: View {
-    @StateObject private var locationViewModel = LocationViewModel()
+    @StateObject private var locationViewModel = LocationRecorder()
     @StateObject private var cameraManager = CameraManager()
     
     var body: some View {
