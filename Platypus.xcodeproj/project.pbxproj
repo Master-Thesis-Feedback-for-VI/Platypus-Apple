@@ -111,7 +111,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B09126C730260A5F000E2487 /* Build configuration list for PBXNativeTarget "Platypus" */;
 			buildPhases = (
-				B0EE994F302631F700008CA3 /* [Image Flow] Build Rust bindings */,
 				B09126A230260A5E000E2487 /* Sources */,
 				B09126A330260A5E000E2487 /* Frameworks */,
 				B09126A430260A5E000E2487 /* Resources */,
@@ -241,42 +240,6 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		B0EE994F302631F700008CA3 /* [Image Flow] Build Rust bindings */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			name = "[Image Flow] Build Rust bindings";
-			shellPath = /bin/sh;
-			shellScript = (
-				"set -euxo pipefail",
-				"",
-				"export PATH=\"/opt/homebrew/bin:$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin\"",
-				"",
-				"RUST_ROOT=\"$(cd \"$SRCROOT/image-flow\" && pwd)\"",
-				"APP_SOURCE_ROOT=\"$SRCROOT/Platypus\"",
-				"",
-				"echo \"SRCROOT: $SRCROOT\"",
-				"echo \"RUST_ROOT: $RUST_ROOT\"",
-				"echo \"APP_SOURCE_ROOT: $APP_SOURCE_ROOT\"",
-				"",
-				"cd \"$RUST_ROOT\"",
-				"",
-				"/opt/homebrew/bin/just swift-build-xcode-bindings",
-				"",
-				"mkdir -p \"$APP_SOURCE_ROOT/Frameworks\"",
-				"mkdir -p \"$APP_SOURCE_ROOT/Generated\"",
-				"",
-				"rm -rf \"$APP_SOURCE_ROOT/Frameworks/Mobile.xcframework\"",
-				"ditto \"$RUST_ROOT/ios/Mobile.xcframework\" \\",
-				"  \"$APP_SOURCE_ROOT/Frameworks/Mobile.xcframework\"",
-				"",
-				"cp \"$RUST_ROOT/bindings/swift/image_flow.swift\" \\",
-				"  \"$APP_SOURCE_ROOT/Generated/image_flow.swift\"",
-				"",
-			);
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B09126A230260A5E000E2487 /* Sources */ = {
