@@ -15,6 +15,7 @@ enum CameraError: Error {
     case deviceNotFound
     case alreadyRecording
     case notAuthorized
+    case bundleNotCreated
 }
 
 /// Owns the `AVCaptureSession` and every AVFoundation call.
@@ -35,14 +36,10 @@ actor CameraSessionActor {
     
     private var fileBundler = FileBundler(createDir: false)
 
-    private static let fileNameFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = .current
-        formatter.dateFormat = "yyyy-MM-dd-HH-mm-ss"
-        return formatter
-    }()
+    struct RecordingResult {
+        let videoURL: URL
+        let bundledURL: URL
+    }
 
     // MARK: - Camera Setup
     func configure() throws {
@@ -77,7 +74,7 @@ actor CameraSessionActor {
     // MARK: - Video Capture
     /// Suspends until AVFoundation finishes writing the file, then
     /// resumes with the output URL or throws whatever error AVFoundation reported.
-    func startRecording() async throws -> URL {
+    func startRecording() async throws -> RecordingResult {
         guard !videoOutput.isRecording else { throw CameraError.alreadyRecording }
         
         enum MessageSnapshot {
@@ -90,69 +87,79 @@ actor CameraSessionActor {
         let fileBundlerCpy = fileBundler
         
         let (snapshotStream, snapshotContinuation) = AsyncStream<MessageSnapshot>.makeStream()
-        let work = Task {
-            await withTaskGroup(of: Void.self) { group in
-                group.addTask { [fileBundlerCpy] in
-                    let locationModel = await LocationRecorder()
-                    var gpsTimeStamps = await GPSTimestamps()
-                    
-                    messageLoop: for await msg in snapshotStream {
-                        switch msg {
-                        case .cancel:
-                            break messageLoop
-                            
-                        case .sleepAwake:
-                            guard let location = await locationModel.location else { continue }
-                            let stamp = await GPSTimestampModel(location: location)
-                            
-                            gpsTimeStamps.stamps.append(stamp)
-                            if gpsTimeStamps.stamps.count > 10 {
-                                _ = try? await gpsTimeStamps.flush(to: fileBundlerCpy.gpsDataFile)
-                            }
-                            
-                        case .snapNowAndLeave:
-                            if let location = await locationModel.location {
-                                await gpsTimeStamps.stamps.append(GPSTimestampModel(location: location))
-                            }
-                            try? await gpsTimeStamps.flush(to: fileBundlerCpy.gpsDataFile)
-                            fileBundlerCpy.saveBundled()
-                            break messageLoop
-                        }
+        let work = Task<URL?, Error> {
+            let locationModel = await LocationRecorder()
+            var gpsTimeStamps = await GPSTimestamps()
+            let sleepTask = Task {
+                while !Task.isCancelled {
+                    do {
+                        try await Task.sleep(nanoseconds: UInt64(Self.SLEEP_DURATION * 1_000_000_000))
+                    } catch {
+                        break
                     }
+
+                    snapshotContinuation.yield(.sleepAwake)
                 }
-                
-                group.addTask {
-                    while !Task.isCancelled {
-                        guard ((try? await Task.sleep(nanoseconds: UInt64(Self.SLEEP_DURATION) * 1_000_000_000)) != nil) else {
-                            continue
-                        }
-                        snapshotContinuation.yield(.sleepAwake)
-                    }
-                }
-                
-                // Once the message loop exits (recording finished or cancelled),
-                // stop the timer task too instead of leaking it forever.
-                await group.next()
-                group.cancelAll()
+            }
+
+            defer {
+                sleepTask.cancel()
                 snapshotContinuation.finish()
             }
-        }
-        _ = work
-        
-        return try await withCheckedThrowingContinuation { continuation in
-            recordingDelegate.continuation = continuation
-            recordingDelegate.onFinish = { [snapshotContinuation] in
-                snapshotContinuation.yield(.snapNowAndLeave)
+
+            for await msg in snapshotStream {
+                switch msg {
+                case .cancel:
+                    return nil
+
+                case .sleepAwake:
+                    guard let location = await locationModel.location else { continue }
+                    let stamp = await GPSTimestampModel(location: location)
+
+                    gpsTimeStamps.stamps.append(stamp)
+                    if gpsTimeStamps.stamps.count > 10 {
+                        try? await gpsTimeStamps.flush(to: fileBundlerCpy.gpsDataFile)
+                    }
+
+                case .snapNowAndLeave:
+                    if let location = await locationModel.location {
+                        await gpsTimeStamps.stamps.append(GPSTimestampModel(location: location))
+                    }
+                    try? await gpsTimeStamps.flush(to: fileBundlerCpy.gpsDataFile)
+                    return try fileBundlerCpy.saveBundled()
+                }
             }
-            videoOutput.startRecording(to: fileBundler.videoFile, recordingDelegate: recordingDelegate)
+
+            return nil
         }
+
+        let outputURL: URL
+        do {
+            outputURL = try await withCheckedThrowingContinuation { continuation in
+                recordingDelegate.continuation = continuation
+                recordingDelegate.onComplete = { [snapshotContinuation] didSucceed in
+                    snapshotContinuation.yield(didSucceed ? .snapNowAndLeave : .cancel)
+                }
+                videoOutput.startRecording(to: fileBundler.videoFile, recordingDelegate: recordingDelegate)
+            }
+        } catch {
+            snapshotContinuation.yield(.cancel)
+            snapshotContinuation.finish()
+            work.cancel()
+            _ = try? await work.value
+            throw error
+        }
+
+        guard let bundledURL = try await work.value else {
+            throw CameraError.bundleNotCreated
+        }
+
+        return RecordingResult(videoURL: outputURL, bundledURL: bundledURL)
     }
 
-    func stopRecording() -> FileBundler? {
-        guard videoOutput.isRecording else { return nil }
+    func stopRecording() {
+        guard videoOutput.isRecording else { return }
         videoOutput.stopRecording()
-        let cpy = self.fileBundler
-        return cpy
     }
 }
 
@@ -164,7 +171,7 @@ actor CameraSessionActor {
 /// delegate-based AVFoundation APIs into async/await.
 nonisolated private final class RecordingDelegateProxy: NSObject, AVCaptureFileOutputRecordingDelegate {
     var continuation: CheckedContinuation<URL, Error>?
-    var onFinish: (() -> Void)?
+    var onComplete: ((Bool) -> Void)?
 
     func fileOutput(
         _ output: AVCaptureFileOutput,
@@ -172,20 +179,23 @@ nonisolated private final class RecordingDelegateProxy: NSObject, AVCaptureFileO
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
+        let didSucceed = (error == nil)
+        onComplete?(didSucceed)
+
         if let error {
             continuation?.resume(throwing: error)
         } else {
-            onFinish?()
             continuation?.resume(returning: outputFileURL)
         }
         continuation = nil
-        onFinish = nil
+        onComplete = nil
     }
 }
 
 @MainActor
 final class CameraManager: ObservableObject {
     private let cameraActor = CameraSessionActor()
+    private var activeRecordingTask: Task<CameraSessionActor.RecordingResult, Error>?
 
     /// Exposed synchronously for SwiftUI preview layers.
     nonisolated var session: AVCaptureSession { cameraActor.session }
@@ -193,6 +203,7 @@ final class CameraManager: ObservableObject {
     @Published var isCamAuthorized = false
     @Published var capturedVideo: Data?
     @Published var capturedVideoURL: URL?
+    @Published var bundledRecordingURL: URL?
     @Published var recordingError: Error?
     @Published var isRecording = false
 
@@ -237,18 +248,31 @@ final class CameraManager: ObservableObject {
     // MARK: - Video Capture
     func startRecording() async {
         guard !isRecording else { return }
+
+        recordingError = nil
+        bundledRecordingURL = nil
         isRecording = true
+
+        let recordingTask = Task { try await cameraActor.startRecording() }
+        activeRecordingTask = recordingTask
+        defer {
+            activeRecordingTask = nil
+            isRecording = false
+        }
+
         do {
-            let url = try await cameraActor.startRecording()
-            capturedVideoURL = url
-            capturedVideo = try Data(contentsOf: url)
+            let result = try await recordingTask.value
+            capturedVideoURL = result.videoURL
+            bundledRecordingURL = result.bundledURL
+            capturedVideo = try Data(contentsOf: result.videoURL)
         } catch {
             recordingError = error
         }
-        isRecording = false
     }
 
     func stopRecording() async {
-        _ = await cameraActor.stopRecording()
+        let recordingTask = activeRecordingTask
+        await cameraActor.stopRecording()
+        _ = try? await recordingTask?.value
     }
 }
