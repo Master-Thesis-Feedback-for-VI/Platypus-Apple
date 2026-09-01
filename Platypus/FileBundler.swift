@@ -24,6 +24,12 @@ nonisolated struct FileBundler {
     let gpsDataFile: URL
     
     let dirName: String
+
+    var archiveFile: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(self.dirName)
+            .appendingPathExtension("zip")
+    }
     
     init(createDir: Bool = true) {
         let fileManager = FileManager.default
@@ -41,14 +47,16 @@ nonisolated struct FileBundler {
         self.gpsDataFile = dirPath.appendingPathComponent("gps_timestamps").appendingPathExtension("csv")
     }
     
-    func saveBundled() {
+    func saveBundled() throws -> URL {
         let fileManager = FileManager.default
-        let targetPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent(self.dirName)
-            .appendingPathExtension("zip")
+        let targetPath = self.archiveFile
+
+        if fileManager.fileExists(atPath: targetPath.path) {
+            try fileManager.removeItem(at: targetPath)
+        }
         
-        try! fileManager.zipItem(at: self.bundleDirPath, to: targetPath)
+        try fileManager.zipItem(at: self.bundleDirPath, to: targetPath)
+        return targetPath
     }
 }
-
 
