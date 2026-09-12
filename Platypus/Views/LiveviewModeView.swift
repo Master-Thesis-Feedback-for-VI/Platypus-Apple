@@ -8,14 +8,12 @@
 import SwiftUI
 
 struct LiveviewModeView: View {
-    @EnvironmentObject var locationViewModel: LocationRecorder
     @EnvironmentObject var cameraManager: CameraManager
 
     var body: some View {
-        NavigationStack {
+        Group {
             if cameraManager.isCamAuthorized {
                 CameraActiveLiveView()
-                    .environmentObject(locationViewModel)
                     .environmentObject(cameraManager)
             } else {
                 VStack(spacing: 10) {
@@ -29,28 +27,42 @@ struct LiveviewModeView: View {
 }
 
 struct CameraActiveLiveView: View {
-    @EnvironmentObject var locationViewModel: LocationRecorder
     @EnvironmentObject var cameraManager: CameraManager
 
     @State private var isPreviewActive = false
     @State private var previewAttachTask: Task<Void, Never>? = nil
+    @State private var locationSnapTask: Task<Void, Never>? = nil
+    
+    @State private var locationRecorder = LocationRecorder()
 
     var body: some View {
-        VStack {
-            CameraPreview(
-                cameraManager: cameraManager,
-                isActive: isPreviewActive
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
-        }
+        CameraPreview(
+            cameraManager: cameraManager,
+            isActive: isPreviewActive
+        )
+        .ignoresSafeArea()
         .onAppear {
             isPreviewActive = false
             previewAttachTask?.cancel()
             previewAttachTask = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: Constants.contentionTime)
                 if !Task.isCancelled { isPreviewActive = true }
             }
+            
+            locationSnapTask?.cancel()
+            locationSnapTask = Task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(3))
+                    if Task.isCancelled { break }
+                    guard let location = locationRecorder.location else {
+                        continue
+                    }
+                    guard let img = try? await cameraManager.snapPhoto() else {
+                        continue
+                    }
+                }
+            }
+            
+            
         }
         .onDisappear {
             previewAttachTask?.cancel()
