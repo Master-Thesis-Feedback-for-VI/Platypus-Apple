@@ -8,6 +8,6 @@
 import Foundation
 
 enum Constants {
-  static let contentionTime: UInt64 = 120_000_000
-  static let cornerRadius: CGFloat = 12
+    static let contentionTime: UInt64 = 120_000_000
+    static let cornerRadius: CGFloat = 12
 }
