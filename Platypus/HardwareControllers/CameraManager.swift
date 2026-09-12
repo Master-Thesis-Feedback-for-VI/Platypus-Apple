@@ -44,6 +44,7 @@ actor CameraSessionActor {
     // MARK: - Camera Setup
     func configure() throws {
         session.beginConfiguration()
+        session.sessionPreset = .high
         defer { session.commitConfiguration() }
 
         guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
@@ -276,3 +277,4 @@ final class CameraManager: ObservableObject {
         _ = try? await recordingTask?.value
     }
 }
+
