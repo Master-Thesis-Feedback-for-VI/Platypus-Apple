@@ -9,7 +9,6 @@ import AVFoundation
 import SwiftUI
 
 struct CameraView: View {
-    @EnvironmentObject var locationViewModel: LocationRecorder
     @EnvironmentObject var cameraManager: CameraManager
     @State private var isPreviewActive = false
     @State private var previewAttachTask: Task<Void, Never>? = nil
@@ -67,7 +66,6 @@ struct CameraView: View {
                 isPreviewActive = false
                 previewAttachTask?.cancel()
                 previewAttachTask = Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: Constants.contentionTime)
                     if !Task.isCancelled { isPreviewActive = true }
                 }
             }

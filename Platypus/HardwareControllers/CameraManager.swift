@@ -33,6 +33,9 @@ actor CameraSessionActor {
 
     private let videoOutput = AVCaptureMovieFileOutput()
     private let recordingDelegate = RecordingDelegateProxy()
+    
+    private let photoOutput = AVCapturePhotoOutput()
+    private let photoCaptureDelegate = PhotoCaptureDelegateProxy()
 
     private var fileBundler = FileBundler(createDir: false)
 
@@ -64,6 +67,17 @@ actor CameraSessionActor {
 
         if session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
+        }
+        
+        if session.canAddOutput(photoOutput) {
+            session.addOutput(photoOutput)
+            photoOutput.isResponsiveCaptureEnabled = photoOutput.isZeroShutterLagSupported
+            if photoOutput.isZeroShutterLagSupported {
+                photoOutput.isZeroShutterLagEnabled = true
+            }
+            if photoOutput.isFastCapturePrioritizationSupported {
+                photoOutput.isFastCapturePrioritizationEnabled = true
+            }
         }
     }
 
@@ -191,6 +205,17 @@ actor CameraSessionActor {
         guard videoOutput.isRecording else { return }
         videoOutput.stopRecording()
     }
+    
+    // MARK: - Photo Capture
+    func snapPhoto() async throws -> Data {
+        let settings = AVCapturePhotoSettings()
+        settings.photoQualityPrioritization = .speed
+
+        return try await withCheckedThrowingContinuation { continuation in
+            photoCaptureDelegate.continuation = continuation
+            photoOutput.capturePhoto(with: settings, delegate: photoCaptureDelegate)
+        }
+    }
 
     // MARK: - Preview
     func attachPreview(_ layer: AVCaptureVideoPreviewLayer) {
@@ -234,6 +259,29 @@ nonisolated private final class RecordingDelegateProxy: NSObject,
         }
         continuation = nil
         onComplete = nil
+    }
+}
+
+nonisolated private final class PhotoCaptureDelegateProxy: NSObject,
+    AVCapturePhotoCaptureDelegate
+{
+    var continuation: CheckedContinuation<Data, Error>?
+
+    func photoOutput(
+        _ output: AVCapturePhotoOutput,
+        didFinishProcessingPhoto photo: AVCapturePhoto,
+        error: Error?
+    ) {
+        defer { continuation = nil }
+        if let error {
+            continuation?.resume(throwing: error)
+            return
+        }
+        guard let data = photo.fileDataRepresentation() else {
+            continuation?.resume(throwing: CameraError.bundleNotCreated)
+            return
+        }
+        continuation?.resume(returning: data)
     }
 }
 
@@ -320,6 +368,12 @@ final class CameraManager: ObservableObject {
         let recordingTask = activeRecordingTask
         await cameraActor.stopRecording()
         _ = try? await recordingTask?.value
+    }
+    
+    // MARK: - Photo
+    func snapPhoto() async throws -> PlatyImage {
+        let img = try await cameraActor.snapPhoto()
+        return PlatyImage(img: img)
     }
 
     // MARK: - Preview
