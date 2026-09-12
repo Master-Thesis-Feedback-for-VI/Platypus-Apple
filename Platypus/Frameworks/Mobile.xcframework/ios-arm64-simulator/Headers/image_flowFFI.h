@@ -243,6 +243,26 @@ typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureRes
     );
 
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CLONE_FRAMEPATH
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CLONE_FRAMEPATH
+uint64_t uniffi_image_flow_fn_clone_framepath(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FREE_FRAMEPATH
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FREE_FRAMEPATH
+void uniffi_image_flow_fn_free_framepath(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_FRAMEPATH_NEW
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_FRAMEPATH_NEW
+uint64_t uniffi_image_flow_fn_constructor_framepath_new(RustBuffer offset, RustBuffer path, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_EVALUATE_CONTEXT
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_EVALUATE_CONTEXT
+uint64_t uniffi_image_flow_fn_func_evaluate_context(RustBuffer location, RustBuffer frame
+);
+#endif
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
 #define UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
 RustBuffer ffi_image_flow_rustbuffer_alloc(uint64_t size, RustCallStatus *_Nonnull out_status
@@ -501,6 +521,18 @@ void ffi_image_flow_rust_future_free_void(uint64_t handle
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUST_FUTURE_COMPLETE_VOID
 #define UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUST_FUTURE_COMPLETE_VOID
 void ffi_image_flow_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_EVALUATE_CONTEXT
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_EVALUATE_CONTEXT
+uint16_t uniffi_image_flow_checksum_func_evaluate_context(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_FRAMEPATH_NEW
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_FRAMEPATH_NEW
+uint16_t uniffi_image_flow_checksum_constructor_framepath_new(void
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_UNIFFI_CONTRACT_VERSION
