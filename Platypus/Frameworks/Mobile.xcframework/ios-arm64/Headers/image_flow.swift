@@ -524,6 +524,156 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterDuration: FfiConverterRustBuffer {
+    typealias SwiftType = TimeInterval
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TimeInterval {
+        let seconds: UInt64 = try readInt(&buf)
+        let nanoseconds: UInt32 = try readInt(&buf)
+        return Double(seconds) + (Double(nanoseconds) / 1.0e9)
+    }
+
+    public static func write(_ value: TimeInterval, into buf: inout [UInt8]) {
+        if value.rounded(.down) > Double(Int64.max) {
+            fatalError("Duration overflow, exceeds max bounds supported by Uniffi")
+        }
+
+        if value < 0 {
+            fatalError("Invalid duration, must be non-negative")
+        }
+
+        let seconds = UInt64(value)
+        let nanoseconds = UInt32((value - Double(seconds)) * 1.0e9)
+        writeInt(&buf, seconds)
+        writeInt(&buf, nanoseconds)
+    }
+}
+
+
+
+
+public protocol FramePathProtocol: AnyObject, Sendable {
+    
+}
+open class FramePath: FramePathProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_image_flow_fn_clone_framepath(self.handle, $0) }
+    }
+    /**
+     * TODO
+     *
+     * # Panics
+     * TODO
+     */
+public convenience init(offset: TimeInterval, path: String) {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_constructor_framepath_new(
+        FfiConverterDuration.lower(offset),
+        FfiConverterString.lower(path),uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_image_flow_fn_free_framepath(handle, $0) }
+    }
+
+    
+
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFramePath: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = FramePath
+
+    public static func lift(_ handle: UInt64) throws -> FramePath {
+        return FramePath(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: FramePath) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FramePath {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: FramePath, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFramePath_lift(_ handle: UInt64) throws -> FramePath {
+    return try FfiConverterTypeFramePath.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
+    return FfiConverterTypeFramePath.lower(value)
+}
+
+
+
 
 public struct Coordinate: Equatable, Hashable {
     public var lat: Double
@@ -578,6 +728,304 @@ public func FfiConverterTypeCoordinate_lower(_ value: Coordinate) -> RustBuffer 
     return FfiConverterTypeCoordinate.lower(value)
 }
 
+
+/**
+ * All potential geographic categories supported.
+ *
+ * <https://github.com/Master-Thesis-Feedback-for-VI/image-flow/issues/2>
+ */
+
+public enum ContextCategory: Equatable, Hashable {
+    
+    case forest
+    case outside
+    case building
+    case street
+    case pedestrian
+    case intersection
+    case elevator
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ContextCategory: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeContextCategory: FfiConverterRustBuffer {
+    typealias SwiftType = ContextCategory
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ContextCategory {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .forest
+        
+        case 2: return .outside
+        
+        case 3: return .building
+        
+        case 4: return .street
+        
+        case 5: return .pedestrian
+        
+        case 6: return .intersection
+        
+        case 7: return .elevator
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ContextCategory, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .forest:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .outside:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .building:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .street:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .pedestrian:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .intersection:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .elevator:
+            writeInt(&buf, Int32(7))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextCategory_lift(_ buf: RustBuffer) throws -> ContextCategory {
+    return try FfiConverterTypeContextCategory.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextCategory_lower(_ value: ContextCategory) -> RustBuffer {
+    return FfiConverterTypeContextCategory.lower(value)
+}
+
+
+
+public 
+enum ImageFlowError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    case Request(message: String)
+    
+    case Serialization(message: String)
+    
+    case Io(message: String)
+    
+    case Image(message: String)
+    
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension ImageFlowError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImageFlowError: FfiConverterRustBuffer {
+    typealias SwiftType = ImageFlowError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImageFlowError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .Request(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .Serialization(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .Io(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .Image(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ImageFlowError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        case .Request(_ /* message is ignored*/):
+            writeInt(&buf, Int32(1))
+        case .Serialization(_ /* message is ignored*/):
+            writeInt(&buf, Int32(2))
+        case .Io(_ /* message is ignored*/):
+            writeInt(&buf, Int32(3))
+        case .Image(_ /* message is ignored*/):
+            writeInt(&buf, Int32(4))
+
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowError_lift(_ buf: RustBuffer) throws -> ImageFlowError {
+    return try FfiConverterTypeImageFlowError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowError_lower(_ value: ImageFlowError) -> RustBuffer {
+    return FfiConverterTypeImageFlowError.lower(value)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeContextCategory: FfiConverterRustBuffer {
+    typealias SwiftType = [ContextCategory]
+
+    public static func write(_ value: [ContextCategory], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeContextCategory.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ContextCategory] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ContextCategory]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeContextCategory.read(from: &buf))
+        }
+        return seq
+    }
+}
+private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
+private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
+
+fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
+
+fileprivate func uniffiRustCallAsync<F, T>(
+    rustFutureFunc: () -> UInt64,
+    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
+    freeFunc: (UInt64) -> (),
+    liftFunc: (F) throws -> T,
+    errorHandler: ((RustBuffer) throws -> Swift.Error)?
+) async throws -> T {
+    // Make sure to call the ensure init function since future creation doesn't have a
+    // RustCallStatus param, so doesn't use makeRustCall()
+    uniffiEnsureImageFlowInitialized()
+    let rustFuture = rustFutureFunc()
+    defer {
+        freeFunc(rustFuture)
+    }
+    var pollResult: Int8;
+    repeat {
+        pollResult = await withUnsafeContinuation {
+            pollFunc(
+                rustFuture,
+                { handle, pollResult in
+                    uniffiFutureContinuationCallback(handle: handle, pollResult: pollResult)
+                },
+                uniffiContinuationHandleMap.insert(obj: $0)
+            )
+        }
+    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+
+    return try liftFunc(makeRustCall(
+        { completeFunc(rustFuture, $0) },
+        errorHandler: errorHandler
+    ))
+}
+
+// Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
+// lift the return value or error and resume the suspended function.
+fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: Int8) {
+    if let continuation = try? uniffiContinuationHandleMap.remove(handle: handle) {
+        continuation.resume(returning: pollResult)
+    } else {
+        print("uniffiFutureContinuationCallback invalid handle")
+    }
+}
+/**
+ * TODO
+ *
+ * # Errors
+ * TODO
+ */
+public func evaluateContext(location: Coordinate, frame: String)async throws  -> [ContextCategory]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_func_evaluate_context(FfiConverterTypeCoordinate_lower(location),FfiConverterString.lower(frame)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
+            completeFunc: ffi_image_flow_rust_future_complete_rust_buffer,
+            freeFunc: ffi_image_flow_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeContextCategory.lift,
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+}
+
 private enum InitializationResult {
     case ok
     case contractVersionMismatch
@@ -592,6 +1040,12 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_image_flow_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
+    }
+    if (uniffi_image_flow_checksum_func_evaluate_context() != 22095) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_constructor_framepath_new() != 29437) {
+        return InitializationResult.apiChecksumMismatch
     }
 
     return InitializationResult.ok
