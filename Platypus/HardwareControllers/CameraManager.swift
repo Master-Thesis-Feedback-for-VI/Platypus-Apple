@@ -244,7 +244,7 @@ final class CameraManager: ObservableObject {
         Task<CameraSessionActor.RecordingResult, Error>?
 
     /// Exposed synchronously for SwiftUI preview layers.
-//    nonisolated var session: AVCaptureSession { cameraActor.session }
+    //    nonisolated var session: AVCaptureSession { cameraActor.session }
 
     @Published var isCamAuthorized = false
     @Published var capturedVideo: Data?
@@ -321,7 +321,7 @@ final class CameraManager: ObservableObject {
         await cameraActor.stopRecording()
         _ = try? await recordingTask?.value
     }
-    
+
     // MARK: - Preview
     // CameraManager
     func attachPreview(_ layer: AVCaptureVideoPreviewLayer) async {
