@@ -9,16 +9,18 @@ import SwiftUI
 import AVFoundation
 
 struct CameraView: View {
-    @StateObject private var locationViewModel = LocationRecorder()
-    @StateObject private var cameraManager = CameraManager()
+    @EnvironmentObject var locationViewModel: LocationRecorder
+    @EnvironmentObject var cameraManager: CameraManager
+    @State private var isPreviewActive = false
+    @State private var previewAttachTask: Task<Void, Never>? = nil
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
                 if cameraManager.isCamAuthorized {
-                    CameraPreview(session: cameraManager.session)
+                    CameraPreview(session: isPreviewActive ? cameraManager.session : nil)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
 
                     Button {
                         if cameraManager.isRecording {
@@ -53,47 +55,23 @@ struct CameraView: View {
             .padding()
             .navigationTitle("Camera")
             .onAppear {
-                Task { await cameraManager.startSession() }
-            }
-            .onDisappear {
-                Task {
-                    if cameraManager.isRecording {
-                        await cameraManager.stopRecording()
-                    }
-                    await cameraManager.stopSession()
+                isPreviewActive = false
+                previewAttachTask?.cancel()
+                previewAttachTask = Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: Constants.contentionTime) 
+                    if !Task.isCancelled { isPreviewActive = true }
                 }
             }
+            .onDisappear {
+                previewAttachTask?.cancel()
+                previewAttachTask = nil
+                isPreviewActive = false
+            }
         }
     }
 }
 
-private struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
 
-    func makeUIView(context: Context) -> PreviewView {
-        let view = PreviewView()
-        view.previewLayer.session = session
-        return view
-    }
-
-    func updateUIView(_ uiView: PreviewView, context: Context) {
-        uiView.previewLayer.session = session
-    }
-}
-
-private final class PreviewView: UIView {
-    override class var layerClass: AnyClass {
-        AVCaptureVideoPreviewLayer.self
-    }
-
-    var previewLayer: AVCaptureVideoPreviewLayer {
-        guard let layer = layer as? AVCaptureVideoPreviewLayer else {
-            fatalError("Expected AVCaptureVideoPreviewLayer")
-        }
-        layer.videoGravity = .resizeAspectFill
-        return layer
-    }
-}
 
 #Preview {
     CameraView()
