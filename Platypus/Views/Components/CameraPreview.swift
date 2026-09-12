@@ -9,20 +9,36 @@ import AVFoundation
 import SwiftUI
 
 struct CameraPreview: UIViewRepresentable {
-  let session: AVCaptureSession?
+  let cameraManager: CameraManager
+  let isActive: Bool
+
+  final class Coordinator {
+    var pendingTask: Task<Void, Never>?
+  }
+
+  func makeCoordinator() -> Coordinator { Coordinator() }
 
   func makeUIView(context: Context) -> PreviewView {
-    let view = PreviewView()
-    view.previewLayer.session = session
-    return view
+    PreviewView()
   }
 
   func updateUIView(_ uiView: PreviewView, context: Context) {
-    uiView.previewLayer.session = session
+    let layer = uiView.previewLayer
+    let manager = cameraManager
+    let active = isActive
+
+    context.coordinator.pendingTask?.cancel()
+    context.coordinator.pendingTask = Task {
+      if active {
+        await manager.attachPreview(layer)
+      } else {
+        await manager.detachPreview(layer)
+      }
+    }
   }
 
-  static func dismantleUIView(_ uiView: PreviewView, coordinator: ()) {
-    uiView.previewLayer.session = nil
+  static func dismantleUIView(_ uiView: PreviewView, coordinator: Coordinator) {
+    coordinator.pendingTask?.cancel()
   }
 }
 
