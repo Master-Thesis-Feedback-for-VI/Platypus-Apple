@@ -12,7 +12,7 @@ import Foundation
 import ImageIO
 
 struct PlatyImage {
-    private let img: Data
+    let img: Data
     public var location: CLLocationCoordinate2D?
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 
 enum Constants {
     static let cornerRadius: CGFloat = 12

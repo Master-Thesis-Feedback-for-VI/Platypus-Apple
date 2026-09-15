@@ -6,15 +6,20 @@
 //
 
 import SwiftUI
+import os
 
 struct LiveviewModeView: View {
     @EnvironmentObject var cameraManager: CameraManager
+    @EnvironmentObject var locationRecorder: LocationRecorder
+    @EnvironmentObject var imageRecognizerStore: ImageRecognizerStore
 
     var body: some View {
         Group {
             if cameraManager.isCamAuthorized {
                 CameraActiveLiveView()
                     .environmentObject(cameraManager)
+                    .environmentObject(imageRecognizerStore)
+                    .environmentObject(locationRecorder)
             } else {
                 VStack(spacing: 10) {
                     Text("Camera not authorized").font(.title2)
@@ -28,12 +33,13 @@ struct LiveviewModeView: View {
 
 struct CameraActiveLiveView: View {
     @EnvironmentObject var cameraManager: CameraManager
+    @EnvironmentObject var locationRecorder: LocationRecorder
+    @EnvironmentObject var imageRecognizerStore: ImageRecognizerStore
 
+    @State private var logger = PlatyLogger(tag: "CameraActiveLiveView")
     @State private var isPreviewActive = false
     @State private var previewAttachTask: Task<Void, Never>? = nil
     @State private var locationSnapTask: Task<Void, Never>? = nil
-    
-    @State private var locationRecorder = LocationRecorder()
 
     var body: some View {
         CameraPreview(
@@ -47,27 +53,73 @@ struct CameraActiveLiveView: View {
             previewAttachTask = Task { @MainActor in
                 if !Task.isCancelled { isPreviewActive = true }
             }
-            
+
             locationSnapTask?.cancel()
             locationSnapTask = Task {
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(3))
+                    try? await Task.sleep(for: .seconds(2))
                     if Task.isCancelled { break }
-                    guard let location = locationRecorder.location else {
+
+                    logger.log("Recording image and location")
+                    let start = ContinuousClock.now
+
+                    guard let location = locationRecorder.location,
+                        let img = try? await cameraManager.snapPhoto(),
+                        let savedURL = try? await img.saveImage(
+                            name: "image_taken"
+                        )
+                    else {
+                        logger.log(
+                            "Failed to record location or image",
+                            level: .error
+                        )
                         continue
                     }
-                    guard let img = try? await cameraManager.snapPhoto() else {
+
+                    let cord = Coordinate(
+                        lat: location.latitude,
+                        lon: location.longitude
+                    )
+                    let imgPath = savedURL.path
+
+                    guard let imgRecognizer = imageRecognizerStore.recognizer
+                    else {
+                        logger.log(
+                            "Image recognizer not loaded or failed to load",
+                            level: .error
+                        )
                         continue
+                    }
+
+                    do {
+                        let evaluations = try await evaluateContext(
+                            location: cord,
+                            frame: imgPath,
+                            imageModel: imgRecognizer
+                        )
+
+                        let elapsed = (ContinuousClock.now - start) / .milliseconds(1)
+                        let elapsed_formatted = String(format: "%.2f", elapsed)
+                        logger.log("Evaluated to: \(evaluations)")
+                        logger.log("Evaluation took: \(elapsed_formatted) ms")
+                    } catch {
+                        logger.log(
+                            "This failed due to \(error.localizedDescription)",
+                            level: .error
+                        )
                     }
                 }
             }
-            
-            
+
         }
         .onDisappear {
             previewAttachTask?.cancel()
             previewAttachTask = nil
+
             isPreviewActive = false
+
+            locationSnapTask?.cancel()
+            locationSnapTask = nil
         }
     }
 }

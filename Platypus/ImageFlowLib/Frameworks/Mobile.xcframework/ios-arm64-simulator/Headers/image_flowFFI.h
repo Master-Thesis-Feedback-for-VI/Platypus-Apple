@@ -258,9 +258,29 @@ void uniffi_image_flow_fn_free_framepath(uint64_t handle, RustCallStatus *_Nonnu
 uint64_t uniffi_image_flow_fn_constructor_framepath_new(RustBuffer offset, RustBuffer path, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CLONE_IMAGERECOGNIZER
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CLONE_IMAGERECOGNIZER
+uint64_t uniffi_image_flow_fn_clone_imagerecognizer(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FREE_IMAGERECOGNIZER
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FREE_IMAGERECOGNIZER
+void uniffi_image_flow_fn_free_imagerecognizer(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_IMAGERECOGNIZER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_IMAGERECOGNIZER_NEW
+uint64_t uniffi_image_flow_fn_constructor_imagerecognizer_new(RustBuffer model_variant, RustBuffer downlaod_path
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_METHOD_IMAGERECOGNIZER_MODEL_PATH
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_METHOD_IMAGERECOGNIZER_MODEL_PATH
+RustBuffer uniffi_image_flow_fn_method_imagerecognizer_model_path(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_EVALUATE_CONTEXT
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_EVALUATE_CONTEXT
-uint64_t uniffi_image_flow_fn_func_evaluate_context(RustBuffer location, RustBuffer frame
+uint64_t uniffi_image_flow_fn_func_evaluate_context(RustBuffer location, RustBuffer frame, uint64_t image_model
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
@@ -529,9 +549,21 @@ uint16_t uniffi_image_flow_checksum_func_evaluate_context(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_METHOD_IMAGERECOGNIZER_MODEL_PATH
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_METHOD_IMAGERECOGNIZER_MODEL_PATH
+uint16_t uniffi_image_flow_checksum_method_imagerecognizer_model_path(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_FRAMEPATH_NEW
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_FRAMEPATH_NEW
 uint16_t uniffi_image_flow_checksum_constructor_framepath_new(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_IMAGERECOGNIZER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_CONSTRUCTOR_IMAGERECOGNIZER_NEW
+uint16_t uniffi_image_flow_checksum_constructor_imagerecognizer_new(void
     
 );
 #endif
