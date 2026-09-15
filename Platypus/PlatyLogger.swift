@@ -27,13 +27,17 @@ extension PlatyLogger {
     public func log(_ message: String, level: LogLevel = .info) {
         switch level {
         case .debug:
-            logger.debug("\(message, privacy: .public)")
+            let prependTag = "[[DEBUG]]"
+            logger.debug("\(prependTag):  \(message, privacy: .public)")
         case .info:
-            logger.info("\(message, privacy: .public)")
+            let prependTag = "[[INFO]]"
+            logger.info("\(prependTag):  \(message, privacy: .public)")
         case .warning:
-            logger.warning("\(message, privacy: .public)")
+            let prependTag = "[[WARNING]]"
+            logger.warning("\(prependTag):  \(message, privacy: .public)")
         case .error:
-            logger.error("\(message, privacy: .public)")
+            let prependTag = "[[ERROR]]"
+            logger.error("\(prependTag):  \(message, privacy: .public)")
         }
     }
 }
