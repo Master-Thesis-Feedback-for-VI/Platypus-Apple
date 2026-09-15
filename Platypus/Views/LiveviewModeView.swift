@@ -41,12 +41,19 @@ struct CameraActiveLiveView: View {
     @State private var previewAttachTask: Task<Void, Never>? = nil
     @State private var locationSnapTask: Task<Void, Never>? = nil
 
+    @State private var categoriesDetected: [ContextCategory] = []
+
     var body: some View {
-        CameraPreview(
-            cameraManager: cameraManager,
-            isActive: isPreviewActive
-        )
-        .ignoresSafeArea()
+        ZStack(alignment: .bottom) {
+            CameraPreview(
+                cameraManager: cameraManager,
+                isActive: isPreviewActive
+            )
+            .ignoresSafeArea()
+
+            CategoryOverlayView(categories: categoriesDetected)
+                .padding(.top, 24)
+        }
         .onAppear {
             isPreviewActive = false
             previewAttachTask?.cancel()
@@ -57,7 +64,7 @@ struct CameraActiveLiveView: View {
             locationSnapTask?.cancel()
             locationSnapTask = Task {
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(2))
+                    try? await Task.sleep(for: .seconds(1))
                     if Task.isCancelled { break }
 
                     logger.log("Recording image and location")
@@ -97,11 +104,16 @@ struct CameraActiveLiveView: View {
                             frame: imgPath,
                             imageModel: imgRecognizer
                         )
+                        categoriesDetected = evaluations
 
-                        let elapsed = (ContinuousClock.now - start) / .milliseconds(1)
+                        let elapsed =
+                            (ContinuousClock.now - start) / .milliseconds(1)
                         let elapsed_formatted = String(format: "%.2f", elapsed)
                         logger.log("Evaluated to: \(evaluations)")
-                        logger.log("Evaluation took: \(elapsed_formatted) ms")
+                        logger.log(
+                            "Evaluation took: \(elapsed_formatted) ms",
+                            level: .debug
+                        )
                     } catch {
                         logger.log(
                             "This failed due to \(error.localizedDescription)",
