@@ -42,19 +42,29 @@ struct CameraActiveLiveView: View {
     @State private var locationSnapTask: Task<Void, Never>? = nil
 
     @State private var categoriesDetected: [ContextCategory] = []
+    @State private var progress: ProgressStatus = .switchedOff
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             CameraPreview(
                 cameraManager: cameraManager,
                 isActive: isPreviewActive
             )
             .ignoresSafeArea()
 
-            CategoryOverlayView(categories: categoriesDetected)
-                .padding(.top, 24)
+            VStack {
+                ProgressCategoriesIndicator(progress: progress)
+                    .padding(.top, 15)
+                
+                Spacer()
+                
+                CategoryOverlayView(categories: categoriesDetected)
+                    .padding(.bottom, 24)
+            }
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+            
             isPreviewActive = false
             previewAttachTask?.cancel()
             previewAttachTask = Task { @MainActor in
@@ -70,6 +80,7 @@ struct CameraActiveLiveView: View {
                     logger.log("Recording image and location")
                     let start = ContinuousClock.now
 
+                    progress = .hardware
                     guard let location = locationRecorder.location,
                         let img = try? await cameraManager.snapPhoto(),
                         let savedURL = try? await img.saveImage(
@@ -80,6 +91,7 @@ struct CameraActiveLiveView: View {
                             "Failed to record location or image",
                             level: .error
                         )
+                        progress = .failure
                         continue
                     }
 
@@ -95,9 +107,11 @@ struct CameraActiveLiveView: View {
                             "Image recognizer not loaded or failed to load",
                             level: .error
                         )
+                        progress = .failure
                         continue
                     }
 
+                    progress = .evaluating
                     do {
                         let evaluations = try await evaluateContext(
                             location: cord,
@@ -105,6 +119,7 @@ struct CameraActiveLiveView: View {
                             imageModel: imgRecognizer
                         )
                         categoriesDetected = evaluations
+                        progress = .success
 
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)
@@ -119,12 +134,15 @@ struct CameraActiveLiveView: View {
                             "This failed due to \(error.localizedDescription)",
                             level: .error
                         )
+                        progress = .failure
                     }
                 }
             }
 
         }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+            
             previewAttachTask?.cancel()
             previewAttachTask = nil
 
@@ -132,6 +150,8 @@ struct CameraActiveLiveView: View {
 
             locationSnapTask?.cancel()
             locationSnapTask = nil
+            
+            progress = .switchedOff
         }
     }
 }
