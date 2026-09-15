@@ -675,6 +675,151 @@ public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
 
 
 
+
+
+public protocol ImageRecognizerProtocol: AnyObject, Sendable {
+    
+    /**
+     * # Panics
+     * TODO
+     */
+    func modelPath()  -> String
+    
+}
+open class ImageRecognizer: ImageRecognizerProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_image_flow_fn_clone_imagerecognizer(self.handle, $0) }
+    }
+    /**
+     * # Errors
+     * TODO
+     */
+public convenience init(modelVariant: ModelVariant, downlaodPath: String)async throws  {
+    let handle =
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_constructor_imagerecognizer_new(FfiConverterTypeModelVariant_lower(modelVariant),FfiConverterString.lower(downlaodPath)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_u64,
+            completeFunc: ffi_image_flow_rust_future_complete_u64,
+            freeFunc: ffi_image_flow_rust_future_free_u64,
+            liftFunc: FfiConverterTypeImageRecognizer_lift,
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+        
+        .uniffiCloneHandle()
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_image_flow_fn_free_imagerecognizer(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * # Panics
+     * TODO
+     */
+open func modelPath() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imagerecognizer_model_path(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImageRecognizer: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ImageRecognizer
+
+    public static func lift(_ handle: UInt64) throws -> ImageRecognizer {
+        return ImageRecognizer(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ImageRecognizer) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImageRecognizer {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ImageRecognizer, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageRecognizer_lift(_ handle: UInt64) throws -> ImageRecognizer {
+    return try FfiConverterTypeImageRecognizer.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageRecognizer_lower(_ value: ImageRecognizer) -> UInt64 {
+    return FfiConverterTypeImageRecognizer.lower(value)
+}
+
+
+
+
 public struct Coordinate: Equatable, Hashable {
     public var lat: Double
     public var lon: Double
@@ -739,7 +884,7 @@ public enum ContextCategory: Equatable, Hashable {
     
     case forest
     case outside
-    case building
+    case inside
     case street
     case pedestrian
     case intersection
@@ -769,7 +914,7 @@ public struct FfiConverterTypeContextCategory: FfiConverterRustBuffer {
         
         case 2: return .outside
         
-        case 3: return .building
+        case 3: return .inside
         
         case 4: return .street
         
@@ -795,7 +940,7 @@ public struct FfiConverterTypeContextCategory: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         
         
-        case .building:
+        case .inside:
             writeInt(&buf, Int32(3))
         
         
@@ -933,6 +1078,93 @@ public func FfiConverterTypeImageFlowError_lower(_ value: ImageFlowError) -> Rus
     return FfiConverterTypeImageFlowError.lower(value)
 }
 
+
+
+public enum ModelVariant: Equatable, Hashable {
+    
+    case nano
+    case small
+    case medium
+    case large
+    case xLarge
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ModelVariant: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeModelVariant: FfiConverterRustBuffer {
+    typealias SwiftType = ModelVariant
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ModelVariant {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .nano
+        
+        case 2: return .small
+        
+        case 3: return .medium
+        
+        case 4: return .large
+        
+        case 5: return .xLarge
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ModelVariant, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .nano:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .small:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .medium:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .large:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .xLarge:
+            writeInt(&buf, Int32(5))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeModelVariant_lift(_ buf: RustBuffer) throws -> ModelVariant {
+    return try FfiConverterTypeModelVariant.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeModelVariant_lower(_ value: ModelVariant) -> RustBuffer {
+    return FfiConverterTypeModelVariant.lower(value)
+}
+
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -1011,11 +1243,11 @@ fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: In
  * # Errors
  * TODO
  */
-public func evaluateContext(location: Coordinate, frame: String)async throws  -> [ContextCategory]  {
+public func evaluateContext(location: Coordinate, frame: String, imageModel: ImageRecognizer)async throws  -> [ContextCategory]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_evaluate_context(FfiConverterTypeCoordinate_lower(location),FfiConverterString.lower(frame)
+                uniffi_image_flow_fn_func_evaluate_context(FfiConverterTypeCoordinate_lower(location),FfiConverterString.lower(frame),FfiConverterTypeImageRecognizer_lower(imageModel)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
@@ -1041,10 +1273,16 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_image_flow_checksum_func_evaluate_context() != 22095) {
+    if (uniffi_image_flow_checksum_func_evaluate_context() != 1844) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imagerecognizer_model_path() != 38988) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_constructor_framepath_new() != 29437) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_constructor_imagerecognizer_new() != 23926) {
         return InitializationResult.apiChecksumMismatch
     }
 

@@ -11,8 +11,9 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
-    @StateObject private var locationViewModel = LocationRecorder()
+    @StateObject private var locationRecorder = LocationRecorder()
     @StateObject private var cameraManager = CameraManager()
+    @StateObject private var imageRecognizerStore = ImageRecognizerStore()
 
     @State private var selection: Tab = .home
 
@@ -28,8 +29,9 @@ struct ContentView: View {
                 .tag(Tab.home)
 
             LiveviewModeView()
-                .environmentObject(locationViewModel)
+                .environmentObject(locationRecorder)
                 .environmentObject(cameraManager)
+                .environmentObject(imageRecognizerStore)
                 .tabItem {
                     Image(systemName: "camera")
                     Text("Live")
@@ -37,13 +39,16 @@ struct ContentView: View {
                 .tag(Tab.live)
 
             CameraView()
-                .environmentObject(locationViewModel)
+                .environmentObject(locationRecorder)
                 .environmentObject(cameraManager)
                 .tabItem {
                     Image(systemName: "tv")
                     Text("Record Simulation")
                 }
                 .tag(Tab.camera)
+        }
+        .task {
+            await imageRecognizerStore.load()
         }
         .onChange(of: selection) { _, newValue in
             Task {
