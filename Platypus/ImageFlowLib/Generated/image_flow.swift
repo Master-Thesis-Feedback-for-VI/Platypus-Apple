@@ -465,6 +465,38 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterFloat: FfiConverterPrimitive {
+    typealias FfiType = Float
+    typealias SwiftType = Float
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Float {
+        return try lift(readFloat(&buf))
+    }
+
+    public static func write(_ value: Float, into buf: inout [UInt8]) {
+        writeFloat(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterDouble: FfiConverterPrimitive {
     typealias FfiType = Double
     typealias SwiftType = Double
@@ -475,6 +507,30 @@ fileprivate struct FfiConverterDouble: FfiConverterPrimitive {
 
     public static func write(_ value: Double, into buf: inout [UInt8]) {
         writeDouble(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
+
+    public static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
+    }
+
+    public static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Bool, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
     }
 }
 
@@ -677,6 +733,148 @@ public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
 
 
 
+public protocol ImageFlowEvaluationProtocol: AnyObject, Sendable {
+    
+    /**
+     * # Errors
+     * TODO
+     */
+    func saveAsJson(path: String) async throws 
+    
+}
+open class ImageFlowEvaluation: ImageFlowEvaluationProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_image_flow_fn_clone_imageflowevaluation(self.handle, $0) }
+    }
+public convenience init(locationTags: UniqueLocationTags, imageDetections: ImageDetections) {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_constructor_imageflowevaluation_new(
+        FfiConverterTypeUniqueLocationTags_lower(locationTags),
+        FfiConverterTypeImageDetections_lower(imageDetections),uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_image_flow_fn_free_imageflowevaluation(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * # Errors
+     * TODO
+     */
+open func saveAsJson(path: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_method_imageflowevaluation_save_as_json(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_void,
+            completeFunc: ffi_image_flow_rust_future_complete_void,
+            freeFunc: ffi_image_flow_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImageFlowEvaluation: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ImageFlowEvaluation
+
+    public static func lift(_ handle: UInt64) throws -> ImageFlowEvaluation {
+        return ImageFlowEvaluation(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ImageFlowEvaluation) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImageFlowEvaluation {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ImageFlowEvaluation, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowEvaluation_lift(_ handle: UInt64) throws -> ImageFlowEvaluation {
+    return try FfiConverterTypeImageFlowEvaluation.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowEvaluation_lower(_ value: ImageFlowEvaluation) -> UInt64 {
+    return FfiConverterTypeImageFlowEvaluation.lower(value)
+}
+
+
+
+
+
+
 public protocol ImageRecognizerProtocol: AnyObject, Sendable {
     
     /**
@@ -820,6 +1018,126 @@ public func FfiConverterTypeImageRecognizer_lower(_ value: ImageRecognizer) -> U
 
 
 
+public struct AuthToHost: Equatable, Hashable {
+    public var url: String
+    public var user: String
+    public var passwd: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(url: String, user: String, passwd: String) {
+        self.url = url
+        self.user = user
+        self.passwd = passwd
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuthToHost: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthToHost: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthToHost {
+        return
+            try AuthToHost(
+                url: FfiConverterString.read(from: &buf), 
+                user: FfiConverterString.read(from: &buf), 
+                passwd: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuthToHost, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterString.write(value.user, into: &buf)
+        FfiConverterString.write(value.passwd, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthToHost_lift(_ buf: RustBuffer) throws -> AuthToHost {
+    return try FfiConverterTypeAuthToHost.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthToHost_lower(_ value: AuthToHost) -> RustBuffer {
+    return FfiConverterTypeAuthToHost.lower(value)
+}
+
+
+public struct BoundingBox: Equatable, Hashable {
+    public var x1: Float
+    public var x2: Float
+    public var y1: Float
+    public var y2: Float
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(x1: Float, x2: Float, y1: Float, y2: Float) {
+        self.x1 = x1
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension BoundingBox: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeBoundingBox: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BoundingBox {
+        return
+            try BoundingBox(
+                x1: FfiConverterFloat.read(from: &buf), 
+                x2: FfiConverterFloat.read(from: &buf), 
+                y1: FfiConverterFloat.read(from: &buf), 
+                y2: FfiConverterFloat.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: BoundingBox, into buf: inout [UInt8]) {
+        FfiConverterFloat.write(value.x1, into: &buf)
+        FfiConverterFloat.write(value.x2, into: &buf)
+        FfiConverterFloat.write(value.y1, into: &buf)
+        FfiConverterFloat.write(value.y2, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBoundingBox_lift(_ buf: RustBuffer) throws -> BoundingBox {
+    return try FfiConverterTypeBoundingBox.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeBoundingBox_lower(_ value: BoundingBox) -> RustBuffer {
+    return FfiConverterTypeBoundingBox.lower(value)
+}
+
+
 public struct Coordinate: Equatable, Hashable {
     public var lat: Double
     public var lon: Double
@@ -874,21 +1192,185 @@ public func FfiConverterTypeCoordinate_lower(_ value: Coordinate) -> RustBuffer 
 }
 
 
-/**
- * All potential geographic categories supported.
- *
- * <https://github.com/Master-Thesis-Feedback-for-VI/image-flow/issues/2>
- */
+public struct Detection: Equatable, Hashable {
+    public var confidence: Float
+    public var name: DetectionType
+    public var xyxy: BoundingBox
 
-public enum ContextCategory: Equatable, Hashable {
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(confidence: Float, name: DetectionType, xyxy: BoundingBox) {
+        self.confidence = confidence
+        self.name = name
+        self.xyxy = xyxy
+    }
+
     
-    case forest
-    case outside
-    case inside
-    case street
-    case pedestrian
-    case intersection
-    case elevator
+
+    
+}
+
+#if compiler(>=6)
+extension Detection: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDetection: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Detection {
+        return
+            try Detection(
+                confidence: FfiConverterFloat.read(from: &buf), 
+                name: FfiConverterTypeDetectionType.read(from: &buf), 
+                xyxy: FfiConverterTypeBoundingBox.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Detection, into buf: inout [UInt8]) {
+        FfiConverterFloat.write(value.confidence, into: &buf)
+        FfiConverterTypeDetectionType.write(value.name, into: &buf)
+        FfiConverterTypeBoundingBox.write(value.xyxy, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetection_lift(_ buf: RustBuffer) throws -> Detection {
+    return try FfiConverterTypeDetection.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetection_lower(_ value: Detection) -> RustBuffer {
+    return FfiConverterTypeDetection.lower(value)
+}
+
+
+public struct ImageDetections: Equatable, Hashable {
+    public var detections: [Detection]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(detections: [Detection]) {
+        self.detections = detections
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ImageDetections: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImageDetections: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImageDetections {
+        return
+            try ImageDetections(
+                detections: FfiConverterSequenceTypeDetection.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImageDetections, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeDetection.write(value.detections, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageDetections_lift(_ buf: RustBuffer) throws -> ImageDetections {
+    return try FfiConverterTypeImageDetections.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageDetections_lower(_ value: ImageDetections) -> RustBuffer {
+    return FfiConverterTypeImageDetections.lower(value)
+}
+
+
+public struct UniqueLocationTags: Equatable, Hashable {
+    public var categories: Set<LocationTag>
+    public var isInside: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(categories: Set<LocationTag>, isInside: Bool) {
+        self.categories = categories
+        self.isInside = isInside
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension UniqueLocationTags: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUniqueLocationTags: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UniqueLocationTags {
+        return
+            try UniqueLocationTags(
+                categories: FfiConverterSetTypeLocationTag.read(from: &buf), 
+                isInside: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UniqueLocationTags, into buf: inout [UInt8]) {
+        FfiConverterSetTypeLocationTag.write(value.categories, into: &buf)
+        FfiConverterBool.write(value.isInside, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUniqueLocationTags_lift(_ buf: RustBuffer) throws -> UniqueLocationTags {
+    return try FfiConverterTypeUniqueLocationTags.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUniqueLocationTags_lower(_ value: UniqueLocationTags) -> RustBuffer {
+    return FfiConverterTypeUniqueLocationTags.lower(value)
+}
+
+
+
+public enum DetectionType: Equatable, Hashable {
+    
+    case bench
+    case bicycle
+    case car
+    case chair
+    case cup
+    case diningTable
+    case handbag
+    case laptop
+    case person
+    case trafficLight
+    case tv
+    case keyboard
+    case unknown(String
+    )
 
 
 
@@ -897,67 +1379,199 @@ public enum ContextCategory: Equatable, Hashable {
 }
 
 #if compiler(>=6)
-extension ContextCategory: Sendable {}
+extension DetectionType: Sendable {}
 #endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public struct FfiConverterTypeContextCategory: FfiConverterRustBuffer {
-    typealias SwiftType = ContextCategory
+public struct FfiConverterTypeDetectionType: FfiConverterRustBuffer {
+    typealias SwiftType = DetectionType
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ContextCategory {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DetectionType {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .forest
+        case 1: return .bench
         
-        case 2: return .outside
+        case 2: return .bicycle
         
-        case 3: return .inside
+        case 3: return .car
         
-        case 4: return .street
+        case 4: return .chair
         
-        case 5: return .pedestrian
+        case 5: return .cup
         
-        case 6: return .intersection
+        case 6: return .diningTable
         
-        case 7: return .elevator
+        case 7: return .handbag
+        
+        case 8: return .laptop
+        
+        case 9: return .person
+        
+        case 10: return .trafficLight
+        
+        case 11: return .tv
+        
+        case 12: return .keyboard
+        
+        case 13: return .unknown(try FfiConverterString.read(from: &buf)
+        )
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
-    public static func write(_ value: ContextCategory, into buf: inout [UInt8]) {
+    public static func write(_ value: DetectionType, into buf: inout [UInt8]) {
         switch value {
         
         
-        case .forest:
+        case .bench:
             writeInt(&buf, Int32(1))
         
         
-        case .outside:
+        case .bicycle:
             writeInt(&buf, Int32(2))
         
         
-        case .inside:
+        case .car:
             writeInt(&buf, Int32(3))
         
         
-        case .street:
+        case .chair:
             writeInt(&buf, Int32(4))
         
         
-        case .pedestrian:
+        case .cup:
             writeInt(&buf, Int32(5))
         
         
-        case .intersection:
+        case .diningTable:
             writeInt(&buf, Int32(6))
         
         
-        case .elevator:
+        case .handbag:
             writeInt(&buf, Int32(7))
+        
+        
+        case .laptop:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .person:
+            writeInt(&buf, Int32(9))
+        
+        
+        case .trafficLight:
+            writeInt(&buf, Int32(10))
+        
+        
+        case .tv:
+            writeInt(&buf, Int32(11))
+        
+        
+        case .keyboard:
+            writeInt(&buf, Int32(12))
+        
+        
+        case let .unknown(v1):
+            writeInt(&buf, Int32(13))
+            FfiConverterString.write(v1, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetectionType_lift(_ buf: RustBuffer) throws -> DetectionType {
+    return try FfiConverterTypeDetectionType.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetectionType_lower(_ value: DetectionType) -> RustBuffer {
+    return FfiConverterTypeDetectionType.lower(value)
+}
+
+
+
+
+public enum FilterLevel: Equatable, Hashable {
+    
+    case off
+    case warn
+    case info
+    case debug
+    case trace
+    case error
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension FilterLevel: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFilterLevel: FfiConverterRustBuffer {
+    typealias SwiftType = FilterLevel
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FilterLevel {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .off
+        
+        case 2: return .warn
+        
+        case 3: return .info
+        
+        case 4: return .debug
+        
+        case 5: return .trace
+        
+        case 6: return .error
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: FilterLevel, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .off:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .warn:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .info:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .debug:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .trace:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .error:
+            writeInt(&buf, Int32(6))
         
         }
     }
@@ -967,15 +1581,15 @@ public struct FfiConverterTypeContextCategory: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeContextCategory_lift(_ buf: RustBuffer) throws -> ContextCategory {
-    return try FfiConverterTypeContextCategory.lift(buf)
+public func FfiConverterTypeFilterLevel_lift(_ buf: RustBuffer) throws -> FilterLevel {
+    return try FfiConverterTypeFilterLevel.lift(buf)
 }
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-public func FfiConverterTypeContextCategory_lower(_ value: ContextCategory) -> RustBuffer {
-    return FfiConverterTypeContextCategory.lower(value)
+public func FfiConverterTypeFilterLevel_lower(_ value: FilterLevel) -> RustBuffer {
+    return FfiConverterTypeFilterLevel.lower(value)
 }
 
 
@@ -1079,6 +1693,112 @@ public func FfiConverterTypeImageFlowError_lower(_ value: ImageFlowError) -> Rus
 }
 
 
+/**
+ * All potential geographic categories supported.
+ *
+ * <https://github.com/Master-Thesis-Feedback-for-VI/image-flow/issues/2>
+ */
+
+public enum LocationTag: Equatable, Hashable {
+    
+    case forest
+    case outside
+    case inside
+    case street
+    case pedestrian
+    case intersection
+    case elevator
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension LocationTag: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
+    typealias SwiftType = LocationTag
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LocationTag {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .forest
+        
+        case 2: return .outside
+        
+        case 3: return .inside
+        
+        case 4: return .street
+        
+        case 5: return .pedestrian
+        
+        case 6: return .intersection
+        
+        case 7: return .elevator
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: LocationTag, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .forest:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .outside:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .inside:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .street:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .pedestrian:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .intersection:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .elevator:
+            writeInt(&buf, Int32(7))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocationTag_lift(_ buf: RustBuffer) throws -> LocationTag {
+    return try FfiConverterTypeLocationTag.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLocationTag_lower(_ value: LocationTag) -> RustBuffer {
+    return FfiConverterTypeLocationTag.lower(value)
+}
+
+
+
 
 public enum ModelVariant: Equatable, Hashable {
     
@@ -1168,25 +1888,97 @@ public func FfiConverterTypeModelVariant_lower(_ value: ModelVariant) -> RustBuf
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypeContextCategory: FfiConverterRustBuffer {
-    typealias SwiftType = [ContextCategory]
+fileprivate struct FfiConverterOptionTypeAuthToHost: FfiConverterRustBuffer {
+    typealias SwiftType = AuthToHost?
 
-    public static func write(_ value: [ContextCategory], into buf: inout [UInt8]) {
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAuthToHost.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAuthToHost.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeFilterLevel: FfiConverterRustBuffer {
+    typealias SwiftType = FilterLevel?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeFilterLevel.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeFilterLevel.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeDetection: FfiConverterRustBuffer {
+    typealias SwiftType = [Detection]
+
+    public static func write(_ value: [Detection], into buf: inout [UInt8]) {
         let len = Int32(value.count)
         writeInt(&buf, len)
         for item in value {
-            FfiConverterTypeContextCategory.write(item, into: &buf)
+            FfiConverterTypeDetection.write(item, into: &buf)
         }
     }
 
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ContextCategory] {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [Detection] {
         let len: Int32 = try readInt(&buf)
-        var seq = [ContextCategory]()
+        var seq = [Detection]()
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeContextCategory.read(from: &buf))
+            seq.append(try FfiConverterTypeDetection.read(from: &buf))
         }
         return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSetTypeLocationTag: FfiConverterRustBuffer {
+    public static func write(_ value: Set<LocationTag>, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLocationTag.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Set<LocationTag> {
+        let len: Int32 = try readInt(&buf)
+        var set = Set<LocationTag>()
+        set.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let item = try FfiConverterTypeLocationTag.read(from: &buf)
+            set.insert(item)
+        }
+        return set
     }
 }
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
@@ -1237,23 +2029,83 @@ fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: In
         print("uniffiFutureContinuationCallback invalid handle")
     }
 }
+public func enableTracing(rustLog: FilterLevel?) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_func_enable_tracing(
+        FfiConverterOptionTypeFilterLevel.lower(rustLog),uniffiCallStatus
+    )
+})
+}
 /**
- * TODO
- *
  * # Errors
  * TODO
  */
-public func evaluateContext(location: Coordinate, frame: String, imageModel: ImageRecognizer)async throws  -> [ContextCategory]  {
+public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath: String, imageRecognizer: ImageRecognizer, amount: UInt32)async throws  -> ImageFlowEvaluation  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_evaluate_context(FfiConverterTypeCoordinate_lower(location),FfiConverterString.lower(frame),FfiConverterTypeImageRecognizer_lower(imageModel)
+                uniffi_image_flow_fn_func_image_flow_evaluation(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterUInt32.lower(amount)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_u64,
+            completeFunc: ffi_image_flow_rust_future_complete_u64,
+            freeFunc: ffi_image_flow_rust_future_free_u64,
+            liftFunc: FfiConverterTypeImageFlowEvaluation_lift,
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+}
+/**
+ * # Errors
+ * TODO
+ */
+public func imageFlowEvaluationReadFromJson(path: String)async throws  -> ImageFlowEvaluation  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_func_image_flow_evaluation_read_from_json(FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_u64,
+            completeFunc: ffi_image_flow_rust_future_complete_u64,
+            freeFunc: ffi_image_flow_rust_future_free_u64,
+            liftFunc: FfiConverterTypeImageFlowEvaluation_lift,
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+}
+/**
+ * # Errors
+ * TODO
+ */
+public func recognizeLocationTags(location: Coordinate, auth: AuthToHost?, imgPath: String, amount: UInt32)async throws  -> UniqueLocationTags  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_func_recognize_location_tags(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterUInt32.lower(amount)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
             completeFunc: ffi_image_flow_rust_future_complete_rust_buffer,
             freeFunc: ffi_image_flow_rust_future_free_rust_buffer,
-            liftFunc: FfiConverterSequenceTypeContextCategory.lift,
+            liftFunc: FfiConverterTypeUniqueLocationTags_lift,
+            errorHandler: FfiConverterTypeImageFlowError_lift
+        )
+}
+/**
+ * # Errors
+ * TODO
+ */
+public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecognizer)async throws  -> ImageDetections  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_image_flow_fn_func_recognize_objects_in_image(FfiConverterString.lower(path),FfiConverterTypeImageRecognizer_lower(imageRecognizer)
+                )
+            },
+            pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
+            completeFunc: ffi_image_flow_rust_future_complete_rust_buffer,
+            freeFunc: ffi_image_flow_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeImageDetections_lift,
             errorHandler: FfiConverterTypeImageFlowError_lift
         )
 }
@@ -1273,10 +2125,28 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if (uniffi_image_flow_checksum_func_evaluate_context() != 1844) {
+    if (uniffi_image_flow_checksum_func_enable_tracing() != 62385) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 27644) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_func_image_flow_evaluation_read_from_json() != 24612) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_func_recognize_location_tags() != 45347) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 36315) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluation_save_as_json() != 57397) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_method_imagerecognizer_model_path() != 38988) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_constructor_imageflowevaluation_new() != 25174) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_constructor_framepath_new() != 29437) {

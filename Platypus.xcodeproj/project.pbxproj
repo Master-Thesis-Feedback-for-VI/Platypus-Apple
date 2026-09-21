@@ -35,6 +35,7 @@
 		B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0EE99503026376500008CA3 /* Platypus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platypus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0F3377F305C21050054C68F /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -101,6 +102,7 @@
 				B0EE99503026376500008CA3 /* Platypus.app */,
 				B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */,
 				B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */,
+				B0F3377F305C21050054C68F /* Secrets.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -275,6 +277,7 @@
 /* Begin XCBuildConfiguration section */
 		B09126C530260A5F000E2487 /* Debug configuration for PBXProject "Platypus" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -337,6 +340,7 @@
 		};
 		B09126C630260A5F000E2487 /* Release configuration for PBXProject "Platypus" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -391,6 +395,7 @@
 		};
 		B09126C830260A5F000E2487 /* Debug configuration for PBXNativeTarget "Platypus" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -406,6 +411,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Platypus/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Can we record the environment?";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track context.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -442,6 +448,7 @@
 		};
 		B09126C930260A5F000E2487 /* Release configuration for PBXNativeTarget "Platypus" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -457,6 +464,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Platypus/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Can we record the environment?";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to track context.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -493,6 +501,7 @@
 		};
 		B09126CB30260A5F000E2487 /* Debug configuration for PBXNativeTarget "PlatypusTests" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -519,6 +528,7 @@
 		};
 		B09126CC30260A5F000E2487 /* Release configuration for PBXNativeTarget "PlatypusTests" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -545,6 +555,7 @@
 		};
 		B09126CE30260A5F000E2487 /* Debug configuration for PBXNativeTarget "PlatypusUITests" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -570,6 +581,7 @@
 		};
 		B09126CF30260A5F000E2487 /* Release configuration for PBXNativeTarget "PlatypusUITests" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B0F3377F305C21050054C68F /* Secrets.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

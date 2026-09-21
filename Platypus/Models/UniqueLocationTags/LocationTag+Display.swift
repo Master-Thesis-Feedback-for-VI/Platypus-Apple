@@ -5,7 +5,7 @@
 //  Created by Yann Bernard on 15.09.26.
 //
 
-extension ContextCategory {
+extension LocationTag: DisplayableProto {
     var displayName: String {
         switch self {
         case .forest: return "Forest"
