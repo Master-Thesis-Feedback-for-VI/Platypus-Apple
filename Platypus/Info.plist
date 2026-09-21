@@ -2,9 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
+	<key>OVERPASS_URL</key>
+	<string>$(OVERPASS_URL)</string>
+	<key>PASSWORD</key>
+	<string>$(PASSWORD)</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>USER_AGENT_NAME</key>
+	<string>$(USER_AGENT_NAME)</string>
 </dict>
 </plist>

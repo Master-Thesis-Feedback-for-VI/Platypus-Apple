@@ -17,7 +17,7 @@ struct ContentView: View {
 
     @State private var selection: Tab = .home
 
-    enum Tab { case home, live, camera }
+    enum Tab { case home, live, camera, replay }
 
     var body: some View {
         TabView(selection: $selection) {
@@ -42,10 +42,16 @@ struct ContentView: View {
                 .environmentObject(locationRecorder)
                 .environmentObject(cameraManager)
                 .tabItem {
-                    Image(systemName: "tv")
-                    Text("Record Simulation")
+                    Image(systemName: "folder.fill")
+                    Text("Record")
                 }
                 .tag(Tab.camera)
+            
+            ReplayView()
+                .tabItem {
+                    Image(systemName: "play.square.fill")
+                    Text("Replay")
+                }.tag(Tab.replay)
         }
         .task {
             await imageRecognizerStore.load()
@@ -55,7 +61,7 @@ struct ContentView: View {
                 switch newValue {
                 case .live, .camera:
                     await cameraManager.startSession()
-                case .home:
+                case .home, .replay:
                     if cameraManager.isRecording {
                         await cameraManager.stopRecording()
                     }
