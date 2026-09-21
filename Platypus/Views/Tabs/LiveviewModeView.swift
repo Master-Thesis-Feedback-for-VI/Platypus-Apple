@@ -27,8 +27,14 @@ struct LiveviewModeView: View {
                 }
             }
 
+        }.task {
+            assert(enableTracing(rustLog: .error))
         }
     }
+}
+
+private func infoValue(_ key: String) -> String {
+    Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
 }
 
 struct CameraActiveLiveView: View {
@@ -41,8 +47,16 @@ struct CameraActiveLiveView: View {
     @State private var previewAttachTask: Task<Void, Never>? = nil
     @State private var locationSnapTask: Task<Void, Never>? = nil
 
-    @State private var categoriesDetected: [ContextCategory] = []
+    @State private var uniqueLocationTags = UniqueLocationTags(categories: [], isInside: false)
+    @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff
+
+    private let auth = AuthToHost(
+        url: infoValue("OVERPASS_URL"),
+        user: infoValue("USER_AGENT_NAME"),
+        passwd: infoValue("PASSWORD")
+    )
+    private let amountDominantColor: UInt32 = 4
 
     var body: some View {
         ZStack {
@@ -55,16 +69,16 @@ struct CameraActiveLiveView: View {
             VStack {
                 ProgressCategoriesIndicator(progress: progress)
                     .padding(.top, 15)
-                
+
                 Spacer()
-                
-                CategoryOverlayView(categories: categoriesDetected)
+
+                CategoryOverlayView(uniqueLocationTags: uniqueLocationTags, imageDetections: detectedObjects)
                     .padding(.bottom, 24)
             }
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
-            
+
             isPreviewActive = false
             previewAttachTask?.cancel()
             previewAttachTask = Task { @MainActor in
@@ -113,18 +127,17 @@ struct CameraActiveLiveView: View {
 
                     progress = .evaluating
                     do {
-                        let evaluations = try await evaluateContext(
-                            location: cord,
-                            frame: imgPath,
-                            imageModel: imgRecognizer
-                        )
-                        categoriesDetected = evaluations
+                        let detectedObjectsEvaluations = try await recognizeObjectsInImage(path: imgPath, imageRecognizer: imgRecognizer)
+                        detectedObjects = detectedObjectsEvaluations
                         progress = .success
+                        
+                        let detectedLocationTagsEvaluations = try await recognizeLocationTags(location: cord, auth: auth, imgPath: imgPath, amount: amountDominantColor)
+                        uniqueLocationTags = detectedLocationTagsEvaluations
 
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)
                         let elapsed_formatted = String(format: "%.2f", elapsed)
-                        logger.log("Evaluated to: \(evaluations)")
+//                        logger.log("Evaluated to: \(evaluations)")
                         logger.log(
                             "Evaluation took: \(elapsed_formatted) ms",
                             level: .debug
@@ -142,7 +155,7 @@ struct CameraActiveLiveView: View {
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
-            
+
             previewAttachTask?.cancel()
             previewAttachTask = nil
 
@@ -150,7 +163,7 @@ struct CameraActiveLiveView: View {
 
             locationSnapTask?.cancel()
             locationSnapTask = nil
-            
+
             progress = .switchedOff
         }
     }

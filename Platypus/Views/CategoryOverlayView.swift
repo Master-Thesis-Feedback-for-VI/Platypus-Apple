@@ -8,27 +8,94 @@
 import SwiftUI
 
 struct CategoryOverlayView: View {
-    let categories: [ContextCategory]
+    let uniqueLocationTags: UniqueLocationTags
+    let imageDetections: ImageDetections
 
     var body: some View {
-        if categories.isEmpty {
-            EmptyView()
-        } else {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(categories, id: \.self) { category in
-                        Label(
-                            category.displayName,
-                            systemImage: category.symbolName
+        VStack {
+            HorizontalItems(collection: uniqueLocationTags)
+            HorizontalItems(collection: imageDetections.summaries)
+        }
+    }
+}
+
+struct HorizontalItems<T: RandomAccessCollection>: View
+where T.Element: Hashable & DisplayableProto {
+    let collection: T
+
+    private var items: [T.Element] {
+        Array(collection)
+    }
+
+    var body: some View {
+        Group {
+            if items.isEmpty {
+                emptyState
+                    .transition(
+                        .asymmetric(
+                            insertion: .scale(scale: 0.92).combined(
+                                with: .opacity
+                            ),
+                            removal: .scale(scale: 0.98).combined(
+                                with: .opacity
+                            )
                         )
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial, in: Capsule())
+                    )
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(items, id: \.self) { item in
+                            itemLabel(item)
+                                .transition(
+                                    .asymmetric(
+                                        insertion: .scale(scale: 0.8).combined(
+                                            with: .opacity
+                                        ),
+                                        removal: .scale(scale: 0.8).combined(
+                                            with: .opacity
+                                        )
+                                    )
+                                )
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 2)
                 }
-                .padding(.horizontal, 16)
+                .transition(
+                    .asymmetric(
+                        insertion: .opacity.combined(
+                            with: .move(edge: .trailing)
+                        ),
+                        removal: .opacity.combined(with: .move(edge: .leading))
+                    )
+                )
             }
         }
+        .animation(
+            .spring(response: 0.38, dampingFraction: 0.78),
+            value: items
+        )
+    }
+
+    private var emptyState: some View {
+        Label("Nothing detected", systemImage: "magnifyingglass")
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial, in: Capsule())
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.horizontal, 16)
+    }
+
+    private func itemLabel(_ item: T.Element) -> some View {
+        Label(
+            item.displayTitle,
+            systemImage: item.symbolName
+        )
+        .font(.subheadline.weight(.semibold))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
     }
 }
