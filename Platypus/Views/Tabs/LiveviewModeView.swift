@@ -52,9 +52,10 @@ struct CameraActiveLiveView: View {
     @State private var progress: ProgressStatus = .switchedOff
 
     private let auth = AuthToHost(
-        url: infoValue("OVERPASS_URL"),
+        overpassUrl: infoValue("OVERPASS_URL"),
+        nominatimUrl: infoValue("NOMINATIM_URL"),
         user: infoValue("USER_AGENT_NAME"),
-        passwd: infoValue("PASSWORD")
+        passwd: infoValue("PASSWORD"),
     )
     private let amountDominantColor: UInt32 = 4
 
