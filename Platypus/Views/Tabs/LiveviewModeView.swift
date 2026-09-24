@@ -47,7 +47,10 @@ struct CameraActiveLiveView: View {
     @State private var previewAttachTask: Task<Void, Never>? = nil
     @State private var locationSnapTask: Task<Void, Never>? = nil
 
-    @State private var uniqueLocationTags = UniqueLocationTags(categories: [], isInside: false)
+    @State private var uniqueLocationTags = UniqueLocationTags(
+        categories: [],
+        isInside: false
+    )
     @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff
 
@@ -67,15 +70,10 @@ struct CameraActiveLiveView: View {
             )
             .ignoresSafeArea()
 
-            VStack {
-                ProgressCategoriesIndicator(progress: progress)
-                    .padding(.top, 15)
-
-                Spacer()
-
-                CategoryOverlayView(uniqueLocationTags: uniqueLocationTags, imageDetections: detectedObjects)
-                    .padding(.bottom, 24)
-            }
+            ProgressIndicatorView(
+                uniqueLocationTags: uniqueLocationTags,
+                detectedObjects: detectedObjects
+            )
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
@@ -128,17 +126,27 @@ struct CameraActiveLiveView: View {
 
                     progress = .evaluating
                     do {
-                        let detectedObjectsEvaluations = try await recognizeObjectsInImage(path: imgPath, imageRecognizer: imgRecognizer)
+                        let detectedObjectsEvaluations =
+                            try await recognizeObjectsInImage(
+                                path: imgPath,
+                                imageRecognizer: imgRecognizer
+                            )
                         detectedObjects = detectedObjectsEvaluations
                         progress = .success
-                        
-                        let detectedLocationTagsEvaluations = try await recognizeLocationTags(location: cord, auth: auth, imgPath: imgPath, amount: amountDominantColor)
+
+                        let detectedLocationTagsEvaluations =
+                            try await recognizeLocationTags(
+                                location: cord,
+                                auth: auth,
+                                imgPath: imgPath,
+                                amount: amountDominantColor
+                            )
                         uniqueLocationTags = detectedLocationTagsEvaluations
 
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)
                         let elapsed_formatted = String(format: "%.2f", elapsed)
-//                        logger.log("Evaluated to: \(evaluations)")
+                        //                        logger.log("Evaluated to: \(evaluations)")
                         logger.log(
                             "Evaluation took: \(elapsed_formatted) ms",
                             level: .debug

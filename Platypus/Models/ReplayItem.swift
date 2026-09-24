@@ -24,10 +24,26 @@ extension ReplayItem {
         let stem = absolutPath.deletingPathExtension().lastPathComponent
         return stem.localizedCapitalized
     }
+    
+    func videoPath() async throws -> URL {
+        let dir = try await self.resolvedTempPath()
+        return dir.appendingPathComponent("recording.mov")
+    }
+    
+    func contentPath() async throws -> URL {
+        let dir = try await self.resolvedTempPath()
+        return dir.appendingPathComponent("content.json")
+    }
+    
+    func intoVideoPlayback() async throws -> VideoPlayback {
+        let videoPath = try await self.videoPath()
+        let eval = try await self.evaluations()
+        let videoPlayback = VideoPlayback(evaluations: eval, videoPath: videoPath)
+        return videoPlayback
+    }
 
     func evaluations() async throws -> [ImageFlowEvaluationForRecording] {
-        let dir = try await resolvedTempPath()
-        let contentFile = dir.appendingPathComponent("content.json")
+        let contentFile = try await self.contentPath()
         return try await imageFlowEvaluationReadFromJson(path: contentFile.path)
     }
 

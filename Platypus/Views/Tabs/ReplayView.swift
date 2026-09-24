@@ -82,16 +82,23 @@ struct ReplayView: View {
 struct FileItemView: View {
     @State var replayItem: ReplayItem
 
+    @State private var evaluationData: VideoPlayback? = nil
+    @State private var isLoading = false
+    @State private var loadError: Error?
+
     private var logger = PlatyLogger(tag: "FileItemView")
 
     var body: some View {
         Button {
             Task {
+                isLoading = true
+                defer { isLoading = false }
+                
                 do {
-                    let data = try await replayItem.evaluations()
-                    logger.log("\(data)")
+                    evaluationData = try await replayItem.intoVideoPlayback()
                 } catch {
                     logger.log("\(error)", level: .error)
+                    loadError = error
                 }
             }
         } label: {
@@ -128,7 +135,11 @@ struct FileItemView: View {
                 .stroke(Color.primary.opacity(0.08), lineWidth: 2)
             }
         }
+        .disabled(isLoading)
         .accessibilityLabel(replayItem.title)
+        .fullScreenCover(item: $evaluationData) { data in
+            VideoPlaybackView(playback: data)
+        }
     }
 }
 
