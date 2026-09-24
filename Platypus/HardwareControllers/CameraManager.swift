@@ -23,7 +23,7 @@ enum CameraError: Error {
 /// and recording can never race with each other or with the main actor —
 /// the compiler enforces it, so the old `sessionQueue` is no longer needed.
 actor CameraSessionActor {
-    static let SLEEP_DURATION: TimeInterval = 0.5
+    static let SLEEP_DURATION: TimeInterval = 0.2
 
     // AVCaptureSession is documented by Apple as internally thread-safe,
     // which is exactly the situation `nonisolated(unsafe)` exists for:

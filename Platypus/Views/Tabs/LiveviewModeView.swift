@@ -49,7 +49,6 @@ struct CameraActiveLiveView: View {
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
-        isInside: false
     )
     @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff

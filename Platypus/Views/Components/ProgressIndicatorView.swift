@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct ProgressIndicatorView: View {
-    @State var progress: ProgressStatus = .switchedOff
-    @State var uniqueLocationTags: UniqueLocationTags
-    @State var detectedObjects: ImageDetections
+    let progress: ProgressStatus = .switchedOff
+    let uniqueLocationTags: UniqueLocationTags
+    let detectedObjects: ImageDetections
 
     var body: some View {
         VStack {

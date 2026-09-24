@@ -9,7 +9,8 @@ import AVKit
 import SwiftUI
 
 struct VideoPlaybackView: View {
-    let videoPlayback: VideoPlayback
+    var videoPlayback: VideoPlayback
+    private let logger = PlatyLogger(tag: "VideoPlaybackView")
 
     @Environment(\.dismiss) private var dismiss
     @State private var player: AVPlayer
@@ -18,7 +19,6 @@ struct VideoPlaybackView: View {
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
-        isInside: false
     )
     @State private var imageDetections = ImageDetections(detections: [])
 
@@ -72,7 +72,14 @@ struct VideoPlaybackView: View {
             forInterval: interval,
             queue: .main
         ) { time in
+            logger.log("Clock ticket")
             currentSeconds = time.seconds
+            let evaluation = videoPlayback.findEvaluation(currentSeconds).evaluation()
+            logger.log("\(evaluation.locationTags())")
+            logger.log("\(evaluation.imageDetections())")
+            
+            uniqueLocationTags = evaluation.locationTags()
+            imageDetections = evaluation.imageDetections()
         }
     }
 

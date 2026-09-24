@@ -735,6 +735,10 @@ public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
 
 public protocol ImageFlowEvaluationProtocol: AnyObject, Sendable {
     
+    func imageDetections()  -> ImageDetections
+    
+    func locationTags()  -> UniqueLocationTags
+    
     /**
      * # Errors
      * TODO
@@ -804,6 +808,24 @@ public convenience init(locationTags: UniqueLocationTags, imageDetections: Image
 
     
 
+    
+open func imageDetections() -> ImageDetections  {
+    return try!  FfiConverterTypeImageDetections_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluation_image_detections(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func locationTags() -> UniqueLocationTags  {
+    return try!  FfiConverterTypeUniqueLocationTags_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluation_location_tags(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
     
     /**
      * # Errors
@@ -877,6 +899,12 @@ public func FfiConverterTypeImageFlowEvaluation_lower(_ value: ImageFlowEvaluati
 
 public protocol ImageFlowEvaluationForRecordingProtocol: AnyObject, Sendable {
     
+    func evaluation()  -> ImageFlowEvaluation
+    
+    func location()  -> Coordinate
+    
+    func timeDiff()  -> TimeInterval
+    
 }
 open class ImageFlowEvaluationForRecording: ImageFlowEvaluationForRecordingProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -941,6 +969,33 @@ public convenience init(evaluations: ImageFlowEvaluation, timeDiff: TimeInterval
 
     
 
+    
+open func evaluation() -> ImageFlowEvaluation  {
+    return try!  FfiConverterTypeImageFlowEvaluation_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_evaluation(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func location() -> Coordinate  {
+    return try!  FfiConverterTypeCoordinate_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_location(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func timeDiff() -> TimeInterval  {
+    return try!  FfiConverterDuration.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_time_diff(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
     
 
     
@@ -1423,13 +1478,11 @@ public func FfiConverterTypeImageDetections_lower(_ value: ImageDetections) -> R
 
 public struct UniqueLocationTags: Equatable, Hashable {
     public var categories: Set<LocationTag>
-    public var isInside: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(categories: Set<LocationTag>, isInside: Bool) {
+    public init(categories: Set<LocationTag>) {
         self.categories = categories
-        self.isInside = isInside
     }
 
     
@@ -1448,14 +1501,12 @@ public struct FfiConverterTypeUniqueLocationTags: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UniqueLocationTags {
         return
             try UniqueLocationTags(
-                categories: FfiConverterSetTypeLocationTag.read(from: &buf), 
-                isInside: FfiConverterBool.read(from: &buf)
+                categories: FfiConverterSetTypeLocationTag.read(from: &buf)
         )
     }
 
     public static func write(_ value: UniqueLocationTags, into buf: inout [UInt8]) {
         FfiConverterSetTypeLocationTag.write(value.categories, into: &buf)
-        FfiConverterBool.write(value.isInside, into: &buf)
     }
 }
 
@@ -2300,7 +2351,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 36315) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_image_flow_checksum_method_imageflowevaluation_image_detections() != 14491) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluation_location_tags() != 61081) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_image_flow_checksum_method_imageflowevaluation_save_as_json() != 57397) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_evaluation() != 19801) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_location() != 15279) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_time_diff() != 30353) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_method_imagerecognizer_model_path() != 38988) {

@@ -30,10 +30,10 @@ extension Detection: DisplayableProto {
         case .trafficLight: return "trafficlight.fill"
         case .car: return "car.fill"
         case .bicycle: return "bicycle"
-        case .bench: return "parkingchair"  // or "bench" if available in your SF Symbols version
+        case .bench: return "chair.lounge.fill"  
         case .chair: return "chair.fill"
         case .diningTable: return "table.fill"
-        case .cup: return "cup.fill"
+        case .cup: return "cup.and.saucer.fill"
         case .handbag: return "handbag.fill"
         case .laptop: return "laptopcomputer"
         case .tv: return "tv.fill"
