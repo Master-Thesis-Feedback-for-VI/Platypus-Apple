@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B08E850F302B30EF007AFF1F /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = B08E850E302B30EF007AFF1F /* ZIPFoundation */; };
+		B0D04927306669FE00ED081D /* MQTTNIO in Frameworks */ = {isa = PBXBuildFile; productRef = B0D04926306669FE00ED081D /* MQTTNIO */; };
 		B0F84A33302C6532002B5913 /* HelperCoders in Frameworks */ = {isa = PBXBuildFile; productRef = B0F84A32302C6532002B5913 /* HelperCoders */; };
 		B0F84A35302C6532002B5913 /* MetaCodable in Frameworks */ = {isa = PBXBuildFile; productRef = B0F84A34302C6532002B5913 /* MetaCodable */; };
 		B0F84A37302C6532002B5913 /* ProtocolGen in Frameworks */ = {isa = PBXBuildFile; productRef = B0F84A36302C6532002B5913 /* ProtocolGen */; };
@@ -74,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				B0F84A37302C6532002B5913 /* ProtocolGen in Frameworks */,
+				B0D04927306669FE00ED081D /* MQTTNIO in Frameworks */,
 				B0F84A35302C6532002B5913 /* MetaCodable in Frameworks */,
 				B0F84A33302C6532002B5913 /* HelperCoders in Frameworks */,
 				B08E850F302B30EF007AFF1F /* ZIPFoundation in Frameworks */,
@@ -129,6 +131,7 @@
 				B0F84A34302C6532002B5913 /* MetaCodable */,
 				B0F84A36302C6532002B5913 /* ProtocolGen */,
 				B0F84A39302C6755002B5913 /* CodableCSV */,
+				B0D04926306669FE00ED081D /* MQTTNIO */,
 			);
 			productName = Platypus;
 			productReference = B0EE99503026376500008CA3 /* Platypus.app */;
@@ -212,6 +215,7 @@
 				B08E850D302B30EF007AFF1F /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				B0F84A31302C6532002B5913 /* XCRemoteSwiftPackageReference "MetaCodable" */,
 				B0F84A38302C6755002B5913 /* XCRemoteSwiftPackageReference "CodableCSV" */,
+				B0D04925306669FE00ED081D /* XCRemoteSwiftPackageReference "mqtt-nio" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B091269D30260A5E000E2487;
@@ -651,6 +655,14 @@
 				minimumVersion = 0.9.20;
 			};
 		};
+		B0D04925306669FE00ED081D /* XCRemoteSwiftPackageReference "mqtt-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swift-server-community/mqtt-nio";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.13.0;
+			};
+		};
 		B0F84A31302C6532002B5913 /* XCRemoteSwiftPackageReference "MetaCodable" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftyLab/MetaCodable";
@@ -674,6 +686,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B08E850D302B30EF007AFF1F /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		B0D04926306669FE00ED081D /* MQTTNIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B0D04925306669FE00ED081D /* XCRemoteSwiftPackageReference "mqtt-nio" */;
+			productName = MQTTNIO;
 		};
 		B0F84A32302C6532002B5913 /* HelperCoders */ = {
 			isa = XCSwiftPackageProductDependency;
