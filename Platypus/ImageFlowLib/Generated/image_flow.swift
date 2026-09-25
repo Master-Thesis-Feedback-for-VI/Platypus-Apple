@@ -735,6 +735,10 @@ public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
 
 public protocol ImageFlowEvaluationProtocol: AnyObject, Sendable {
     
+    func imageDetections()  -> ImageDetections
+    
+    func locationTags()  -> UniqueLocationTags
+    
     /**
      * # Errors
      * TODO
@@ -805,6 +809,24 @@ public convenience init(locationTags: UniqueLocationTags, imageDetections: Image
     
 
     
+open func imageDetections() -> ImageDetections  {
+    return try!  FfiConverterTypeImageDetections_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluation_image_detections(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func locationTags() -> UniqueLocationTags  {
+    return try!  FfiConverterTypeUniqueLocationTags_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluation_location_tags(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
     /**
      * # Errors
      * TODO
@@ -868,6 +890,156 @@ public func FfiConverterTypeImageFlowEvaluation_lift(_ handle: UInt64) throws ->
 #endif
 public func FfiConverterTypeImageFlowEvaluation_lower(_ value: ImageFlowEvaluation) -> UInt64 {
     return FfiConverterTypeImageFlowEvaluation.lower(value)
+}
+
+
+
+
+
+
+public protocol ImageFlowEvaluationForRecordingProtocol: AnyObject, Sendable {
+    
+    func evaluation()  -> ImageFlowEvaluation
+    
+    func location()  -> Coordinate
+    
+    func timeDiff()  -> TimeInterval
+    
+}
+open class ImageFlowEvaluationForRecording: ImageFlowEvaluationForRecordingProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_image_flow_fn_clone_imageflowevaluationforrecording(self.handle, $0) }
+    }
+public convenience init(evaluations: ImageFlowEvaluation, timeDiff: TimeInterval, location: Coordinate) {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_constructor_imageflowevaluationforrecording_new(
+        FfiConverterTypeImageFlowEvaluation_lower(evaluations),
+        FfiConverterDuration.lower(timeDiff),
+        FfiConverterTypeCoordinate_lower(location),uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_image_flow_fn_free_imageflowevaluationforrecording(handle, $0) }
+    }
+
+    
+
+    
+open func evaluation() -> ImageFlowEvaluation  {
+    return try!  FfiConverterTypeImageFlowEvaluation_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_evaluation(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func location() -> Coordinate  {
+    return try!  FfiConverterTypeCoordinate_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_location(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func timeDiff() -> TimeInterval  {
+    return try!  FfiConverterDuration.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_method_imageflowevaluationforrecording_time_diff(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImageFlowEvaluationForRecording: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ImageFlowEvaluationForRecording
+
+    public static func lift(_ handle: UInt64) throws -> ImageFlowEvaluationForRecording {
+        return ImageFlowEvaluationForRecording(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ImageFlowEvaluationForRecording) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImageFlowEvaluationForRecording {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ImageFlowEvaluationForRecording, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowEvaluationForRecording_lift(_ handle: UInt64) throws -> ImageFlowEvaluationForRecording {
+    return try FfiConverterTypeImageFlowEvaluationForRecording.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImageFlowEvaluationForRecording_lower(_ value: ImageFlowEvaluationForRecording) -> UInt64 {
+    return FfiConverterTypeImageFlowEvaluationForRecording.lower(value)
 }
 
 
@@ -1019,14 +1191,16 @@ public func FfiConverterTypeImageRecognizer_lower(_ value: ImageRecognizer) -> U
 
 
 public struct AuthToHost: Equatable, Hashable {
-    public var url: String
+    public var overpassUrl: String
+    public var nominatimUrl: String
     public var user: String
     public var passwd: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(url: String, user: String, passwd: String) {
-        self.url = url
+    public init(overpassUrl: String, nominatimUrl: String, user: String, passwd: String) {
+        self.overpassUrl = overpassUrl
+        self.nominatimUrl = nominatimUrl
         self.user = user
         self.passwd = passwd
     }
@@ -1047,14 +1221,16 @@ public struct FfiConverterTypeAuthToHost: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthToHost {
         return
             try AuthToHost(
-                url: FfiConverterString.read(from: &buf), 
+                overpassUrl: FfiConverterString.read(from: &buf), 
+                nominatimUrl: FfiConverterString.read(from: &buf), 
                 user: FfiConverterString.read(from: &buf), 
                 passwd: FfiConverterString.read(from: &buf)
         )
     }
 
     public static func write(_ value: AuthToHost, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterString.write(value.overpassUrl, into: &buf)
+        FfiConverterString.write(value.nominatimUrl, into: &buf)
         FfiConverterString.write(value.user, into: &buf)
         FfiConverterString.write(value.passwd, into: &buf)
     }
@@ -1302,13 +1478,11 @@ public func FfiConverterTypeImageDetections_lower(_ value: ImageDetections) -> R
 
 public struct UniqueLocationTags: Equatable, Hashable {
     public var categories: Set<LocationTag>
-    public var isInside: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(categories: Set<LocationTag>, isInside: Bool) {
+    public init(categories: Set<LocationTag>) {
         self.categories = categories
-        self.isInside = isInside
     }
 
     
@@ -1327,14 +1501,12 @@ public struct FfiConverterTypeUniqueLocationTags: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UniqueLocationTags {
         return
             try UniqueLocationTags(
-                categories: FfiConverterSetTypeLocationTag.read(from: &buf), 
-                isInside: FfiConverterBool.read(from: &buf)
+                categories: FfiConverterSetTypeLocationTag.read(from: &buf)
         )
     }
 
     public static func write(_ value: UniqueLocationTags, into buf: inout [UInt8]) {
         FfiConverterSetTypeLocationTag.write(value.categories, into: &buf)
-        FfiConverterBool.write(value.isInside, into: &buf)
     }
 }
 
@@ -1707,6 +1879,8 @@ public enum LocationTag: Equatable, Hashable {
     case street
     case pedestrian
     case intersection
+    case parking
+    case railway
     case elevator
 
 
@@ -1741,7 +1915,11 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
         
         case 6: return .intersection
         
-        case 7: return .elevator
+        case 7: return .parking
+        
+        case 8: return .railway
+        
+        case 9: return .elevator
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -1775,8 +1953,16 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
             writeInt(&buf, Int32(6))
         
         
-        case .elevator:
+        case .parking:
             writeInt(&buf, Int32(7))
+        
+        
+        case .railway:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .elevator:
+            writeInt(&buf, Int32(9))
         
         }
     }
@@ -1936,6 +2122,31 @@ fileprivate struct FfiConverterOptionTypeFilterLevel: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeImageFlowEvaluationForRecording: FfiConverterRustBuffer {
+    typealias SwiftType = [ImageFlowEvaluationForRecording]
+
+    public static func write(_ value: [ImageFlowEvaluationForRecording], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeImageFlowEvaluationForRecording.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ImageFlowEvaluationForRecording] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ImageFlowEvaluationForRecording]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeImageFlowEvaluationForRecording.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeDetection: FfiConverterRustBuffer {
     typealias SwiftType = [Detection]
 
@@ -2059,17 +2270,17 @@ public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath
  * # Errors
  * TODO
  */
-public func imageFlowEvaluationReadFromJson(path: String)async throws  -> ImageFlowEvaluation  {
+public func imageFlowEvaluationReadFromJson(path: String)async throws  -> [ImageFlowEvaluationForRecording]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_image_flow_fn_func_image_flow_evaluation_read_from_json(FfiConverterString.lower(path)
                 )
             },
-            pollFunc: ffi_image_flow_rust_future_poll_u64,
-            completeFunc: ffi_image_flow_rust_future_complete_u64,
-            freeFunc: ffi_image_flow_rust_future_free_u64,
-            liftFunc: FfiConverterTypeImageFlowEvaluation_lift,
+            pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
+            completeFunc: ffi_image_flow_rust_future_complete_rust_buffer,
+            freeFunc: ffi_image_flow_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeImageFlowEvaluationForRecording.lift,
             errorHandler: FfiConverterTypeImageFlowError_lift
         )
 }
@@ -2131,7 +2342,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 27644) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_image_flow_evaluation_read_from_json() != 24612) {
+    if (uniffi_image_flow_checksum_func_image_flow_evaluation_read_from_json() != 20888) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_recognize_location_tags() != 45347) {
@@ -2140,13 +2351,31 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 36315) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_image_flow_checksum_method_imageflowevaluation_image_detections() != 14491) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluation_location_tags() != 61081) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_image_flow_checksum_method_imageflowevaluation_save_as_json() != 57397) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_evaluation() != 19801) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_location() != 15279) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_method_imageflowevaluationforrecording_time_diff() != 30353) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_method_imagerecognizer_model_path() != 38988) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_constructor_imageflowevaluation_new() != 25174) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_constructor_imageflowevaluationforrecording_new() != 5354) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_constructor_framepath_new() != 29437) {

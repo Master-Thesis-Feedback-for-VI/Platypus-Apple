@@ -15,6 +15,8 @@ extension LocationTag: DisplayableProto {
         case .pedestrian: return "Pedestrian"
         case .intersection: return "Intersection"
         case .elevator: return "Elevator"
+        case .parking: return "Parking"
+        case .railway: return "Railway"
         }
     }
 
@@ -27,6 +29,8 @@ extension LocationTag: DisplayableProto {
         case .pedestrian: return "figure.walk"
         case .intersection: return "signpost.right.fill"
         case .elevator: return "arrow.up.arrow.down.square"
+        case .parking: return "parkingsign.square.fill"
+        case .railway: return "lightrail"
         }
     }
 }
