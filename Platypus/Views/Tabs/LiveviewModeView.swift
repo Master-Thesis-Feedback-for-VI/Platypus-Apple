@@ -145,7 +145,7 @@ struct CameraActiveLiveView: View {
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)
                         let elapsed_formatted = String(format: "%.2f", elapsed)
-                        //                        logger.log("Evaluated to: \(evaluations)")
+                                                logger.log("Evaluated to: \(detectedLocationTagsEvaluations)")
                         logger.log(
                             "Evaluation took: \(elapsed_formatted) ms",
                             level: .debug

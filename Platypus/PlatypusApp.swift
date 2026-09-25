@@ -33,7 +33,9 @@ struct PlatypusApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().task {
+                MINIMUM_LOG_LEVEL = .error
+            }
         }
         .modelContainer(sharedModelContainer)
     }
