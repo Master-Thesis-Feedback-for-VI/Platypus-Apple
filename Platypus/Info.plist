@@ -4,6 +4,8 @@
 <dict>
 	<key>OVERPASS_URL</key>
 	<string>$(OVERPASS_URL)</string>
+	<key>NOMINATIM_URL</key>
+	<string>$(NOMINATIM_URL)</string>
 	<key>PASSWORD</key>
 	<string>$(PASSWORD)</string>
 	<key>UIFileSharingEnabled</key>

@@ -8,12 +8,17 @@
 import Foundation
 import os
 
+var MINIMUM_LOG_LEVEL: PlatyLogger.LogLevel = .error
+
 struct PlatyLogger {
     let tag: String
     private let logger: Logger
 
-    enum LogLevel {
-        case debug, info, warning, error
+    enum LogLevel: Comparable {
+        case debug
+        case info
+        case warning
+        case error
     }
 
     init(tag: String) {
@@ -24,20 +29,35 @@ struct PlatyLogger {
 }
 
 extension PlatyLogger {
-    public func log(_ message: String, level: LogLevel = .info) {
+    public func log(
+        _ message: String,
+        level: LogLevel = .info,
+        file: String = #fileID,
+        function: String = #function,
+        line: Int = #line
+    ) {
+        guard MINIMUM_LOG_LEVEL <= level else {
+            return
+        }
+        
+        let location = "\(tag) \(file):\(line) \(function)"
         switch level {
         case .debug:
-            let prependTag = "[[DEBUG]]"
-            logger.debug("\(prependTag):  \(message, privacy: .public)")
+            logger.debug(
+                "[[DEBUG]]: \(location, privacy: .public) \(message, privacy: .public)"
+            )
         case .info:
-            let prependTag = "[[INFO]]"
-            logger.info("\(prependTag):  \(message, privacy: .public)")
+            logger.info(
+                "[[INFO]]: \(location, privacy: .public) \(message, privacy: .public)"
+            )
         case .warning:
-            let prependTag = "[[WARNING]]"
-            logger.warning("\(prependTag):  \(message, privacy: .public)")
+            logger.warning(
+                "[[WARNING]]: \(location, privacy: .public) \(message, privacy: .public)"
+            )
         case .error:
-            let prependTag = "[[ERROR]]"
-            logger.error("\(prependTag):  \(message, privacy: .public)")
+            logger.error(
+                "[[ERROR]]: \(location, privacy: .public) \(message, privacy: .public)"
+            )
         }
     }
 }

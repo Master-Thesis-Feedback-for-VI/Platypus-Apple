@@ -45,6 +45,7 @@ struct ContentView: View {
                     Image(systemName: "folder.fill")
                     Text("Record")
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .tag(Tab.camera)
             
             ReplayView()
