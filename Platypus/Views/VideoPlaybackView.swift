@@ -10,6 +10,7 @@ import SwiftUI
 
 struct VideoPlaybackView: View {
     var videoPlayback: VideoPlayback
+    
     private let logger = PlatyLogger(tag: "VideoPlaybackView")
 
     @Environment(\.dismiss) private var dismiss
@@ -38,6 +39,7 @@ struct VideoPlaybackView: View {
                 //                ProgressIndicatorView(uniqueLocationTags: <#T##UniqueLocationTags#>, detectedObjects: <#T##ImageDetections#>)
 
                 ProgressIndicatorView(
+                    progress: .switchedOff,
                     uniqueLocationTags: uniqueLocationTags,
                     detectedObjects: imageDetections
                 ).padding(.bottom, 30)

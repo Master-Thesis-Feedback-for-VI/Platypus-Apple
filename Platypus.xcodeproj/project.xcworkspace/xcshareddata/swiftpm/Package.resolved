@@ -1,24 +1,6 @@
 {
-  "originHash" : "46c6ea69a1091c8151f85c594990e938b4a28319799831cf9ef4eaaf1fa2b271",
+  "originHash" : "334f3396ba798c4cc69b8f8733c2d0e253fcc74c40518c94a354d6a8a5d7167c",
   "pins" : [
-    {
-      "identity" : "codablecsv",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/dehesa/CodableCSV.git",
-      "state" : {
-        "revision" : "99ace2cfdfbc19108b529c021005fb57a460e715",
-        "version" : "0.6.7"
-      }
-    },
-    {
-      "identity" : "metacodable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/SwiftyLab/MetaCodable",
-      "state" : {
-        "revision" : "3d4bfeb949c0f31ef80fdc3af8f77c5b35ecaea4",
-        "version" : "1.6.1"
-      }
-    },
     {
       "identity" : "mqtt-nio",
       "kind" : "remoteSourceControl",
@@ -26,15 +8,6 @@
       "state" : {
         "revision" : "91d357875eabd63c55eee40fc6b85bc1f00839ed",
         "version" : "2.13.0"
-      }
-    },
-    {
-      "identity" : "swift-argument-parser",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser.git",
-      "state" : {
-        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
-        "version" : "1.8.2"
       }
     },
     {
@@ -51,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-        "revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
-        "version" : "1.6.0"
+        "revision" : "a66de878e87ef5a3d5d390e0f6d9002aa5541a43",
+        "version" : "1.7.0"
       }
     },
     {
@@ -89,15 +62,6 @@
       "state" : {
         "revision" : "67787bb645a5e67d2edcdfbe48a216cc549222d5",
         "version" : "1.28.0"
-      }
-    },
-    {
-      "identity" : "swift-syntax",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-syntax.git",
-      "state" : {
-        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
-        "version" : "603.0.2"
       }
     },
     {

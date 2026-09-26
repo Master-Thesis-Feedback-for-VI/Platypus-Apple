@@ -27,7 +27,7 @@ extension Detection: DisplayableProto {
     var symbolName: String {
         switch name {
         case .person: return "person.fill"
-        case .trafficLight: return "trafficlight.fill"
+        case .trafficLight: return "figure.walk.diamond"
         case .car: return "car.fill"
         case .bicycle: return "bicycle"
         case .bench: return "chair.lounge.fill"  

@@ -30,13 +30,23 @@ struct PlatypusApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    
+    @StateObject private var mqttClient = PlatyMQTT(
+        userName: infoValue("MQTT_USER"),
+        passwd: infoValue("PASSWORD")
+    )
+    @StateObject private var locationRecorder = LocationRecorder()
+    @StateObject private var cameraManager = CameraManager()
+    @StateObject private var imageRecognizerStore = ImageRecognizerStore()
 
     var body: some Scene {
         WindowGroup {
-            ContentView().task {
-                MINIMUM_LOG_LEVEL = .error
-            }
+            ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .environmentObject(locationRecorder)
+        .environmentObject(cameraManager)
+        .environmentObject(imageRecognizerStore)
+        .environmentObject(mqttClient)
     }
 }

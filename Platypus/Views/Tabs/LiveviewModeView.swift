@@ -33,9 +33,7 @@ struct LiveviewModeView: View {
     }
 }
 
-private func infoValue(_ key: String) -> String {
-    Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
-}
+
 
 struct CameraActiveLiveView: View {
     @EnvironmentObject var cameraManager: CameraManager
@@ -70,8 +68,9 @@ struct CameraActiveLiveView: View {
             .ignoresSafeArea()
 
             ProgressIndicatorView(
+                progress: progress,
                 uniqueLocationTags: uniqueLocationTags,
-                detectedObjects: detectedObjects
+                detectedObjects: detectedObjects,
             )
         }
         .onAppear {
