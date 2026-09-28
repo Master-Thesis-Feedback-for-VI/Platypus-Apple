@@ -33,9 +33,7 @@ struct LiveviewModeView: View {
     }
 }
 
-private func infoValue(_ key: String) -> String {
-    Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
-}
+
 
 struct CameraActiveLiveView: View {
     @EnvironmentObject var cameraManager: CameraManager
@@ -52,6 +50,8 @@ struct CameraActiveLiveView: View {
     )
     @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff
+    @State private var videoDimensions: CGSize = .zero
+    @State private var detectionTransform: CGAffineTransform = .identity
 
     private let auth = AuthToHost(
         overpassUrl: infoValue("OVERPASS_URL"),
@@ -69,7 +69,15 @@ struct CameraActiveLiveView: View {
             )
             .ignoresSafeArea()
 
+            DetectionOverlayView(
+                detectedObjects: detectedObjects,
+                frameSize: videoDimensions,
+                imageTransform: detectionTransform,
+                contentMode: .fill
+            )
+
             ProgressIndicatorView(
+                progress: progress,
                 uniqueLocationTags: uniqueLocationTags,
                 detectedObjects: detectedObjects
             )
@@ -105,6 +113,11 @@ struct CameraActiveLiveView: View {
                         )
                         progress = .failure
                         continue
+                    }
+                    
+                    if let dimensions = img.pixelSize {
+                        videoDimensions = dimensions
+                        detectionTransform = img.detectionTransform
                     }
 
                     let cord = Coordinate(

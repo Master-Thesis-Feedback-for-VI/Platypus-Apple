@@ -8,7 +8,7 @@
 import Foundation
 import os
 
-var MINIMUM_LOG_LEVEL: PlatyLogger.LogLevel = .error
+var MINIMUM_LOG_LEVEL: PlatyLogger.LogLevel = .warning
 
 struct PlatyLogger {
     let tag: String

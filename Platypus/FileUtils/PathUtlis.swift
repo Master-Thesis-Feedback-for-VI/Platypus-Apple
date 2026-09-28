@@ -40,3 +40,7 @@ func ensureDirectoryExists(at url: URL) throws {
         encoding: .utf8
     )
 }
+
+func infoValue(_ key: String) -> String {
+    Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
+}
