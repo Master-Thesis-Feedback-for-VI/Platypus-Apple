@@ -22,7 +22,7 @@ final class PlatyMQTT: ObservableObject {
     private var toSubscribe: [MQTTSubscribeInfo] = []
     private var loopTask: Task<Void, Error>?
 
-    var subscriptions: [String: [(RecMessage) -> Void]] = [:]
+    var subsToCallbacks: [AvailableTopics: [(RecMessage) -> Void]] = [:]
 
     init(
         userName: String,
@@ -60,39 +60,65 @@ extension PlatyMQTT {
         let cmd: RecMessageVariants
     }
 
+    struct SendMessage: Codable {
+        let increaseDiff: Int
+    }
+}
+
+extension PlatyMQTT {
     enum ConnectionStatus {
         case disconnected, connected, establishing
     }
 }
 
 extension PlatyMQTT {
-    func connect()
-        async throws
-    {
+    func subscribeToAllAvailbaleTopics() async throws {
+        for topic in AvailableTopics.allCases {
+            let subscription = MQTTSubscribeInfo(
+                topicFilter: topic.rawValue,
+                qos: .atLeastOnce
+            )
+            toSubscribe.append(subscription)
+        }
+
         self.connectionStatus = .establishing
-        let success = try await self.client.connect(cleanSession: true)
-        if success {
+        do {
+            // The return value indicates whether the broker restored an existing session.
+            // A successful clean-session connection normally returns false.
+            _ = try await self.client.connect()
             self.connectionStatus = .connected
-        } else {
+        } catch {
             self.connectionStatus = .disconnected
+            throw error
         }
     }
 
-    func addSubscription(
-        topic: String,
-        qos: MQTTQoS = .atLeastOnce,
-        action: @escaping (RecMessage) -> Void
+    func addCallback(
+        topic: AvailableTopics,
+        _ cb: @escaping (RecMessage) -> Void
     ) {
-        let subscription = MQTTSubscribeInfo(topicFilter: topic, qos: qos)
-        toSubscribe.append(subscription)
-
-        let some = subscriptions[topic]
-        if var callbacks = some {
-            callbacks.append(action)
-            subscriptions[topic] = callbacks
+        if var callbacks = subsToCallbacks[topic] {
+            callbacks.append(cb)
+            subsToCallbacks[topic] = callbacks
         } else {
-            subscriptions[topic] = [action]
+            subsToCallbacks[topic] = [cb]
         }
+    }
+
+    func publish(
+        to topic: AvailableTopics,
+        payload: SendMessage,
+        qos: MQTTQoS = .atLeastOnce
+    ) async throws {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(payload)
+        let byteBuffer = ByteBuffer(bytes: data)
+
+        try await client.publish(
+            to: topic.rawValue,
+            payload: byteBuffer,
+            qos: qos
+        )
     }
 
     func startLoop() {
@@ -110,8 +136,12 @@ extension PlatyMQTT {
         loopTask = nil
 
         if flushCallbacks {
-            subscriptions = [:]
+            self.flushCallbacks()
         }
+    }
+
+    func flushCallbacks() {
+        subsToCallbacks = [:]
     }
 
     private func mainLoop() async throws {
@@ -129,7 +159,7 @@ extension PlatyMQTT {
 
                 switch res {
                 case .success(let pub):
-                    let topic = pub.topicName
+                    let topic = AvailableTopics(rawValue: pub.topicName)!
                     let msgStr = String(buffer: pub.payload)
                     guard let data = msgStr.data(using: .utf8) else { continue }
 
@@ -140,13 +170,13 @@ extension PlatyMQTT {
                         )
                         lastRecMessage = msg
 
-                        if let callbacks = subscriptions[topic] {
+                        if let callbacks = subsToCallbacks[topic] {
                             for callback in callbacks {
                                 callback(msg)
                             }
                         }
                     } catch {
-                        logger.log("Failed to deserialize: \(error)")
+                        logger.log("Failed to deserialize: \(error)", level: .error)
                     }
 
                 case .failure(let err):
@@ -154,7 +184,19 @@ extension PlatyMQTT {
                 }
             }
         } onCancel: {
-            Task { try? await self.client.disconnect() }
+            Task {
+                do {
+                    try await self.client.disconnect()
+                } catch {
+                    await logger.log("fail on cancel: \(error)")
+                }
+            }
         }
     }
+}
+
+enum AvailableTopics: String, CaseIterable {
+    case hapticLeft = "IoT/device/haptic_left"
+    case hapticRight = "IoT/device/haptic_right"
+    case profileSwap = "IoT/device/profile_swap"
 }

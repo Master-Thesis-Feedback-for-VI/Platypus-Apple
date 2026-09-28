@@ -30,7 +30,7 @@ struct PlatypusApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-    
+
     @StateObject private var mqttClient = PlatyMQTT(
         userName: infoValue("MQTT_USER"),
         passwd: infoValue("PASSWORD")
@@ -39,9 +39,39 @@ struct PlatypusApp: App {
     @StateObject private var cameraManager = CameraManager()
     @StateObject private var imageRecognizerStore = ImageRecognizerStore()
 
+    private let logger = PlatyLogger(tag: "Root")
+
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var didConnect = false
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onChange(of: scenePhase) { _, newPhase in
+                    switch newPhase {
+                    case .active:
+                        guard !didConnect else { return }
+                        didConnect = true
+                        Task {
+                            logger.log("Connecting to mqtt server...")
+                            do {
+                                try await mqttClient.subscribeToAllAvailbaleTopics()
+                                logger.log("... Connected to mqtt server")
+                                mqttClient.startLoop()
+                            } catch {
+                                didConnect = false
+                                logger.log("Failed to connect to mqtt server: \(error)", level: .error)
+                            }
+                        }
+                    case .background, .inactive:
+                        didConnect = false
+                        mqttClient.stopLoop()
+                    @unknown default:
+                        logger.log("Unknown case wtf", level: .error)
+                        fatalError()
+                    }
+                }
+
         }
         .modelContainer(sharedModelContainer)
         .environmentObject(locationRecorder)

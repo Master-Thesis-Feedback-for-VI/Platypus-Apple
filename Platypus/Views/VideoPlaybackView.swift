@@ -10,13 +10,14 @@ import SwiftUI
 
 struct VideoPlaybackView: View {
     var videoPlayback: VideoPlayback
-    
+
     private let logger = PlatyLogger(tag: "VideoPlaybackView")
 
     @Environment(\.dismiss) private var dismiss
     @State private var player: AVPlayer
     @State private var currentSeconds: Double = 0
     @State private var timeObserverToken: Any?
+    @State private var videoDimensions: CGSize = .zero
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
@@ -36,12 +37,11 @@ struct VideoPlaybackView: View {
                 VideoPlayer(player: player)
                     .ignoresSafeArea()
 
-                //                ProgressIndicatorView(uniqueLocationTags: <#T##UniqueLocationTags#>, detectedObjects: <#T##ImageDetections#>)
-
                 ProgressIndicatorView(
                     progress: .switchedOff,
                     uniqueLocationTags: uniqueLocationTags,
-                    detectedObjects: imageDetections
+                    detectedObjects: imageDetections,
+                    frameSize: videoDimensions
                 ).padding(.bottom, 30)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -57,10 +57,17 @@ struct VideoPlaybackView: View {
             .onAppear {
                 player.play()
                 addTimeObserver()
+
             }
             .onDisappear {
                 player.pause()
                 removeTimeObserver()
+            }.task {
+                if let asset = player.currentItem?.asset {
+                    videoDimensions =
+                        (try? await naturalVideoSize(for: asset)) ?? .zero
+                    logger.log("Video size: \(videoDimensions)")
+                }
             }
         }
     }
@@ -76,10 +83,11 @@ struct VideoPlaybackView: View {
         ) { time in
             logger.log("Clock ticket")
             currentSeconds = time.seconds
-            let evaluation = videoPlayback.findEvaluation(currentSeconds).evaluation()
+            let evaluation = videoPlayback.findEvaluation(currentSeconds)
+                .evaluation()
             logger.log("\(evaluation.locationTags())")
             logger.log("\(evaluation.imageDetections())")
-            
+
             uniqueLocationTags = evaluation.locationTags()
             imageDetections = evaluation.imageDetections()
         }

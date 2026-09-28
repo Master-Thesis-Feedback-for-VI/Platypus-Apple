@@ -50,6 +50,7 @@ struct CameraActiveLiveView: View {
     )
     @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff
+    @State private var videoDimensions: CGSize = .zero
 
     private let auth = AuthToHost(
         overpassUrl: infoValue("OVERPASS_URL"),
@@ -71,6 +72,7 @@ struct CameraActiveLiveView: View {
                 progress: progress,
                 uniqueLocationTags: uniqueLocationTags,
                 detectedObjects: detectedObjects,
+                frameSize: videoDimensions
             )
         }
         .onAppear {
@@ -104,6 +106,10 @@ struct CameraActiveLiveView: View {
                         )
                         progress = .failure
                         continue
+                    }
+                    
+                    if let dimensions = img.pixelSize {
+                        videoDimensions = dimensions
                     }
 
                     let cord = Coordinate(
