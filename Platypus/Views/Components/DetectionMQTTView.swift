@@ -47,17 +47,24 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 contentMode: contentMode
             )
 
-            for channel in [
-                left < 0 ? AvailableTopics.hapticLeft : nil,
-                right > 0 ? AvailableTopics.hapticRight : nil,
-            ].compactMap({ $0 }) {
+            let hapticSignals: [(AvailableTopics, Int)] = [
+                (left, AvailableTopics.hapticLeft, left < 0),
+                (right, AvailableTopics.hapticRight, right > 0),
+            ].compactMap { value, topic, shouldSend in
+                shouldSend ? (topic, Int((abs(value) * 10).rounded())) : nil
+            }
+
+            for (channel, scale) in hapticSignals {
                 do {
                     try await mqttClient.publish(
                         to: channel,
-                        payload: .init(increaseDiff: 2)
+                        payload: .init(increaseDiff: scale)
                     )
                 } catch {
-                    logger.log("Could not send to \(channel.rawValue)", level: .error)
+                    logger.log(
+                        "Could not send to \(channel.rawValue)",
+                        level: .error
+                    )
                 }
             }
         }
