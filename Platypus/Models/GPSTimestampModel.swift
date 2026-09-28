@@ -5,26 +5,12 @@
 //  Created by Yann Bernard on 11.08.26.
 //
 
-import CodableCSV
 import CoreLocation
-import MetaCodable
 
-@Codable
-@CodingKeys(.snake_case)
-struct GPSTimestampModel {
+struct GPSTimestampModel: Codable {
     let timestamp: Double
     let latitude: Double
     let longitude: Double
-}
-
-@Codable
-@CodingKeys(.snake_case)
-struct GPSTimestamps {
-    var stamps: [GPSTimestampModel]
-
-    init() {
-        self.stamps = []
-    }
 }
 
 extension GPSTimestampModel {
@@ -35,14 +21,27 @@ extension GPSTimestampModel {
     }
 }
 
+struct GPSTimestamps: Codable {
+    var stamps: [GPSTimestampModel]
+
+    init() {
+        self.stamps = []
+    }
+}
+
 extension GPSTimestamps {
     // MARK: - CSV export
-    func csvData() throws -> Data {
-        let encoder = CSVEncoder {
-            $0.headers = ["timestamp", "latitude", "longitude"]
-        }
 
-        return try encoder.encode(stamps, into: Data.self)
+    private static let header = "timestamp,latitude,longitude\n"
+
+    private func row(for stamp: GPSTimestampModel) -> String {
+        "\(stamp.timestamp),\(stamp.latitude),\(stamp.longitude)\n"
+    }
+
+    func csvData() throws -> Data {
+        var csv = Self.header
+        for stamp in stamps { csv += row(for: stamp) }
+        return Data(csv.utf8)
     }
 
     func csvString() throws -> String {
@@ -59,20 +58,11 @@ extension GPSTimestamps {
         guard !stamps.isEmpty else { return }
 
         let fileExists = FileManager.default.fileExists(atPath: url.path)
-        // The encoder always needs headers to map coding keys to columns;
-        // encoding with empty headers throws. When appending to an existing
-        // file, the header row is stripped from the encoded data instead.
-        let encoder = CSVEncoder {
-            $0.headers = ["timestamp", "latitude", "longitude"]
-        }
-        var newData = try encoder.encode(stamps, into: Data.self)
+        var body = ""
+        for stamp in stamps { body += row(for: stamp) }
+        let newData = Data((fileExists ? body : Self.header + body).utf8)
 
         if fileExists {
-            if let newlineIndex = newData.firstIndex(of: UInt8(ascii: "\n")) {
-                newData = newData.subdata(
-                    in: newData.index(after: newlineIndex)..<newData.endIndex
-                )
-            }
             let handle = try FileHandle(forWritingTo: url)
             defer { handle.closeFile() }
             handle.seekToEndOfFile()

@@ -32,6 +32,10 @@ extension ImageDetections {
                     == .orderedAscending
             }
     }
+
+    func fetch(_ tag: DetectionType) -> [Detection] {
+        return detections.lazy.filter { $0.name == tag }
+    }
 }
 
 struct DetectionSummary: Identifiable, Hashable, DisplayableProto {
