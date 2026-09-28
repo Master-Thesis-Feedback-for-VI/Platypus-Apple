@@ -5,7 +5,6 @@
 //  Created by Yann Bernard on 24.09.26.
 //
 
-import AVFoundation
 import SwiftUI
 
 struct ProgressIndicatorView<Frame: PlatySize>: View {
@@ -13,6 +12,8 @@ struct ProgressIndicatorView<Frame: PlatySize>: View {
     let uniqueLocationTags: UniqueLocationTags
     let detectedObjects: ImageDetections
     let frameSize: Frame
+    var imageTransform: CGAffineTransform = .identity
+    var contentMode: ContentMode = .fill
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
 
@@ -20,8 +21,6 @@ struct ProgressIndicatorView<Frame: PlatySize>: View {
 
     var body: some View {
         VStack {
-//            DetectionBoxOverlay(detectedObjects: detectedObjects, frameSize: frameSize)
-            
             ProgressCategoriesIndicator(progress: progress)
                 .padding(.top, 15)
             Text("\(frameSize.pixelWidth)x\(frameSize.pixelHeight)")
@@ -34,46 +33,25 @@ struct ProgressIndicatorView<Frame: PlatySize>: View {
             )
             .padding(.bottom, 24)
         }
-        .onChange(of: detectedObjects) { _oldValue, newValue in
-            // Example this should be replaced with profiles
-            Task {
-                let locationTag = uniqueLocationTags.categories
-
-                let persons = detectedObjects.fetch(.person)
-                if persons.count > 0
-                {
-                    for person in persons {
-                        
-                        let (xLeftBbox, xRightBbox) = person.xFromCenter(
-                            frameSize
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay {
+            GeometryReader { geometry in
+                DetectionBoxOverlay(
+                    detectedObjects: detectedObjects,
+                    frameSize: frameSize,
+                    imageTransform: imageTransform,
+                    contentMode: contentMode
+                )
+                .onChange(of: detectedObjects) { _, newValue in
+                    Task {
+                        await handleDetections(
+                            newValue,
+                            viewportSize: geometry.size
                         )
-                        if xLeftBbox < 0 {
-                            let channel = AvailableTopics.hapticLeft
-                            do {
-                                try await mqttClient.publish(
-                                    to: channel,
-                                    payload: .init(increaseDiff: 2)
-                                )
-                            } catch {
-                                logger.log("Could not send to \(channel.rawValue)", level: .error)
-                            }
-                        }
-                        if xRightBbox > 0 {
-                            let channel = AvailableTopics.hapticLeft
-                            do {
-                                try await mqttClient.publish(
-                                    to: channel,
-                                    payload: .init(increaseDiff: 2)
-                                )
-                            } catch {
-                                logger.log("Could not send to \(channel.rawValue)", level: .error)
-                            }
-                        }
                     }
-                } else if locationTag.contains(.outside) {
-
                 }
             }
+            .ignoresSafeArea()
         }
         .onAppear {
             let topic = AvailableTopics.profileSwap
@@ -88,16 +66,40 @@ struct ProgressIndicatorView<Frame: PlatySize>: View {
             mqttClient.flushCallbacks()
         }
     }
-}
 
-func naturalVideoSize(for asset: AVAsset) async throws -> CGSize {
-    let tracks = try await asset.loadTracks(withMediaType: .video)
-    guard let track = tracks.first else { return .zero }
-    let size = try await track.load(.naturalSize)
-    let transform = try await track.load(.preferredTransform)
-    let transformed = size.applying(transform)
-    return CGSize(
-        width: abs(transformed.width),
-        height: abs(transformed.height)
-    )
+    private func handleDetections(
+        _ detections: ImageDetections,
+        viewportSize: CGSize
+    ) async {
+        guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
+            viewportSize.width > 0, viewportSize.height > 0
+        else { return }
+
+        for person in detections.fetch(.person) {
+            let (left, right) = person.xFromCenter(
+                frameSize,
+                in: viewportSize,
+                transform: imageTransform,
+                contentMode: contentMode
+            )
+
+            // A box crossing the center activates both sides.
+            for channel in [
+                left < 0 ? AvailableTopics.hapticLeft : nil,
+                right > 0 ? AvailableTopics.hapticRight : nil,
+            ].compactMap({ $0 }) {
+                do {
+                    try await mqttClient.publish(
+                        to: channel,
+                        payload: .init(increaseDiff: 2)
+                    )
+                } catch {
+                    logger.log(
+                        "Could not send to \(channel.rawValue)",
+                        level: .error
+                    )
+                }
+            }
+        }
+    }
 }

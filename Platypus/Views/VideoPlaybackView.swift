@@ -18,6 +18,7 @@ struct VideoPlaybackView: View {
     @State private var currentSeconds: Double = 0
     @State private var timeObserverToken: Any?
     @State private var videoDimensions: CGSize = .zero
+    @State private var videoTransform: CGAffineTransform = .identity
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
@@ -41,8 +42,10 @@ struct VideoPlaybackView: View {
                     progress: .switchedOff,
                     uniqueLocationTags: uniqueLocationTags,
                     detectedObjects: imageDetections,
-                    frameSize: videoDimensions
-                ).padding(.bottom, 30)
+                    frameSize: videoDimensions,
+                    imageTransform: videoTransform,
+                    contentMode: .fit
+                )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .toolbar {
@@ -64,8 +67,12 @@ struct VideoPlaybackView: View {
                 removeTimeObserver()
             }.task {
                 if let asset = player.currentItem?.asset {
-                    videoDimensions =
-                        (try? await naturalVideoSize(for: asset)) ?? .zero
+                    if let track = try? await asset.loadTracks(withMediaType: .video).first,
+                        let size = try? await track.load(.naturalSize),
+                        let transform = try? await track.load(.preferredTransform) {
+                        videoDimensions = size
+                        videoTransform = transform
+                    }
                     logger.log("Video size: \(videoDimensions)")
                 }
             }

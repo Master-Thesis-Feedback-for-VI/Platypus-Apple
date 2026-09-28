@@ -1,6 +1,3 @@
-import AVFoundation
-import Foundation
-
 //
 //  Detection+Extension.swift
 //  Platypus
@@ -8,57 +5,105 @@ import Foundation
 //  Created by Yann Bernard on 26.09.26.
 //
 
+import SwiftUI
+
 extension Detection {
-    public func xFromCenter(_ size: borrowing some PlatySize) -> (Float, Float)
-    {
-        let center = size.center
-        let x1Norm = Self.normalized(center.x, CGFloat(self.xyxy.x1)).clamped(
-            to: -1.0...1.0
-        )
-        let x2Norm = Self.normalized(center.x, CGFloat(self.xyxy.x2)).clamped(
-            to: -1.0...1.0
-        )
+    // Normalized display positions: -1 is left/top, +1 is right/bottom.
+    // The returned edges are ordered left-to-right and top-to-bottom even for rotated images.
+    public func xFromCenter(
+        _ size: borrowing some PlatySize,
+        in viewportSize: CGSize,
+        transform: CGAffineTransform = .identity,
+        contentMode: ContentMode = .fill
+    ) -> (Float, Float) {
+        guard
+            let rect = projectedRect(
+                size,
+                in: viewportSize,
+                transform: transform,
+                contentMode: contentMode
+            )
+        else { return (0, 0) }
 
-        return (x1Norm, x2Norm)
+        return (
+            Self.normalized(rect.minX, relativeTo: viewportSize.width / 2),
+            Self.normalized(rect.maxX, relativeTo: viewportSize.width / 2)
+        )
     }
 
-    public func yFromCenter(_ size: borrowing some PlatySize) -> (Float, Float)
-    {
-        let center = size.center
-        let y1Norm = Self.normalized(center.y, CGFloat(self.xyxy.y1)).clamped(
-            to: -1.0...1.0
-        )
-        let y2Norm = Self.normalized(center.y, CGFloat(self.xyxy.y2)).clamped(
-            to: -1.0...1.0
-        )
+    public func yFromCenter(
+        _ size: borrowing some PlatySize,
+        in viewportSize: CGSize,
+        transform: CGAffineTransform = .identity,
+        contentMode: ContentMode = .fill
+    ) -> (Float, Float) {
+        guard
+            let rect = projectedRect(
+                size,
+                in: viewportSize,
+                transform: transform,
+                contentMode: contentMode
+            )
+        else { return (0, 0) }
 
-        return (y1Norm, y2Norm)
+        return (
+            Self.normalized(rect.minY, relativeTo: viewportSize.height / 2),
+            Self.normalized(rect.maxY, relativeTo: viewportSize.height / 2)
+        )
     }
 
-    public func normVector(_ size: borrowing some PlatySize) -> (Float, Float) {
-        let frameCenter = size.center
-        let mass = centerOfMass()
+    public func normVector(
+        _ size: borrowing some PlatySize,
+        in viewportSize: CGSize,
+        transform: CGAffineTransform = .identity,
+        contentMode: ContentMode = .fill
+    ) -> (Float, Float) {
+        guard
+            let rect = projectedRect(
+                size,
+                in: viewportSize,
+                transform: transform,
+                contentMode: contentMode
+            )
+        else { return (0, 0) }
 
-        let dx = mass.x - frameCenter.x
-        let dy = mass.y - frameCenter.y
-
-        let nx = Float(dx / frameCenter.x).clamped(to: -1.0...1.0)
-        let ny = Float(dy / frameCenter.y).clamped(to: -1.0...1.0)
-
-        return (nx, ny)
+        return (
+            Self.normalized(rect.midX, relativeTo: viewportSize.width / 2),
+            Self.normalized(rect.midY, relativeTo: viewportSize.height / 2)
+        )
     }
 
+    // This center remains in the detector's raw image coordinates.
     public func centerOfMass() -> CGPoint {
-        let centerX = CGFloat((xyxy.x1 + xyxy.x2) / 2.0)
-        let centerY = CGFloat((xyxy.y1 + xyxy.y2) / 2.0)
-        return CGPoint(x: centerX, y: centerY)
+        CGPoint(
+            x: CGFloat((xyxy.x1 + xyxy.x2) / 2),
+            y: CGFloat((xyxy.y1 + xyxy.y2) / 2)
+        )
     }
 
-    static private func normalized(_ long: CGFloat, _ detectionPoint: CGFloat)
+    private func projectedRect(
+        _ size: borrowing some PlatySize,
+        in viewportSize: CGSize,
+        transform: CGAffineTransform,
+        contentMode: ContentMode
+    ) -> CGRect? {
+        guard size.pixelWidth > 0, size.pixelHeight > 0,
+            viewportSize.width > 0, viewportSize.height > 0
+        else { return nil }
+
+        return DetectionBoxProjection.rect(
+            for: xyxy,
+            imageSize: CGSize(width: size.pixelWidth, height: size.pixelHeight),
+            viewportSize: viewportSize,
+            transform: transform,
+            contentMode: contentMode
+        )
+    }
+
+    private static func normalized(_ point: CGFloat, relativeTo center: CGFloat)
         -> Float
     {
-        let toCenterDiff = long - detectionPoint
-        return Float(toCenterDiff / long)
+        Float((point - center) / center).clamped(to: -1...1)
     }
 }
 
