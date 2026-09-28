@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProgressIndicatorView: View {
-    let progress: ProgressStatus = .switchedOff
+    let progress: ProgressStatus
     let uniqueLocationTags: UniqueLocationTags
     let detectedObjects: ImageDetections
 
@@ -25,5 +25,6 @@ struct ProgressIndicatorView: View {
             )
             .padding(.bottom, 24)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

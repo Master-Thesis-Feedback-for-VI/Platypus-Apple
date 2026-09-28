@@ -10,12 +10,15 @@ import SwiftUI
 
 struct VideoPlaybackView: View {
     var videoPlayback: VideoPlayback
+
     private let logger = PlatyLogger(tag: "VideoPlaybackView")
 
     @Environment(\.dismiss) private var dismiss
     @State private var player: AVPlayer
     @State private var currentSeconds: Double = 0
     @State private var timeObserverToken: Any?
+    @State private var videoDimensions: CGSize = .zero
+    @State private var videoTransform: CGAffineTransform = .identity
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
@@ -35,12 +38,18 @@ struct VideoPlaybackView: View {
                 VideoPlayer(player: player)
                     .ignoresSafeArea()
 
-                //                ProgressIndicatorView(uniqueLocationTags: <#T##UniqueLocationTags#>, detectedObjects: <#T##ImageDetections#>)
+                DetectionOverlayView(
+                    detectedObjects: imageDetections,
+                    frameSize: videoDimensions,
+                    imageTransform: videoTransform,
+                    contentMode: .fit
+                )
 
                 ProgressIndicatorView(
+                    progress: .switchedOff,
                     uniqueLocationTags: uniqueLocationTags,
                     detectedObjects: imageDetections
-                ).padding(.bottom, 30)
+                )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .toolbar {
@@ -55,10 +64,21 @@ struct VideoPlaybackView: View {
             .onAppear {
                 player.play()
                 addTimeObserver()
+
             }
             .onDisappear {
                 player.pause()
                 removeTimeObserver()
+            }.task {
+                if let asset = player.currentItem?.asset {
+                    if let track = try? await asset.loadTracks(withMediaType: .video).first,
+                        let size = try? await track.load(.naturalSize),
+                        let transform = try? await track.load(.preferredTransform) {
+                        videoDimensions = size
+                        videoTransform = transform
+                    }
+                    logger.log("Video size: \(videoDimensions)")
+                }
             }
         }
     }
@@ -74,10 +94,11 @@ struct VideoPlaybackView: View {
         ) { time in
             logger.log("Clock ticket")
             currentSeconds = time.seconds
-            let evaluation = videoPlayback.findEvaluation(currentSeconds).evaluation()
+            let evaluation = videoPlayback.findEvaluation(currentSeconds)
+                .evaluation()
             logger.log("\(evaluation.locationTags())")
             logger.log("\(evaluation.imageDetections())")
-            
+
             uniqueLocationTags = evaluation.locationTags()
             imageDetections = evaluation.imageDetections()
         }
