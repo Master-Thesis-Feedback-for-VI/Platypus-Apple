@@ -38,13 +38,17 @@ struct VideoPlaybackView: View {
                 VideoPlayer(player: player)
                     .ignoresSafeArea()
 
-                ProgressIndicatorView(
-                    progress: .switchedOff,
-                    uniqueLocationTags: uniqueLocationTags,
+                DetectionOverlayView(
                     detectedObjects: imageDetections,
                     frameSize: videoDimensions,
                     imageTransform: videoTransform,
                     contentMode: .fit
+                )
+
+                ProgressIndicatorView(
+                    progress: .switchedOff,
+                    uniqueLocationTags: uniqueLocationTags,
+                    detectedObjects: imageDetections
                 )
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

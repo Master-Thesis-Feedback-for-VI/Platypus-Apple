@@ -69,12 +69,17 @@ struct CameraActiveLiveView: View {
             )
             .ignoresSafeArea()
 
+            DetectionOverlayView(
+                detectedObjects: detectedObjects,
+                frameSize: videoDimensions,
+                imageTransform: detectionTransform,
+                contentMode: .fill
+            )
+
             ProgressIndicatorView(
                 progress: progress,
                 uniqueLocationTags: uniqueLocationTags,
-                detectedObjects: detectedObjects,
-                frameSize: videoDimensions,
-                imageTransform: detectionTransform
+                detectedObjects: detectedObjects
             )
         }
         .onAppear {
