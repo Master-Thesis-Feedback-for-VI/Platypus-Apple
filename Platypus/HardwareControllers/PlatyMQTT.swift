@@ -12,7 +12,6 @@ internal import NIOCore
 import NIOPosix
 import NIOTransportServices
 
-@MainActor
 final class PlatyMQTT: ObservableObject {
     @Published var lastRecMessage: RecMessage? = nil
     @Published var connectionStatus: ConnectionStatus = .disconnected
@@ -83,8 +82,6 @@ extension PlatyMQTT {
 
         self.connectionStatus = .establishing
         do {
-            // The return value indicates whether the broker restored an existing session.
-            // A successful clean-session connection normally returns false.
             _ = try await self.client.connect()
             self.connectionStatus = .connected
         } catch {
