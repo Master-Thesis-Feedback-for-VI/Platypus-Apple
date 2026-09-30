@@ -254,7 +254,13 @@
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			shellPath = /bin/sh;
-			shellScript = "eval \"$(/opt/homebrew/bin/brew shellenv)\"\nperiphery scan --project \"$PROJECT_FILE_PATH\" --schemes Platypus --format xcode \\\n  --report-exclude '**/ImageFlowLib/Generated/image_flow.swift' \\\n  -- -destination 'generic/platform=iOS Simulator' ARCHS=arm64\n";
+			shellScript = (
+				"eval \"$(/opt/homebrew/bin/brew shellenv)\"",
+				"periphery scan --project \"$PROJECT_FILE_PATH\" --schemes Platypus --format xcode \\",
+				"  --report-exclude '**/ImageFlowLib/Generated/image_flow.swift' \\",
+				"  -- -destination 'generic/platform=iOS Simulator' ARCHS=arm64",
+				"",
+			);
 		};
 /* End PBXShellScriptBuildPhase section */
 

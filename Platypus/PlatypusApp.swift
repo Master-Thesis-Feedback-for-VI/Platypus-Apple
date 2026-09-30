@@ -14,7 +14,7 @@ let DOMAIN = "com.github.yannbernard.Platypus"
 struct PlatypusApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            //            Item.self,
+            ProfileSettings.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
@@ -55,12 +55,16 @@ struct PlatypusApp: App {
                         Task {
                             logger.log("Connecting to mqtt server...")
                             do {
-                                try await mqttClient.subscribeToAllAvailbaleTopics()
+                                try await mqttClient
+                                    .subscribeToAllAvailbaleTopics()
                                 logger.log("... Connected to mqtt server")
                                 mqttClient.startLoop()
                             } catch {
                                 didConnect = false
-                                logger.log("Failed to connect to mqtt server: \(error)", level: .error)
+                                logger.log(
+                                    "Failed to connect to mqtt server: \(error)",
+                                    level: .error
+                                )
                             }
                         }
                     case .background, .inactive:
