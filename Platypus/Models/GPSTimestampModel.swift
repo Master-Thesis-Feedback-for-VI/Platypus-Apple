@@ -38,22 +38,6 @@ extension GPSTimestamps {
         "\(stamp.timestamp),\(stamp.latitude),\(stamp.longitude)\n"
     }
 
-    func csvData() throws -> Data {
-        var csv = Self.header
-        for stamp in stamps { csv += row(for: stamp) }
-        return Data(csv.utf8)
-    }
-
-    func csvString() throws -> String {
-        return try csvData().base64EncodedString(
-            options: .lineLength76Characters
-        )
-    }
-
-    func writeCsv(to url: URL) throws {
-        try csvData().write(to: url)
-    }
-
     mutating func flush(to url: URL) throws {
         guard !stamps.isEmpty else { return }
 
