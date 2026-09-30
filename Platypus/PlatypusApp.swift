@@ -13,9 +13,7 @@ let DOMAIN = "com.github.yannbernard.Platypus"
 @main
 struct PlatypusApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            ProfileSettings.self
-        ])
+        let schema = Schema([ProfileSettings.self])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false
@@ -27,7 +25,26 @@ struct PlatypusApp: App {
                 configurations: [modelConfiguration]
             )
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            print("ModelContainer failed, wiping store: \(error)")
+            let storeURL = modelConfiguration.url
+            let fm = FileManager.default
+            for suffix in ["", "-shm", "-wal"] {
+                let url =
+                    suffix.isEmpty
+                    ? storeURL
+                    : URL(fileURLWithPath: storeURL.path + suffix)
+                try? fm.removeItem(at: url)
+            }
+            do {
+                return try ModelContainer(
+                    for: schema,
+                    configurations: [modelConfiguration]
+                )
+            } catch {
+                fatalError(
+                    "Could not create ModelContainer after reset: \(error)"
+                )
+            }
         }
     }()
 

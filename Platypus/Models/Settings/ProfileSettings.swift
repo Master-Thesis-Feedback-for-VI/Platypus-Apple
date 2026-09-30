@@ -12,7 +12,8 @@ final class ProfileSettings {
     @Attribute(.unique) var name: String
 
     var isActive: Bool = false
-    var detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings]
+//    var detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings]
+    var settings: ProfileSingularSettings
 
     init(
         name: String,
@@ -21,7 +22,7 @@ final class ProfileSettings {
         isActive: Bool = false
     ) {
         self.name = name
-        self.detectionSettings = detectionSettings
+        self.settings = ProfileSingularSettings(detectionSettings: detectionSettings)
         self.isActive = isActive
     }
 }
