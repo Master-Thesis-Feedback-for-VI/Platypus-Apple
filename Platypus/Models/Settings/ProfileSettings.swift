@@ -12,16 +12,7 @@ final class ProfileSettings {
     @Attribute(.unique) var name: String
 
     var isActive: Bool = false
-//    var detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings]
-    var _settings: [ProfileLocationTag: ProfileSingularSettings]
-    var settings: ProfileSingularSettings {
-        get {
-            _settings[.inside]!
-        }
-        set {
-            _settings[.inside]! = newValue
-        }
-    }
+    var settings: [ProfileLocationTag: ProfileSingularSettings]
 
     init(
         name: String,
@@ -29,22 +20,30 @@ final class ProfileSettings {
     ) {
         self.name = name
         self.isActive = isActive
-        
-        
+
         var collectSettings: [ProfileLocationTag: ProfileSingularSettings] = [:]
         for profileTag in ProfileLocationTag.allCases {
             let tmpDetectionSettings = ProfileDetectionSettings.defaults()
-            collectSettings[profileTag] = ProfileSingularSettings(detectionSettings: tmpDetectionSettings)
+            collectSettings[profileTag] = ProfileSingularSettings(
+                detectionSettings: tmpDetectionSettings
+            )
         }
-        
-        self._settings = collectSettings
+
+        self.settings = collectSettings
+    }
+}
+
+extension ProfileSettings {
+    var allSingularSettings: [ProfileSingularSettings] {
+        settings.map { _key, item in
+            item
+        }
     }
 }
 
 enum ProfileLocationTag: String, CaseIterable, Identifiable, Codable {
-    case generalSetting = "General Settings"
     case inside = "Inside"
     case outside = "Outside"
-    
+
     var id: Self { self }
 }

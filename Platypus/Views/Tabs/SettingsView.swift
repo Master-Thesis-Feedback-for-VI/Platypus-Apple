@@ -21,7 +21,12 @@ struct SettingsView: View {
                             .labelsHidden()
                             .disabled(profiles.count <= 1)
                         NavigationLink(profile.name) {
-                            ProfileEditView(profile: profile)
+                            ProfileEditView(
+                                allOtherProfileNames: profiles.filter {
+                                    $0 !== profile
+                                }.map { $0.name },
+                                profile: profile
+                            )
                         }
                     }
                     .deleteDisabled(profiles.count <= 1)
@@ -33,6 +38,8 @@ struct SettingsView: View {
                 Button("Add", systemImage: "plus", action: addProfile)
             }
             .onAppear(perform: ensureAtLeastOneProfile)
+        }.onAppear {
+            ensureAtLeastOneProfile()
         }
     }
 
@@ -74,6 +81,24 @@ struct SettingsView: View {
     }
 
     private func ensureAtLeastOneProfile() {
-        if profiles.isEmpty { addProfile() }
+        if profiles.isEmpty {
+            let profile = ProfileSettings(name: "Profile 1")
+            profile.isActive = true
+            ctx.insert(profile)
+            return
+        }
+
+        let active = profiles.filter { $0.isActive }
+
+        switch active.count {
+        case 1:
+            break
+        case 0:
+            profiles.first?.isActive = true
+        default:
+            for p in profiles {
+                p.isActive = (p === active.first!)
+            }
+        }
     }
 }

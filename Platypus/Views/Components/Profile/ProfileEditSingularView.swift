@@ -8,12 +8,10 @@
 import SwiftUI
 
 struct ProfileEditSingularView: View {
-    @Bindable var profile: ProfileSettings
+    @Binding var profile: ProfileSingularSettings
 
     var body: some View {
         Form {
-            TextField("Name", text: $profile.name)
-
             ForEach(ProfileDetectionTypes.allCases) { type in
                 if let binding = binding(for: type) {
                     Section(type.rawValue) {
@@ -42,10 +40,10 @@ struct ProfileEditSingularView: View {
     private func binding(for type: ProfileDetectionTypes) -> Binding<
         ProfileDetectionSettings
     >? {
-        guard profile.settings.detectionSettings[type] != nil else { return nil }
+        guard let current = profile.detectionSettings[type] else { return nil }
         return Binding(
-            get: { profile.settings.detectionSettings[type]! },
-            set: { profile.settings.detectionSettings[type] = $0 }
+            get: { profile.detectionSettings[type] ?? current },
+            set: { profile.detectionSettings[type] = $0 }
         )
     }
 }
