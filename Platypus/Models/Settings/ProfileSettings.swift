@@ -13,16 +13,38 @@ final class ProfileSettings {
 
     var isActive: Bool = false
 //    var detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings]
-    var settings: ProfileSingularSettings
+    var _settings: [ProfileLocationTag: ProfileSingularSettings]
+    var settings: ProfileSingularSettings {
+        get {
+            _settings[.inside]!
+        }
+        set {
+            _settings[.inside]! = newValue
+        }
+    }
 
     init(
         name: String,
-        detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings] =
-            ProfileDetectionSettings.defaults(),
         isActive: Bool = false
     ) {
         self.name = name
-        self.settings = ProfileSingularSettings(detectionSettings: detectionSettings)
         self.isActive = isActive
+        
+        
+        var collectSettings: [ProfileLocationTag: ProfileSingularSettings] = [:]
+        for profileTag in ProfileLocationTag.allCases {
+            let tmpDetectionSettings = ProfileDetectionSettings.defaults()
+            collectSettings[profileTag] = ProfileSingularSettings(detectionSettings: tmpDetectionSettings)
+        }
+        
+        self._settings = collectSettings
     }
+}
+
+enum ProfileLocationTag: String, CaseIterable, Identifiable, Codable {
+    case generalSetting = "General Settings"
+    case inside = "Inside"
+    case outside = "Outside"
+    
+    var id: Self { self }
 }
