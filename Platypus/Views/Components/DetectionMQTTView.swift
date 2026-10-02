@@ -3,6 +3,7 @@
 //  Platypus
 //
 
+import SwiftData
 import SwiftUI
 
 struct DetectionMQTTView<Frame: PlatySize>: View {
@@ -14,7 +15,22 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
 
+    @Environment(\.modelContext) private var ctx
+
+    @Query(
+        filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
+        sort: \ProfileSettings.created,
+    )
+    private var profiles: [ProfileSettings]
+    private var currentProfile: ProfileSettings {
+        let activeProfiles = profiles.filter({ $0.isActive })
+        precondition(activeProfiles.count == 1)
+        return activeProfiles.first!
+    }
+
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
+
+    // MARK: - View
 
     var body: some View {
         Color.clear
@@ -25,14 +41,14 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
-                mqttClient.addCallback(topic: topic) {
-                    logger.log("\(topic.rawValue) \($0)", level: .warning)
-                }
+                mqttClient.addCallback(topic: topic, cb: swapProfile)
             }
             .onDisappear {
                 mqttClient.flushCallbacks()
             }
     }
+
+    // MARK: - Callbacks Pub
 
     private func publishHaptics(for detections: ImageDetections) async {
         guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
@@ -67,6 +83,34 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     )
                 }
             }
+        }
+    }
+
+    // MARK: - Callbacks Sub
+
+    private func swapProfile(msg: PlatyMQTT.RecMessage) {
+        Task { @MainActor in
+            logger.log("Received: \(msg)")
+
+            guard profiles.count > 1,
+                let currentIdx = profiles.firstIndex(where: {
+                    $0.isActive
+                })
+            else { return }
+
+            let target: Int
+            switch msg.cmd {
+            case .next: target = (currentIdx + 1) % profiles.count
+            case .prev:
+                target =
+                    (currentIdx - 1 + profiles.count)
+                    % profiles.count
+            case .empty: return
+            }
+
+            profiles[currentIdx].isActive = false
+            profiles[target].isActive = true
+            try? ctx.save()
         }
     }
 }
