@@ -6,13 +6,16 @@
 //
 
 import SwiftData
+import Foundation
 
 @Model
 final class ProfileSettings {
     @Attribute(.unique) var name: String
 
+    var deletedAt: Date? = nil
     var isActive: Bool = false
     var settings: [ProfileLocationTag: ProfileSingularSettings]
+    var created: Date
 
     init(
         name: String,
@@ -29,6 +32,7 @@ final class ProfileSettings {
             )
         }
 
+        self.created = Date.now
         self.settings = collectSettings
     }
 }
