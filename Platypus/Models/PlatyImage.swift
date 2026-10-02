@@ -13,7 +13,7 @@ import ImageIO
 
 struct PlatyImage {
     let img: Data
-    public var location: CLLocationCoordinate2D?
+    var location: CLLocationCoordinate2D?
 }
 
 extension PlatyImage {
