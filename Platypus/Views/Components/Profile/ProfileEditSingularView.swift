@@ -20,17 +20,22 @@ struct ProfileEditSingularView: View {
                                 Text($0.rawValue.capitalized).tag($0)
                             }
                         }
-                        Slider(
-                            value: binding.sound.volume,
-                            in: 0...1,
-                            step: 0.2
-                        )
+                        if binding.sound.soundVariant.wrappedValue != .off {
+                            Slider(
+                                value: binding.sound.volume,
+                                in: 0...1,
+                                step: 0.2
+                            )
+                        }
+
                         Toggle("Haptics", isOn: binding.haptic.switchedOn)
-                        Slider(
-                            value: binding.haptic.intensity,
-                            in: 0...1,
-                            step: 0.2
-                        )
+                        if binding.haptic.switchedOn.wrappedValue {
+                            Slider(
+                                value: binding.haptic.intensity,
+                                in: 0...1,
+                                step: 0.2
+                            )
+                        }
                     }
                 }
             }
@@ -42,8 +47,16 @@ struct ProfileEditSingularView: View {
     >? {
         guard let current = profile.detectionSettings[type] else { return nil }
         return Binding(
-            get: { profile.detectionSettings[type] ?? current },
-            set: { profile.detectionSettings[type] = $0 }
+            get: {
+                withAnimation {
+                    profile.detectionSettings[type] ?? current
+                }
+            },
+            set: { newVal in
+                withAnimation {
+                    profile.detectionSettings[type] = newVal
+                }
+            }
         )
     }
 }

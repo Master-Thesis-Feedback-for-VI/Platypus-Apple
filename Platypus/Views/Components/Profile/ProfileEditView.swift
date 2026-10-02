@@ -22,9 +22,11 @@ struct ProfileEditView: View {
         VStack {
             if let binding = settingsBinding(for: selectedTag) {
                 ProfileEditSingularView(profile: binding)
-                    .id(selectedTag)
+                //                    .id(selectedTag)
+                //                    .transition(.push(from: .trailing))
             }
         }
+        .animation(.default, value: selectedTag)
         .onAppear {
             draftName = profile.name
         }
@@ -55,7 +57,7 @@ struct ProfileEditView: View {
                     .submitLabel(.done)
             }
 
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Picker("Location", selection: $selectedTag) {
                     ForEach(ProfileLocationTag.allCases) { tag in
                         Text(tag.rawValue.capitalized).tag(tag)
@@ -75,13 +77,17 @@ struct ProfileEditView: View {
         }
     }
 
+    // MARK: - Actions
+
     private func settingsBinding(for tag: ProfileLocationTag) -> Binding<
         ProfileSingularSettings
     >? {
         guard let current = profile.settings[tag] else { return nil }
         return Binding(
             get: { profile.settings[tag] ?? current },
-            set: { profile.settings[tag] = $0 }
+            set: { newVal in
+                withAnimation { profile.settings[tag] = newVal }
+            }
         )
     }
 }
