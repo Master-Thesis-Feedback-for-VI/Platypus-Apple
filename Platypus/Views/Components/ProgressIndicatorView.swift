@@ -14,8 +14,10 @@ struct ProgressIndicatorView: View {
 
     var body: some View {
         VStack {
-            ProgressCategoriesIndicator(progress: progress)
-                .padding(.top, 15)
+            VStack {
+                ActiveProfileView()
+                ProgressCategoriesIndicator(progress: progress)
+            }
 
             Spacer()
 

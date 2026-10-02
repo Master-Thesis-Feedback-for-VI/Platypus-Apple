@@ -22,8 +22,6 @@ struct ProfileEditView: View {
         VStack {
             if let binding = settingsBinding(for: selectedTag) {
                 ProfileEditSingularView(profile: binding)
-                //                    .id(selectedTag)
-                //                    .transition(.push(from: .trailing))
             }
         }
         .animation(.default, value: selectedTag)

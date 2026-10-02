@@ -92,7 +92,7 @@ extension PlatyMQTT {
 
     func addCallback(
         topic: AvailableTopics,
-        _ cb: @escaping (RecMessage) -> Void
+        cb: @escaping (RecMessage) -> Void
     ) {
         if var callbacks = subsToCallbacks[topic] {
             callbacks.append(cb)
