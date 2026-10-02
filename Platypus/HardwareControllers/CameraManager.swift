@@ -14,7 +14,6 @@ import Foundation
 enum CameraError: Error {
     case deviceNotFound
     case alreadyRecording
-    case notAuthorized
     case bundleNotCreated
 }
 

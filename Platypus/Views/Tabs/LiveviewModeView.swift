@@ -33,8 +33,6 @@ struct LiveviewModeView: View {
     }
 }
 
-
-
 struct CameraActiveLiveView: View {
     @EnvironmentObject var cameraManager: CameraManager
     @EnvironmentObject var locationRecorder: LocationRecorder
@@ -114,7 +112,7 @@ struct CameraActiveLiveView: View {
                         progress = .failure
                         continue
                     }
-                    
+
                     if let dimensions = img.pixelSize {
                         videoDimensions = dimensions
                         detectionTransform = img.detectionTransform
@@ -138,31 +136,28 @@ struct CameraActiveLiveView: View {
 
                     progress = .evaluating
                     do {
-                        let detectedObjectsEvaluations =
-                            try await recognizeObjectsInImage(
-                                path: imgPath,
-                                imageRecognizer: imgRecognizer
-                            )
-                        detectedObjects = detectedObjectsEvaluations
-                        progress = .success
-
-                        let detectedLocationTagsEvaluations =
-                            try await recognizeLocationTags(
-                                location: cord,
-                                auth: auth,
-                                imgPath: imgPath,
-                                amount: amountDominantColor
-                            )
-                        uniqueLocationTags = detectedLocationTagsEvaluations
+                        let imageFlowData = try await imageFlowEvaluation(
+                            location: cord,
+                            auth: auth,
+                            imgPath: imgPath,
+                            imageRecognizer: imgRecognizer,
+                            amount: amountDominantColor
+                        )
+                        detectedObjects = imageFlowData.imageDetections()
+                        uniqueLocationTags = imageFlowData.locationTags()
 
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)
                         let elapsed_formatted = String(format: "%.2f", elapsed)
-                                                logger.log("Evaluated to: \(detectedLocationTagsEvaluations)")
+                        logger.log(
+                            "Evaluated to: \(uniqueLocationTags)"
+                        )
                         logger.log(
                             "Evaluation took: \(elapsed_formatted) ms",
                             level: .debug
                         )
+                        
+                        progress = .success
                     } catch {
                         logger.log(
                             "This failed due to \(error.localizedDescription)",
