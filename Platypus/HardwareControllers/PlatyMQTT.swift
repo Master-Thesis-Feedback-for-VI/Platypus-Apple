@@ -11,6 +11,7 @@ import MQTTNIO
 internal import NIOCore
 import NIOPosix
 import NIOTransportServices
+import SwiftUI
 
 final class PlatyMQTT: ObservableObject {
     @Published var lastRecMessage: RecMessage? = nil
@@ -21,7 +22,8 @@ final class PlatyMQTT: ObservableObject {
     private var toSubscribe: [MQTTSubscribeInfo] = []
     private var loopTask: Task<Void, Error>?
 
-    var subsToCallbacks: [AvailableTopics: [(RecMessage) -> Void]] = [:]
+    var subsToCallbacks:
+        [AvailableTopics: [Namespace.ID: [(RecMessage) -> Void]]] = [:]
 
     init(
         userName: String,
@@ -92,14 +94,10 @@ extension PlatyMQTT {
 
     func addCallback(
         topic: AvailableTopics,
+        namespace: Namespace.ID,
         cb: @escaping (RecMessage) -> Void
     ) {
-        if var callbacks = subsToCallbacks[topic] {
-            callbacks.append(cb)
-            subsToCallbacks[topic] = callbacks
-        } else {
-            subsToCallbacks[topic] = [cb]
-        }
+        subsToCallbacks[topic, default: [:]][namespace, default: []].append(cb)
     }
 
     func publish(
@@ -128,16 +126,21 @@ extension PlatyMQTT {
         }
     }
 
-    func stopLoop(flushCallbacks: Bool = true) {
+    func stopLoop() {
         loopTask?.cancel()
         loopTask = nil
+    }
 
-        if flushCallbacks {
-            self.flushCallbacks()
+    func flushCallbacks(namespace: Namespace.ID) {
+        for topic in Array(subsToCallbacks.keys) {
+            subsToCallbacks[topic]?[namespace] = nil
+            if subsToCallbacks[topic]?.isEmpty == true {
+                subsToCallbacks[topic] = nil
+            }
         }
     }
 
-    func flushCallbacks() {
+    func flushAllCallbacks() {
         subsToCallbacks = [:]
     }
 
@@ -167,13 +170,14 @@ extension PlatyMQTT {
                         )
                         lastRecMessage = msg
 
-                        if let callbacks = subsToCallbacks[topic] {
-                            for callback in callbacks {
-                                callback(msg)
-                            }
+                        subsToCallbacks[topic]?.values.joined().forEach {
+                            $0(msg)
                         }
                     } catch {
-                        logger.log("Failed to deserialize: \(error)", level: .error)
+                        logger.log(
+                            "Failed to deserialize: \(error)",
+                            level: .error
+                        )
                     }
 
                 case .failure(let err):

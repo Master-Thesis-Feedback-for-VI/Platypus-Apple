@@ -13,10 +13,11 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     let imageTransform: CGAffineTransform
     let contentMode: ContentMode
 
+    private let logger = PlatyLogger(tag: "DetectionMQTTView")
+
     @EnvironmentObject private var mqttClient: PlatyMQTT
 
     @Environment(\.modelContext) private var ctx
-
     @Query(
         filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
         sort: \ProfileSettings.created,
@@ -28,7 +29,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         return activeProfiles.first!
     }
 
-    private let logger = PlatyLogger(tag: "DetectionMQTTView")
+    @Namespace private var namespace
 
     // MARK: - View
 
@@ -41,10 +42,14 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
-                mqttClient.addCallback(topic: topic, cb: swapProfile)
+                mqttClient.addCallback(
+                    topic: topic,
+                    namespace: namespace,
+                    cb: swapProfile
+                )
             }
             .onDisappear {
-                mqttClient.flushCallbacks()
+                mqttClient.flushCallbacks(namespace: namespace)
             }
     }
 
