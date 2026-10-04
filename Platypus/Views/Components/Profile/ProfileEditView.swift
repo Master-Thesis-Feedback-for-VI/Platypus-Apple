@@ -12,7 +12,7 @@ struct ProfileEditView: View {
     let allOtherProfileNames: [String]
 
     @Bindable var profile: ProfileSettings
-    @State private var selectedTag: ProfileLocationTag = .allCases.first!
+    @State private var selectedTag: PlatyLocationTag = .allCases.first!
 
     @State private var draftName = ""
     @State private var rejectedName = ""
@@ -57,7 +57,7 @@ struct ProfileEditView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
                 Picker("Location", selection: $selectedTag) {
-                    ForEach(ProfileLocationTag.allCases) { tag in
+                    ForEach(PlatyLocationTag.allCases) { tag in
                         Text(tag.rawValue.capitalized).tag(tag)
                     }
                 }.pickerStyle(.menu).labelsHidden().fixedSize()
@@ -77,7 +77,7 @@ struct ProfileEditView: View {
 
     // MARK: - Actions
 
-    private func settingsBinding(for tag: ProfileLocationTag) -> Binding<
+    private func settingsBinding(for tag: PlatyLocationTag) -> Binding<
         ProfileSingularSettings
     >? {
         guard let current = profile.settings[tag] else { return nil }

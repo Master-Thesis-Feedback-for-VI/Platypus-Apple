@@ -40,6 +40,7 @@ struct VideoPlaybackView: View {
 
                 DetectionOverlayView(
                     detectedObjects: imageDetections,
+                    uniqueLocationTags: uniqueLocationTags,
                     frameSize: videoDimensions,
                     imageTransform: videoTransform,
                     contentMode: .fit

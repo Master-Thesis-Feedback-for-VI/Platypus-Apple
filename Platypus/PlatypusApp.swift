@@ -73,7 +73,7 @@ struct PlatypusApp: App {
                             logger.log("Connecting to mqtt server...")
                             do {
                                 try await mqttClient
-                                    .subscribeToAllAvailbaleTopics()
+                                    .subscribeToTopics(to: .profileSwap)
                                 logger.log("... Connected to mqtt server")
                                 mqttClient.startLoop()
                             } catch {

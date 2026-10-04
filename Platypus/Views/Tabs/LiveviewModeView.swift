@@ -42,12 +42,13 @@ struct CameraActiveLiveView: View {
     @State private var isPreviewActive = false
     @State private var previewAttachTask: Task<Void, Never>? = nil
     @State private var locationSnapTask: Task<Void, Never>? = nil
-
+    
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
     )
     @State private var detectedObjects = ImageDetections(detections: [])
     @State private var progress: ProgressStatus = .switchedOff
+    
     @State private var videoDimensions: CGSize = .zero
     @State private var detectionTransform: CGAffineTransform = .identity
 
@@ -69,6 +70,7 @@ struct CameraActiveLiveView: View {
 
             DetectionOverlayView(
                 detectedObjects: detectedObjects,
+                uniqueLocationTags: uniqueLocationTags,
                 frameSize: videoDimensions,
                 imageTransform: detectionTransform,
                 contentMode: .fill
