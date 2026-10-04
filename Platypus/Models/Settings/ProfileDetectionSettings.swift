@@ -12,16 +12,6 @@ enum SoundVariants: String, Codable, CaseIterable {
     case earcon, tts, off
 }
 
-enum ProfileDetectionTypes: String, Codable, CaseIterable, Identifiable {
-    case car = "Car"
-    case person = "Person"
-    case bench = "Bench"
-    case bicycle = "Bicycle"
-
-    var id: Self { self }
-    var key: String { "settings.detection.\(rawValue.lowercased())" }
-}
-
 struct SoundSettings: Codable, Equatable {
     var soundVariant: SoundVariants
     var volume: Double {
@@ -50,17 +40,22 @@ struct ProfileDetectionSettings: Codable, Equatable {
     var sound: SoundSettings
     var haptic: HapticSettings
 
-    static func defaults() -> [ProfileDetectionTypes: ProfileDetectionSettings] {
-        Dictionary(
-            uniqueKeysWithValues: ProfileDetectionTypes.allCases.map { type in
-                (
-                    type,
-                    ProfileDetectionSettings(
-                        sound: .init(soundVariant: .earcon, volume: 0.5),
-                        haptic: .init(switchedOn: true, intensity: 0.5)
-                    )
-                )
-            }
-        )
+    static func defaults(location: PlatyLocationTag) -> [PlatyDetectionType:
+        ProfileDetectionSettings]
+    {
+        var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]
+
+        for type in PlatyDetectionType.allCases {
+//            if location == .inside, type == .car {
+//                continue
+//            }
+
+            settings[type] = ProfileDetectionSettings(
+                sound: .init(soundVariant: .earcon, volume: 0.5),
+                haptic: .init(switchedOn: true, intensity: 0.5)
+            )
+        }
+        
+        return settings
     }
 }

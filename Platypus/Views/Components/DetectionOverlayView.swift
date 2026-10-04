@@ -7,6 +7,7 @@ import SwiftUI
 
 struct DetectionOverlayView<Frame: PlatySize>: View {
     let detectedObjects: ImageDetections
+    let uniqueLocationTags: UniqueLocationTags
     let frameSize: Frame
     let imageTransform: CGAffineTransform
     let contentMode: ContentMode
@@ -23,6 +24,7 @@ struct DetectionOverlayView<Frame: PlatySize>: View {
 
                 DetectionMQTTView(
                     detectedObjects: detectedObjects,
+                    uniqueLocationTag: uniqueLocationTags,
                     frameSize: frameSize,
                     viewportSize: geometry.size,
                     imageTransform: imageTransform,

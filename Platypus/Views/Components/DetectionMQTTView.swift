@@ -8,15 +8,18 @@ import SwiftUI
 
 struct DetectionMQTTView<Frame: PlatySize>: View {
     let detectedObjects: ImageDetections
+    let uniqueLocationTag: UniqueLocationTags
+
     let frameSize: Frame
     let viewportSize: CGSize
     let imageTransform: CGAffineTransform
     let contentMode: ContentMode
 
+    private let logger = PlatyLogger(tag: "DetectionMQTTView")
+
     @EnvironmentObject private var mqttClient: PlatyMQTT
 
     @Environment(\.modelContext) private var ctx
-
     @Query(
         filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
         sort: \ProfileSettings.created,
@@ -28,60 +31,112 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         return activeProfiles.first!
     }
 
-    private let logger = PlatyLogger(tag: "DetectionMQTTView")
+    @Namespace private var namespace
 
     // MARK: - View
 
     var body: some View {
         Color.clear
-            .onChange(of: detectedObjects) { _, newValue in
-                Task {
-                    await publishHaptics(for: newValue)
-                }
+            .task(
+                id: HardwareInput(
+                    detectedObjects: detectedObjects,
+                    uniqueLocationTag: uniqueLocationTag
+                )
+            ) {
+                await publishHaptics(
+                    for: detectedObjects,
+                    location: uniqueLocationTag
+                )
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
-                mqttClient.addCallback(topic: topic, cb: swapProfile)
+                mqttClient.addCallback(
+                    topic: topic,
+                    namespace: namespace,
+                    cb: swapProfile
+                )
             }
             .onDisappear {
-                mqttClient.flushCallbacks()
+                mqttClient.flushCallbacks(namespace: namespace)
             }
     }
 
     // MARK: - Callbacks Pub
 
-    private func publishHaptics(for detections: ImageDetections) async {
+    private func publishHaptics(
+        for detections: ImageDetections,
+        location: UniqueLocationTags
+    ) async {
         guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
             viewportSize.width > 0, viewportSize.height > 0
         else { return }
 
-        for person in detections.fetch(.person) {
-            let (left, right) = person.xFromCenter(
-                frameSize,
-                in: viewportSize,
-                transform: imageTransform,
-                contentMode: contentMode
+        // TODO: Finish
+        guard
+            let locationTag = PlatyLocationTag.from(
+                uniqueLocationTags: location
             )
+        else { return }
+        let currentSettingsSet = currentProfile.settings[locationTag]!
 
-            let hapticSignals: [(AvailableTopics, Int)] = [
-                (left, AvailableTopics.hapticLeft, left < 0),
-                (right, AvailableTopics.hapticRight, right > 0),
-            ].compactMap { value, topic, shouldSend in
-                shouldSend ? (topic, Int((abs(value) * 10).rounded())) : nil
+        let detectionsFiltered = detections.detections.filter {
+            $0.name == .person || $0.name == .car
+        }
+        let detections = PlatyDetection.from(
+            detections: detectionsFiltered,
+            frameSize: frameSize,
+            viewportSize: viewportSize,
+            imageTransform: imageTransform,
+            contentMode: contentMode
+        )
+
+        for detection in detections {
+            guard
+                let setting = currentSettingsSet.detectionSettings[
+                    detection.detectionType
+                ]
+            else {
+                continue
             }
 
-            for (channel, scale) in hapticSignals {
-                do {
-                    try await mqttClient.publish(
-                        to: channel,
-                        payload: .init(increaseDiff: scale)
-                    )
-                } catch {
-                    logger.log(
-                        "Could not send to \(channel.rawValue)",
-                        level: .error
-                    )
+            // Haptic settings and callback
+            let hapticSettings = setting.haptic
+            if hapticSettings.switchedOn {
+                let (left, right) = detection.xFromCenter()
+                let candidates = [
+                    (Double(left), AvailableTopics.hapticLeft, left < 0),
+                    (Double(right), AvailableTopics.hapticRight, right > 0),
+                ]
+                let hapticSignals: [(AvailableTopics, Int)] =
+                    candidates.compactMap { value, topic, shouldSend in
+                        shouldSend
+                            ? (
+                                topic,
+                                Int(
+                                    (abs(value) * 10 * hapticSettings.intensity)
+                                        .rounded()
+                                )
+                            ) : nil
+                    }
+
+                for (channel, scale) in hapticSignals {
+                    do {
+                        try await mqttClient.publish(
+                            to: channel,
+                            payload: .init(increaseDiff: scale)
+                        )
+                    } catch {
+                        logger.log(
+                            "Could not send to \(channel.rawValue)",
+                            level: .error
+                        )
+                    }
                 }
+            }
+
+            // Sound Settings and callback
+            if setting.sound.soundVariant != .off {
+
             }
         }
     }
@@ -113,4 +168,9 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             try? ctx.save()
         }
     }
+}
+
+private struct HardwareInput: Equatable {
+    let detectedObjects: ImageDetections
+    let uniqueLocationTag: UniqueLocationTags
 }

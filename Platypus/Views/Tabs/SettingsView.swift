@@ -136,9 +136,13 @@ struct SettingsView: View {
     private func ensureAtLeastOneProfile() {
         purgeTrash()
         if profiles.isEmpty {
-            addProfile()
-            let prof = profiles.first!
-            prof.isActive = true
+            let profile = ProfileSettings(
+                name: uniqueName(from: "Profile")
+            )
+            profile.isActive = true
+            withAnimation {
+                ctx.insert(profile)
+            }
             return
         }
         let active = profiles.filter(\.isActive)

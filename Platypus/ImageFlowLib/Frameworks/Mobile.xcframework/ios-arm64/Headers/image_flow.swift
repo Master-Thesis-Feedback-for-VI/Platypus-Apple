@@ -1873,14 +1873,14 @@ public func FfiConverterTypeImageFlowError_lower(_ value: ImageFlowError) -> Rus
 
 public enum LocationTag: Equatable, Hashable {
     
+    case railway
+    case street
+    case parking
+    case intersection
+    case pedestrian
     case forest
     case outside
     case inside
-    case street
-    case pedestrian
-    case intersection
-    case parking
-    case railway
     case elevator
 
 
@@ -1903,21 +1903,21 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         
-        case 1: return .forest
+        case 1: return .railway
         
-        case 2: return .outside
+        case 2: return .street
         
-        case 3: return .inside
+        case 3: return .parking
         
-        case 4: return .street
+        case 4: return .intersection
         
         case 5: return .pedestrian
         
-        case 6: return .intersection
+        case 6: return .forest
         
-        case 7: return .parking
+        case 7: return .outside
         
-        case 8: return .railway
+        case 8: return .inside
         
         case 9: return .elevator
         
@@ -1929,19 +1929,19 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
         switch value {
         
         
-        case .forest:
+        case .railway:
             writeInt(&buf, Int32(1))
         
         
-        case .outside:
+        case .street:
             writeInt(&buf, Int32(2))
         
         
-        case .inside:
+        case .parking:
             writeInt(&buf, Int32(3))
         
         
-        case .street:
+        case .intersection:
             writeInt(&buf, Int32(4))
         
         
@@ -1949,15 +1949,15 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
             writeInt(&buf, Int32(5))
         
         
-        case .intersection:
+        case .forest:
             writeInt(&buf, Int32(6))
         
         
-        case .parking:
+        case .outside:
             writeInt(&buf, Int32(7))
         
         
-        case .railway:
+        case .inside:
             writeInt(&buf, Int32(8))
         
         
@@ -2172,6 +2172,31 @@ fileprivate struct FfiConverterSequenceTypeDetection: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeLocationTag: FfiConverterRustBuffer {
+    typealias SwiftType = [LocationTag]
+
+    public static func write(_ value: [LocationTag], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLocationTag.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [LocationTag] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [LocationTag]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeLocationTag.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSetTypeLocationTag: FfiConverterRustBuffer {
     public static func write(_ value: Set<LocationTag>, into buf: inout [UInt8]) {
         let len = Int32(value.count)
@@ -2320,6 +2345,14 @@ public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecogniz
             errorHandler: FfiConverterTypeImageFlowError_lift
         )
 }
+public func sortLocationTags(categories: [LocationTag]) -> [LocationTag]  {
+    return try!  FfiConverterSequenceTypeLocationTag.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_image_flow_fn_func_sort_location_tags(
+        FfiConverterSequenceTypeLocationTag.lower(categories),uniffiCallStatus
+    )
+})
+}
 
 private enum InitializationResult {
     case ok
@@ -2349,6 +2382,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 36315) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_image_flow_checksum_func_sort_location_tags() != 4709) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_method_imageflowevaluation_image_detections() != 14491) {
