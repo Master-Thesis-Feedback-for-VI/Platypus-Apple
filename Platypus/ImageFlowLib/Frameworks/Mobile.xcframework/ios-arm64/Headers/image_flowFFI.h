@@ -363,6 +363,11 @@ uint64_t uniffi_image_flow_fn_func_recognize_location_tags(RustBuffer location, 
 uint64_t uniffi_image_flow_fn_func_recognize_objects_in_image(RustBuffer path, uint64_t image_recognizer
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_SORT_LOCATION_TAGS
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_SORT_LOCATION_TAGS
+RustBuffer uniffi_image_flow_fn_func_sort_location_tags(RustBuffer categories, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
 #define UNIFFI_FFIDEF_FFI_IMAGE_FLOW_RUSTBUFFER_ALLOC
 RustBuffer ffi_image_flow_rustbuffer_alloc(uint64_t size, RustCallStatus *_Nonnull out_status
@@ -650,6 +655,12 @@ uint16_t uniffi_image_flow_checksum_func_recognize_location_tags(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_RECOGNIZE_OBJECTS_IN_IMAGE
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_RECOGNIZE_OBJECTS_IN_IMAGE
 uint16_t uniffi_image_flow_checksum_func_recognize_objects_in_image(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_SORT_LOCATION_TAGS
+#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_SORT_LOCATION_TAGS
+uint16_t uniffi_image_flow_checksum_func_sort_location_tags(void
     
 );
 #endif

@@ -40,18 +40,22 @@ struct ProfileDetectionSettings: Codable, Equatable {
     var sound: SoundSettings
     var haptic: HapticSettings
 
-    static func defaults() -> [PlatyDetectionType: ProfileDetectionSettings]
+    static func defaults(location: PlatyLocationTag) -> [PlatyDetectionType:
+        ProfileDetectionSettings]
     {
-        Dictionary(
-            uniqueKeysWithValues: PlatyDetectionType.allCases.map { type in
-                (
-                    type,
-                    ProfileDetectionSettings(
-                        sound: .init(soundVariant: .earcon, volume: 0.5),
-                        haptic: .init(switchedOn: true, intensity: 0.5)
-                    )
-                )
-            }
-        )
+        var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]
+
+        for type in PlatyDetectionType.allCases {
+//            if location == .inside, type == .car {
+//                continue
+//            }
+
+            settings[type] = ProfileDetectionSettings(
+                sound: .init(soundVariant: .earcon, volume: 0.5),
+                haptic: .init(switchedOn: true, intensity: 0.5)
+            )
+        }
+        
+        return settings
     }
 }

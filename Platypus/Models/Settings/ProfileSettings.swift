@@ -14,7 +14,7 @@ final class ProfileSettings {
 
     var deletedAt: Date? = nil
     var isActive: Bool = false
-    var settings: [ProfileLocationTag: ProfileSingularSettings]
+    var settings: [PlatyLocationTag: ProfileSingularSettings]
     var created: Date
 
     init(
@@ -24,14 +24,13 @@ final class ProfileSettings {
         self.name = name
         self.isActive = isActive
 
-        var collectSettings: [ProfileLocationTag: ProfileSingularSettings] = [:]
-        for profileTag in ProfileLocationTag.allCases {
-            let tmpDetectionSettings = ProfileDetectionSettings.defaults()
-            collectSettings[profileTag] = ProfileSingularSettings(
+        var collectSettings: [PlatyLocationTag: ProfileSingularSettings] = [:]
+        for locationTag in PlatyLocationTag.allCases {
+            let tmpDetectionSettings = ProfileDetectionSettings.defaults(location: locationTag)
+            collectSettings[locationTag] = ProfileSingularSettings(
                 detectionSettings: tmpDetectionSettings
             )
         }
-
         self.created = Date.now
         self.settings = collectSettings
     }
@@ -43,11 +42,4 @@ extension ProfileSettings {
             item
         }
     }
-}
-
-enum ProfileLocationTag: String, CaseIterable, Identifiable, Codable {
-    case inside = "Inside"
-    case outside = "Outside"
-
-    var id: Self { self }
 }
