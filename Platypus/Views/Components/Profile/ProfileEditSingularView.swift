@@ -12,7 +12,7 @@ struct ProfileEditSingularView: View {
 
     var body: some View {
         Form {
-            ForEach(ProfileDetectionTypes.allCases) { type in
+            ForEach(PlatyDetectionType.allCases) { type in
                 if let binding = binding(for: type) {
                     Section(type.rawValue) {
                         Picker("Sound", selection: binding.sound.soundVariant) {
@@ -42,7 +42,7 @@ struct ProfileEditSingularView: View {
         }
     }
 
-    private func binding(for type: ProfileDetectionTypes) -> Binding<
+    private func binding(for type: PlatyDetectionType) -> Binding<
         ProfileDetectionSettings
     >? {
         guard let current = profile.detectionSettings[type] else { return nil }

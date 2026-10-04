@@ -18,21 +18,18 @@ struct DetectionBoxOverlay<Frame: PlatySize>: View {
             if frameSize.pixelWidth > 0 && frameSize.pixelHeight > 0 {
                 ForEach(detectedObjects.detections.indices, id: \.self) {
                     index in
-                    let box = detectedObjects.detections[index].xyxy
-                    let rect = DetectionBoxProjection.rect(
-                        for: box,
-                        imageSize: CGSize(
-                            width: frameSize.pixelWidth,
-                            height: frameSize.pixelHeight
-                        ),
+                    let defDetection = detectedObjects.detections[index]
+                    if let detection = PlatyDetection.from(
+                        detection: defDetection,
+                        frameSize: frameSize,
                         viewportSize: geo.size,
-                        transform: imageTransform,
+                        imageTransform: imageTransform,
                         contentMode: contentMode
-                    )
-
-                    Rectangle()
-                        .path(in: rect)
-                        .stroke(Color.red, lineWidth: 2)
+                    ) {
+                        Rectangle()
+                            .path(in: detection.rect)
+                            .stroke(Color.red, lineWidth: 2)
+                    }
                 }
             }
         }

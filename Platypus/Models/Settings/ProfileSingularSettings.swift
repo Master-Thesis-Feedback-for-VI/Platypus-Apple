@@ -8,5 +8,5 @@
 import Foundation
 
 struct ProfileSingularSettings: Codable {
-    var detectionSettings: [ProfileDetectionTypes: ProfileDetectionSettings]
+    var detectionSettings: [PlatyDetectionType: ProfileDetectionSettings]
 }

@@ -3,6 +3,29 @@ app_source_root := "." / "Platypus"
 frameworks_path := app_source_root / "ImageFlowLib" / "Frameworks"
 generated_path := app_source_root / "ImageFlowLib" / "Generated"
 
+[group('mqtt')]
+post:
+    for cmd in 0 1 2; do \
+        npx mqtt pub -t 'IoT/device/profile_swap' \
+            -m "{\"cmd\":$cmd}" \
+            -h mqtt.yannbernard.com \
+            -p 443 --protocol wss \
+            -u iotdevice -P image-flow; \
+    done
+
+[group('mqtt')]
+sub_left:
+    npx mqtt sub -t 'IoT/device/haptic_left' \
+        -h mqtt.yannbernard.com -p 443 --protocol wss \
+        -u iotdevice -P image-flow -v
+
+[group('mqtt')]
+sub_right:
+    npx mqtt sub -t 'IoT/device/haptic_right' \
+        -h mqtt.yannbernard.com -p 443 --protocol wss \
+        -u iotdevice -P image-flow -v
+
+
 insert_lib:
     cd {{image_flow_path}} && just swift-build-xcode-bindings 
     rm -rf {{frameworks_path}} {{generated_path}}

@@ -60,13 +60,19 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             viewportSize.width > 0, viewportSize.height > 0
         else { return }
 
-        for person in detections.fetch(.person) {
-            let (left, right) = person.xFromCenter(
-                frameSize,
-                in: viewportSize,
-                transform: imageTransform,
-                contentMode: contentMode
-            )
+        let detectionsFiltered = detections.detections.filter {
+            $0.name == .person || $0.name == .car
+        }
+        let detections = PlatyDetection.from(
+            detections: detectionsFiltered,
+            frameSize: frameSize,
+            viewportSize: viewportSize,
+            imageTransform: imageTransform,
+            contentMode: contentMode
+        )
+
+        for obj in detections {
+            let (left, right) = obj.xFromCenter()
 
             let hapticSignals: [(AvailableTopics, Int)] = [
                 (left, AvailableTopics.hapticLeft, left < 0),

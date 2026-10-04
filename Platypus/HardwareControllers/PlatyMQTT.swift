@@ -73,13 +73,9 @@ extension PlatyMQTT {
 }
 
 extension PlatyMQTT {
-    func subscribeToAllAvailbaleTopics() async throws {
-        for topic in AvailableTopics.allCases {
-            let subscription = MQTTSubscribeInfo(
-                topicFilter: topic.rawValue,
-                qos: .atLeastOnce
-            )
-            toSubscribe.append(subscription)
+    func subscribeToTopics(to topics: AvailableTopics..., qos: MQTTQoS = .atMostOnce) async throws {
+        for topic in topics {
+            self.subscribe(to: topic, qos: .atLeastOnce)
         }
 
         self.connectionStatus = .establishing
@@ -90,6 +86,14 @@ extension PlatyMQTT {
             self.connectionStatus = .disconnected
             throw error
         }
+    }
+
+    func subscribe(to topic: AvailableTopics, qos: MQTTQoS) {
+        let subscription = MQTTSubscribeInfo(
+            topicFilter: topic.rawValue,
+            qos: qos
+        )
+        toSubscribe.append(subscription)
     }
 
     func addCallback(
@@ -175,7 +179,7 @@ extension PlatyMQTT {
                         }
                     } catch {
                         logger.log(
-                            "Failed to deserialize: \(error)",
+                            "Failed to deserialize: \(error)\nwith data: \(msgStr)",
                             level: .error
                         )
                     }
