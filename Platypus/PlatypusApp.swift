@@ -48,6 +48,7 @@ struct PlatypusApp: App {
         }
     }()
 
+    @StateObject private var earconEngine = EarconPlayer()
     @StateObject private var mqttClient = PlatyMQTT(
         userName: infoValue("MQTT_USER"),
         passwd: infoValue("PASSWORD")
@@ -99,5 +100,6 @@ struct PlatypusApp: App {
         .environmentObject(cameraManager)
         .environmentObject(imageRecognizerStore)
         .environmentObject(mqttClient)
+        .environmentObject(earconEngine)
     }
 }
