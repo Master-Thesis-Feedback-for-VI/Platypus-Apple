@@ -21,7 +21,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
     @EnvironmentObject private var earconEngine: EarconPlayer
-    
+
     @Environment(\.modelContext) private var ctx
     @Namespace private var namespace
 
@@ -73,8 +73,10 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             )
         else { return }
         guard let profileManager else { return }
-        
-        let currentSettingsSet = profileManager.currentProfile.settings[locationTag]!
+
+        let currentSettingsSet = profileManager.currentProfile.settings[
+            locationTag
+        ]!
 
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
@@ -130,22 +132,35 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             }
 
             // Sound Settings and callback
-            switch setting.sound.soundVariant {
+            switch setting.sound {
             case .off: break
 
-            case .earcon: do {
-                let volume = Float(setting.sound.volume)
-                let detectionType = detection.detectionType
-                
-                earconEngine.play(detectionType, volume: volume, azimuth: Double(detection.azimuth()))
-            }
+            case .earcon(let earconSetting):
+                do {
+                    let volume = earconSetting.volume
+                    let detectionType = detection.detectionType
 
-            case .tts: do {
-//                let volume = Float(setting.sound.volume)
-                let name = detection.detectionType.rawValue
-                
-                tts.speak(name)
-            }
+                    earconEngine.play(
+                        detectionType,
+                        volume: volume,
+                        azimuth: Double(detection.azimuth())
+                    )
+                }
+
+            case .tts(let ttsSetting):
+                do {
+                    let volume = ttsSetting.volume
+                    var name = detection.detectionType.rawValue
+
+                    if ttsSetting.enableDirectionControl {
+                        let direction = String(
+                            describing: detection.direction()
+                        )
+                        name = "\(name), \(direction)"
+                    }
+
+                    tts.speak(name, volume)
+                }
             }
         }
     }

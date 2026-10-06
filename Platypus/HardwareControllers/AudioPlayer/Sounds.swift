@@ -5,6 +5,7 @@
 //  Created by Yann Bernard on 06.10.26.
 //
 
+import AVFoundation
 import Foundation
 
 struct SoundFile: Hashable {
@@ -29,5 +30,18 @@ extension PlatyDetectionType: Earconable {
         case .bench: SoundFile("bench")
         case .bicycle: SoundFile("bicycle")
         }
+    }
+}
+
+
+// TODO: Front front right or front front right it should depend on the screen where something is positioned
+final class Speaker {
+    private let synthesizer = AVSpeechSynthesizer()
+
+    func speak(_ text: String, _ volume: Float = 1.0) {
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-EN")
+        utterance.volume = min(1.0, max(0.0, volume))
+        synthesizer.speak(utterance)
     }
 }

@@ -8,20 +8,60 @@
 import Foundation
 import SwiftData
 
-enum SoundVariants: String, Codable, CaseIterable {
-    case earcon, tts, off
+protocol SpecificSoundSetting: Codable, CustomStringConvertible, Equatable {}
+
+struct OffSetting: SpecificSoundSetting {
+    var description: String = "off"
 }
 
-struct SoundSettings: Codable, Equatable {
-    var soundVariant: SoundVariants
-    var volume: Double {
+struct EarconSetting: SpecificSoundSetting {
+    var description: String = "earcon"
+    var volume: Float {
         didSet { volume = min(max(volume, 0), 1) }
     }
+}
 
-    init(soundVariant: SoundVariants, volume: Double) {
-        self.soundVariant = soundVariant
-        self.volume = min(max(volume, 0), 1)
+struct TtsSetting: SpecificSoundSetting {
+    var description: String = "tts"
+    var volume: Float {
+        didSet { volume = min(max(volume, 0), 1) }
     }
+    var enableDirectionControl: Bool = false
+}
+
+enum SoundVariant: Codable, Equatable {
+    case earcon(EarconSetting)
+    case tts(TtsSetting)
+    case off(OffSetting)
+}
+
+extension SoundVariant: CustomStringConvertible, CaseIterable {
+    var isOff: Bool {
+        if case .off = self { true } else { false }
+    }
+
+    static var allCases: [SoundVariant] = [
+        .earcon(EarconSetting(volume: 0.5)),
+        .tts(TtsSetting(volume: 0.5)),
+        .off(OffSetting()),
+    ]
+
+    static var allNames: [String] {
+        allCases.map { String(describing: $0) }
+    }
+
+    var settings: any SpecificSoundSetting {
+        let setting: any SpecificSoundSetting
+        switch self {
+        case .earcon(let s): setting = s
+        case .off(let s): setting = s
+        case .tts(let s): setting = s
+        }
+
+        return setting
+    }
+
+    var description: String { settings.description }
 }
 
 struct HapticSettings: Codable, Equatable {
@@ -37,7 +77,7 @@ struct HapticSettings: Codable, Equatable {
 }
 
 struct ProfileDetectionSettings: Codable, Equatable {
-    var sound: SoundSettings
+    var sound: SoundVariant
     var haptic: HapticSettings
 
     static func defaults(location: PlatyLocationTag) -> [PlatyDetectionType:
@@ -46,16 +86,12 @@ struct ProfileDetectionSettings: Codable, Equatable {
         var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]
 
         for type in PlatyDetectionType.allCases {
-//            if location == .inside, type == .car {
-//                continue
-//            }
-
             settings[type] = ProfileDetectionSettings(
-                sound: .init(soundVariant: .earcon, volume: 0.5),
+                sound: .earcon(EarconSetting(volume: 0.5)),
                 haptic: .init(switchedOn: true, intensity: 0.5)
             )
         }
-        
+
         return settings
     }
 }

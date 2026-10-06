@@ -20,8 +20,48 @@ enum Direction: Double, CaseIterable {
     case frontLeftLeft = 292.5
     case frontLeft = 315
     case frontFrontLeft = 337.5
+}
 
+extension Direction {
     var azimuth: Double { rawValue }
+
+    static func closest(to angle: Double) -> Direction {
+        let a = angle.truncatingRemainder(dividingBy: 360)
+        let normalized = a < 0 ? a + 360 : a
+
+        return allCases.min {
+            circularDistance($0.azimuth, normalized)
+                < circularDistance($1.azimuth, normalized)
+        } ?? .front
+    }
+
+    private static func circularDistance(_ a: Double, _ b: Double) -> Double {
+        let diff = abs(a - b).truncatingRemainder(dividingBy: 360)
+        return min(diff, 360 - diff)
+    }
+}
+
+extension Direction: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .front: "front"
+        case .frontFrontRight: "front front right"
+        case .frontRight: "front right"
+        case .frontRightRight: "front right right"
+        case .right: "right"
+        case .backRightRight: "back right right"
+        case .backRight: "back right"
+        case .backBackRight: "back back right"
+        case .back: "back"
+        case .backBackLeft: "back back left"
+        case .backLeft: "back left"
+        case .backLeftLeft: "back left left"
+        case .left: "left"
+        case .frontLeftLeft: "front left left"
+        case .frontLeft: "front left"
+        case .frontFrontLeft: "front front left"
+        }
+    }
 }
 
 // MARK: - Polar -> 3D point (listener at origin, facing -Z, +X = right, +Y = up)
@@ -138,12 +178,14 @@ final class EarconPlayer: ObservableObject {
 
     func play(
         _ earcon: some Earconable,
+        volume: Float,
         from direction: Direction,
         elevation: Double = 0,
-        distance: Float = 2
+        distance: Float = 2,
     ) {
         play(
             earcon,
+            volume: volume,
             azimuth: direction.azimuth,
             elevation: elevation,
             distance: distance
@@ -152,6 +194,7 @@ final class EarconPlayer: ObservableObject {
 
     func play(
         _ earcon: some Earconable,
+        volume: Float,
         azimuth: Double,
         elevation: Double = 0,
         distance: Float = 2
@@ -160,6 +203,8 @@ final class EarconPlayer: ObservableObject {
             print("Earcon not loaded: \(earcon.soundFile.fileName)")
             return
         }
+
+        voice.node.volume = volume
         voice.node.position = .polar(
             azimuth: azimuth,
             elevation: elevation,
@@ -173,12 +218,16 @@ final class EarconPlayer: ObservableObject {
         }
     }
 
-    func playSweep(_ earcon: some Earconable, interval: Duration = .seconds(1.5))
+    func playSweep(
+        _ earcon: some Earconable,
+        interval: Duration = .seconds(1.5),
+        volume: Float = 0.5
+    )
         async
     {
         for direction in Direction.allCases {
             if Task.isCancelled { return }
-            play(earcon, from: direction)
+            play(earcon, volume: volume, from: direction)
             do { try await Task.sleep(for: interval) } catch { return }
         }
     }
