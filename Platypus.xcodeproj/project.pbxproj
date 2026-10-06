@@ -20,6 +20,18 @@
 
 /* Begin PBXBuildFile section */
 		B08E850F302B30EF007AFF1F /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = B08E850E302B30EF007AFF1F /* ZIPFoundation */; };
+		B09A4B8A3074EC9400F9A39B /* person.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B883074EC9400F9A39B /* person.wav */; };
+		B09A4B8B3074EC9400F9A39B /* bench.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B853074EC9400F9A39B /* bench.wav */; };
+		B09A4B8C3074EC9400F9A39B /* car.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B873074EC9400F9A39B /* car.wav */; };
+		B09A4B8D3074EC9400F9A39B /* bicycle.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B863074EC9400F9A39B /* bicycle.wav */; };
+		B09A4B8E3074EC9400F9A39B /* person.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B883074EC9400F9A39B /* person.wav */; };
+		B09A4B8F3074EC9400F9A39B /* bench.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B853074EC9400F9A39B /* bench.wav */; };
+		B09A4B903074EC9400F9A39B /* car.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B873074EC9400F9A39B /* car.wav */; };
+		B09A4B913074EC9400F9A39B /* bicycle.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B863074EC9400F9A39B /* bicycle.wav */; };
+		B09A4B923074EC9400F9A39B /* person.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B883074EC9400F9A39B /* person.wav */; };
+		B09A4B933074EC9400F9A39B /* bench.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B853074EC9400F9A39B /* bench.wav */; };
+		B09A4B943074EC9400F9A39B /* car.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B873074EC9400F9A39B /* car.wav */; };
+		B09A4B953074EC9400F9A39B /* bicycle.wav in Resources */ = {isa = PBXBuildFile; fileRef = B09A4B863074EC9400F9A39B /* bicycle.wav */; };
 		B0D04927306669FE00ED081D /* MQTTNIO in Frameworks */ = {isa = PBXBuildFile; productRef = B0D04926306669FE00ED081D /* MQTTNIO */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +53,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B09A4B853074EC9400F9A39B /* bench.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bench.wav; sourceTree = "<group>"; };
+		B09A4B863074EC9400F9A39B /* bicycle.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bicycle.wav; sourceTree = "<group>"; };
+		B09A4B873074EC9400F9A39B /* car.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = car.wav; sourceTree = "<group>"; };
+		B09A4B883074EC9400F9A39B /* person.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = person.wav; sourceTree = "<group>"; };
 		B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatypusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0EE99503026376500008CA3 /* Platypus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Platypus.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,7 +125,19 @@
 				B0A9912C3029D8DC00A2A1E4 /* PlatypusTests.xctest */,
 				B0A9912D3029D8DC00A2A1E4 /* PlatypusUITests.xctest */,
 				B0F3377F305C21050054C68F /* Secrets.xcconfig */,
+				B09A4B893074EC9400F9A39B /* Sounds */,
 			);
+			sourceTree = "<group>";
+		};
+		B09A4B893074EC9400F9A39B /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				B09A4B853074EC9400F9A39B /* bench.wav */,
+				B09A4B863074EC9400F9A39B /* bicycle.wav */,
+				B09A4B873074EC9400F9A39B /* car.wav */,
+				B09A4B883074EC9400F9A39B /* person.wav */,
+			);
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -235,16 +263,28 @@
 		B09126A430260A5E000E2487 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				B09A4B8A3074EC9400F9A39B /* person.wav in Resources */,
+				B09A4B8B3074EC9400F9A39B /* bench.wav in Resources */,
+				B09A4B8C3074EC9400F9A39B /* car.wav in Resources */,
+				B09A4B8D3074EC9400F9A39B /* bicycle.wav in Resources */,
 			);
 		};
 		B09126B330260A5F000E2487 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				B09A4B923074EC9400F9A39B /* person.wav in Resources */,
+				B09A4B933074EC9400F9A39B /* bench.wav in Resources */,
+				B09A4B943074EC9400F9A39B /* car.wav in Resources */,
+				B09A4B953074EC9400F9A39B /* bicycle.wav in Resources */,
 			);
 		};
 		B09126BD30260A5F000E2487 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				B09A4B8E3074EC9400F9A39B /* person.wav in Resources */,
+				B09A4B8F3074EC9400F9A39B /* bench.wav in Resources */,
+				B09A4B903074EC9400F9A39B /* car.wav in Resources */,
+				B09A4B913074EC9400F9A39B /* bicycle.wav in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
