@@ -70,6 +70,7 @@ struct PlatypusApp: App {
                     case .active:
                         guard !didConnect else { return }
                         didConnect = true
+//                        let _ = enableTracing(rustLog: .debug)
                         Task {
                             logger.log("Connecting to mqtt server...")
                             do {

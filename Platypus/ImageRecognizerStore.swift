@@ -12,8 +12,11 @@ import Foundation
 final class ImageRecognizerStore: ObservableObject {
     @Published private(set) var recognizer: ImageRecognizer?
     @Published var loadError: Error?
+    
+    private var logger = PlatyLogger(tag: "ImageRecognizerStore")
 
     func load() async {
+        logger.log("Loading image recognizer...")
         let dlPath = FileManager.default.urls(
             for: .documentDirectory,
             in: .userDomainMask
@@ -24,8 +27,11 @@ final class ImageRecognizerStore: ObservableObject {
                 modelVariant: .medium,
                 downlaodPath: dlPath
             )
+            logger.log("... loaded recognizer models")
+
         } catch {
             loadError = error
+            logger.log("... failed due to: \(error)", level: .error)
         }
     }
 }

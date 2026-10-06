@@ -39,7 +39,7 @@ struct ProgressCategoriesIndicator: View {
 
                 Text(progress.label)
                     .font(.subheadline.weight(.semibold))
-                    .contentTransition(.numericText())  
+                    .contentTransition(.numericText())
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -50,13 +50,14 @@ struct ProgressCategoriesIndicator: View {
 }
 
 enum ProgressStatus {
-    case switchedOff, hardware, evaluating, failure, success
+    case switchedOff, hardware, evaluating, failure, success, downloading
 
     var color: Color {
         switch self {
         case .switchedOff: return .gray
         case .hardware: return .blue
         case .evaluating: return .yellow
+        case .downloading: return .yellow
         case .failure: return .red
         case .success: return .green
         }
@@ -69,6 +70,7 @@ enum ProgressStatus {
         case .evaluating: return "Evaluating"
         case .failure: return "Failed"
         case .success: return "Success"
+        case .downloading: return "Downloading"
         }
     }
 }
