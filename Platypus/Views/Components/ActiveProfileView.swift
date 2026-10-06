@@ -9,23 +9,23 @@ import SwiftData
 import SwiftUI
 
 struct ActiveProfileView: View {
-    @Query(
-        filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
-        sort: \ProfileSettings.created,
-        animation: .default
-    )
-    private var profiles: [ProfileSettings]
-    private var currentProfile: ProfileSettings {
-        let activeProfiles = profiles.filter({ $0.isActive })
-        precondition(activeProfiles.count == 1)
-        return activeProfiles.first!
-    }
+    @State private var profileManager: ProfileManager?
+    @Environment(\.modelContext) private var ctx
 
     var body: some View {
-        VStack {
-            Text("Profile: \(currentProfile.name)")
+        HStack {
+            Button {
+                
+            } label: {
+                Label("Prev", systemImage: "arrowshape.left")
+            }
+            
+            Text("Profile: \(profileManager?.currentProfile.name ?? "Loading...")")
         }
         .padding()
         .background(.ultraThinMaterial, in: Capsule())
+        .onAppear {
+            profileManager = ProfileManager(context: ctx)
+        }
     }
 }

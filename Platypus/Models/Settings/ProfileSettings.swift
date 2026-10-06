@@ -5,8 +5,8 @@
 //  Created by Yann Bernard on 30.09.26.
 //
 
-import SwiftData
 import Foundation
+import SwiftData
 
 @Model
 final class ProfileSettings {
@@ -26,7 +26,9 @@ final class ProfileSettings {
 
         var collectSettings: [PlatyLocationTag: ProfileSingularSettings] = [:]
         for locationTag in PlatyLocationTag.allCases {
-            let tmpDetectionSettings = ProfileDetectionSettings.defaults(location: locationTag)
+            let tmpDetectionSettings = ProfileDetectionSettings.defaults(
+                location: locationTag
+            )
             collectSettings[locationTag] = ProfileSingularSettings(
                 detectionSettings: tmpDetectionSettings
             )

@@ -16,21 +16,13 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     let contentMode: ContentMode
 
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
+    private let tts = Speaker()
+    @State private var profileManager: ProfileManager?
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
-
+    @EnvironmentObject private var earconEngine: EarconPlayer
+    
     @Environment(\.modelContext) private var ctx
-    @Query(
-        filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
-        sort: \ProfileSettings.created,
-    )
-    private var profiles: [ProfileSettings]
-    private var currentProfile: ProfileSettings {
-        let activeProfiles = profiles.filter({ $0.isActive })
-        precondition(activeProfiles.count == 1)
-        return activeProfiles.first!
-    }
-
     @Namespace private var namespace
 
     // MARK: - View
@@ -47,6 +39,9 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     for: detectedObjects,
                     location: uniqueLocationTag
                 )
+            }
+            .task {
+                profileManager = ProfileManager(context: ctx)
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
@@ -77,7 +72,9 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 uniqueLocationTags: location
             )
         else { return }
-        let currentSettingsSet = currentProfile.settings[locationTag]!
+        guard let profileManager else { return }
+        
+        let currentSettingsSet = profileManager.currentProfile.settings[locationTag]!
 
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
@@ -109,14 +106,12 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 ]
                 let hapticSignals: [(AvailableTopics, Int)] =
                     candidates.compactMap { value, topic, shouldSend in
-                        shouldSend
-                            ? (
-                                topic,
-                                Int(
-                                    (abs(value) * 10 * hapticSettings.intensity)
-                                        .rounded()
-                                )
-                            ) : nil
+                        let signalStrength = Int(
+                            (abs(value) * 10.0 * hapticSettings.intensity)
+                                .rounded()
+                        )
+
+                        return shouldSend ? (topic, signalStrength) : nil
                     }
 
                 for (channel, scale) in hapticSignals {
@@ -135,8 +130,22 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             }
 
             // Sound Settings and callback
-            if setting.sound.soundVariant != .off {
+            switch setting.sound.soundVariant {
+            case .off: break
 
+            case .earcon: do {
+                let volume = Float(setting.sound.volume)
+                let detectionType = detection.detectionType
+                
+                earconEngine.play(detectionType, volume: volume, azimuth: Double(detection.azimuth()))
+            }
+
+            case .tts: do {
+//                let volume = Float(setting.sound.volume)
+                let name = detection.detectionType.rawValue
+                
+                tts.speak(name)
+            }
             }
         }
     }
@@ -147,25 +156,11 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         Task { @MainActor in
             logger.log("Received: \(msg)")
 
-            guard profiles.count > 1,
-                let currentIdx = profiles.firstIndex(where: {
-                    $0.isActive
-                })
-            else { return }
-
-            let target: Int
             switch msg.cmd {
-            case .next: target = (currentIdx + 1) % profiles.count
-            case .prev:
-                target =
-                    (currentIdx - 1 + profiles.count)
-                    % profiles.count
+            case .next: try? profileManager?.next()
+            case .prev: try? profileManager?.prev()
             case .empty: return
             }
-
-            profiles[currentIdx].isActive = false
-            profiles[target].isActive = true
-            try? ctx.save()
         }
     }
 }

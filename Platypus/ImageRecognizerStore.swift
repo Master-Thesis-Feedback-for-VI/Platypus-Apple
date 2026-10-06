@@ -18,7 +18,7 @@ final class ImageRecognizerStore: ObservableObject {
     func load() async {
         logger.log("Loading image recognizer...")
         let dlPath = FileManager.default.urls(
-            for: .documentDirectory,
+            for: .cachesDirectory,
             in: .userDomainMask
         ).first!.path
 
