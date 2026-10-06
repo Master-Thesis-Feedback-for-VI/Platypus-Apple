@@ -48,7 +48,7 @@ struct PlatypusApp: App {
         }
     }()
 
-    @StateObject private var earconEngine = EarconPlayer()
+    @StateObject private var earconEngine = EarconPlayer(earcons: PlatyDetectionType.allCases)
     @StateObject private var mqttClient = PlatyMQTT(
         userName: infoValue("MQTT_USER"),
         passwd: infoValue("PASSWORD")

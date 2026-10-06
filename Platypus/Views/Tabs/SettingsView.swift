@@ -9,6 +9,8 @@ import SwiftData
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var earconEngine: EarconPlayer
+    
     @Environment(\.modelContext) private var ctx
     @Environment(\.scenePhase) private var scenePhase
 
@@ -24,44 +26,59 @@ struct SettingsView: View {
         sort: \ProfileSettings.deletedAt
     )
     private var trashed: [ProfileSettings]
+    
+    private let logger = PlatyLogger(tag: "StringSettingsView")
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(profiles) { profile in
-                    HStack {
-                        Toggle("Active", isOn: activeBinding(for: profile))
-                            .labelsHidden()
-                            .disabled(profiles.count <= 1)
-                        NavigationLink(profile.name) {
-                            ProfileEditView(
-                                allOtherProfileNames:
-                                    profiles
-                                    .filter { $0 !== profile }
-                                    .map(\.name),
-                                profile: profile
-                            )
+            VStack {
+                Button {
+                    Task {
+                        for detectionType in PlatyDetectionType.allCases {
+                            logger.log("Now playing: \(detectionType.rawValue)", level: .warning)
+                            await earconEngine.playSweep(detectionType, interval: .seconds(1))
                         }
                     }
-                    .deleteDisabled(profiles.count <= 1)
+                } label: {
+                    Label("Sweep", systemImage: "speaker")
                 }
-                .onDelete(perform: deleteProfiles)
-            }
-            .animation(.default, value: profiles.map(\.isActive))
-            .navigationTitle("Available Profiles")
-            .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button(action: undoDelete) {
-                        Label("Undo", systemImage: "arrow.uturn.backward")
+                
+                List {
+                    ForEach(profiles) { profile in
+                        HStack {
+                            Toggle("Active", isOn: activeBinding(for: profile))
+                                .labelsHidden()
+                                .disabled(profiles.count <= 1)
+                            NavigationLink(profile.name) {
+                                ProfileEditView(
+                                    allOtherProfileNames:
+                                        profiles
+                                        .filter { $0 !== profile }
+                                        .map(\.name),
+                                    profile: profile
+                                )
+                            }
+                        }
+                        .deleteDisabled(profiles.count <= 1)
                     }
-                    .disabled(trashed.isEmpty)
-
-                    Button("Add", systemImage: "plus", action: addProfile)
+                    .onDelete(perform: deleteProfiles)
                 }
-            }
-            .onAppear(perform: ensureAtLeastOneProfile)
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .background { purgeTrash() }
+                .animation(.default, value: profiles.map(\.isActive))
+                .navigationTitle("Available Profiles")
+                .toolbar {
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Button(action: undoDelete) {
+                            Label("Undo", systemImage: "arrow.uturn.backward")
+                        }
+                        .disabled(trashed.isEmpty)
+                        
+                        Button("Add", systemImage: "plus", action: addProfile)
+                    }
+                }
+                .onAppear(perform: ensureAtLeastOneProfile)
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .background { purgeTrash() }
+                }
             }
         }
     }
