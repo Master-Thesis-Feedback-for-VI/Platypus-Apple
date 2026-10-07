@@ -255,12 +255,7 @@ void uniffi_image_flow_fn_free_imageflowevaluation(uint64_t handle, RustCallStat
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_IMAGEFLOWEVALUATION_NEW
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_CONSTRUCTOR_IMAGEFLOWEVALUATION_NEW
-uint64_t uniffi_image_flow_fn_constructor_imageflowevaluation_new(RustBuffer location_tags, RustBuffer image_detections, RustBuffer depth_map, RustCallStatus *_Nonnull out_status
-);
-#endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_METHOD_IMAGEFLOWEVALUATION_DEPTH_MAP
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_METHOD_IMAGEFLOWEVALUATION_DEPTH_MAP
-RustBuffer uniffi_image_flow_fn_method_imageflowevaluation_depth_map(uint64_t ptr, RustCallStatus *_Nonnull out_status
+uint64_t uniffi_image_flow_fn_constructor_imageflowevaluation_new(RustBuffer location_tags, RustBuffer image_detections, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_METHOD_IMAGEFLOWEVALUATION_IMAGE_DETECTIONS
@@ -375,7 +370,7 @@ int8_t uniffi_image_flow_fn_func_enable_tracing(RustBuffer rust_log, RustCallSta
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_IMAGE_FLOW_EVALUATION
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_IMAGE_FLOW_EVALUATION
-uint64_t uniffi_image_flow_fn_func_image_flow_evaluation(RustBuffer location, RustBuffer auth, RustBuffer img_path, uint64_t image_recognizer, uint32_t amount, int8_t disable_depth_detection
+uint64_t uniffi_image_flow_fn_func_image_flow_evaluation(RustBuffer location, RustBuffer auth, RustBuffer img_path, uint64_t image_recognizer, uint32_t amount, int8_t include_depth
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_IMAGE_FLOW_EVALUATION_READ_FROM_JSON
@@ -395,7 +390,7 @@ uint64_t uniffi_image_flow_fn_func_recognize_location_tags(RustBuffer location, 
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_RECOGNIZE_OBJECTS_IN_IMAGE
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_RECOGNIZE_OBJECTS_IN_IMAGE
-uint64_t uniffi_image_flow_fn_func_recognize_objects_in_image(RustBuffer path, uint64_t image_recognizer
+uint64_t uniffi_image_flow_fn_func_recognize_objects_in_image(RustBuffer path, uint64_t image_recognizer, int8_t include_depth
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_FN_FUNC_SORT_LOCATION_TAGS
@@ -702,12 +697,6 @@ uint16_t uniffi_image_flow_checksum_func_recognize_objects_in_image(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_SORT_LOCATION_TAGS
 #define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_FUNC_SORT_LOCATION_TAGS
 uint16_t uniffi_image_flow_checksum_func_sort_location_tags(void
-    
-);
-#endif
-#ifndef UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_METHOD_IMAGEFLOWEVALUATION_DEPTH_MAP
-#define UNIFFI_FFIDEF_UNIFFI_IMAGE_FLOW_CHECKSUM_METHOD_IMAGEFLOWEVALUATION_DEPTH_MAP
-uint16_t uniffi_image_flow_checksum_method_imageflowevaluation_depth_map(void
     
 );
 #endif

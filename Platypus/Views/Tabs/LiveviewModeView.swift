@@ -153,12 +153,11 @@ struct CameraActiveLiveView: View {
                             imgPath: imgPath,
                             imageRecognizer: imgRecognizer,
                             amount: amountDominantColor,
-                            disableDepthDetection: false
+                            includeDepth: true
                         )
 
                         detectedObjects = imageFlowData.imageDetections()
                         uniqueLocationTags = imageFlowData.locationTags()
-                        let _ = imageFlowData.depthMap()!
 
                         let elapsed =
                             (ContinuousClock.now - start) / .milliseconds(1)

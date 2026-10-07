@@ -865,8 +865,6 @@ public func FfiConverterTypeFramePath_lower(_ value: FramePath) -> UInt64 {
 
 public protocol ImageFlowEvaluationProtocol: AnyObject, Sendable {
     
-    func depthMap()  -> DepthMap?
-    
     func imageDetections()  -> ImageDetections
     
     func locationTags()  -> UniqueLocationTags
@@ -917,14 +915,13 @@ open class ImageFlowEvaluation: ImageFlowEvaluationProtocol, @unchecked Sendable
     public func uniffiCloneHandle() -> UInt64 {
         return try! rustCall { uniffi_image_flow_fn_clone_imageflowevaluation(self.handle, $0) }
     }
-public convenience init(locationTags: UniqueLocationTags, imageDetections: ImageDetections, depthMap: DepthMap?) {
+public convenience init(locationTags: UniqueLocationTags, imageDetections: ImageDetections) {
     let handle =
         try! rustCall() {
         uniffiCallStatus in
     uniffi_image_flow_fn_constructor_imageflowevaluation_new(
         FfiConverterTypeUniqueLocationTags_lower(locationTags),
-        FfiConverterTypeImageDetections_lower(imageDetections),
-        FfiConverterOptionTypeDepthMap.lower(depthMap),uniffiCallStatus
+        FfiConverterTypeImageDetections_lower(imageDetections),uniffiCallStatus
     )
 }
     self.init(unsafeFromHandle: handle)
@@ -941,15 +938,6 @@ public convenience init(locationTags: UniqueLocationTags, imageDetections: Image
 
     
 
-    
-open func depthMap() -> DepthMap?  {
-    return try!  FfiConverterOptionTypeDepthMap.lift(try! rustCall() {
-        uniffiCallStatus in
-    uniffi_image_flow_fn_method_imageflowevaluation_depth_map(
-            self.uniffiCloneHandle(),uniffiCallStatus
-    )
-})
-}
     
 open func imageDetections() -> ImageDetections  {
     return try!  FfiConverterTypeImageDetections_lift(try! rustCall() {
@@ -1533,13 +1521,15 @@ public struct Detection: Equatable, Hashable {
     public var confidence: Float
     public var name: DetectionType
     public var xyxy: BoundingBox
+    public var distance: Float?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(confidence: Float, name: DetectionType, xyxy: BoundingBox) {
+    public init(confidence: Float, name: DetectionType, xyxy: BoundingBox, distance: Float?) {
         self.confidence = confidence
         self.name = name
         self.xyxy = xyxy
+        self.distance = distance
     }
 
     
@@ -1560,7 +1550,8 @@ public struct FfiConverterTypeDetection: FfiConverterRustBuffer {
             try Detection(
                 confidence: FfiConverterFloat.read(from: &buf), 
                 name: FfiConverterTypeDetectionType.read(from: &buf), 
-                xyxy: FfiConverterTypeBoundingBox.read(from: &buf)
+                xyxy: FfiConverterTypeBoundingBox.read(from: &buf), 
+                distance: FfiConverterOptionFloat.read(from: &buf)
         )
     }
 
@@ -1568,6 +1559,7 @@ public struct FfiConverterTypeDetection: FfiConverterRustBuffer {
         FfiConverterFloat.write(value.confidence, into: &buf)
         FfiConverterTypeDetectionType.write(value.name, into: &buf)
         FfiConverterTypeBoundingBox.write(value.xyxy, into: &buf)
+        FfiConverterOptionFloat.write(value.distance, into: &buf)
     }
 }
 
@@ -2313,30 +2305,6 @@ fileprivate struct FfiConverterOptionFloat: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterOptionTypeDepthMap: FfiConverterRustBuffer {
-    typealias SwiftType = DepthMap?
-
-    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
-        guard let value = value else {
-            writeInt(&buf, Int8(0))
-            return
-        }
-        writeInt(&buf, Int8(1))
-        FfiConverterTypeDepthMap.write(value, into: &buf)
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        switch try readInt(&buf) as Int8 {
-        case 0: return nil
-        case 1: return try FfiConverterTypeDepthMap.read(from: &buf)
-        default: throw UniffiInternalError.unexpectedOptionalTag
-        }
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterOptionTypeAuthToHost: FfiConverterRustBuffer {
     typealias SwiftType = AuthToHost?
 
@@ -2540,11 +2508,11 @@ public func enableTracing(rustLog: FilterLevel?) -> Bool  {
  * # Errors
  * TODO
  */
-public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath: String, imageRecognizer: ImageRecognizer, amount: UInt32, disableDepthDetection: Bool)async throws  -> ImageFlowEvaluation  {
+public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath: String, imageRecognizer: ImageRecognizer, amount: UInt32, includeDepth: Bool)async throws  -> ImageFlowEvaluation  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_image_flow_evaluation(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterUInt32.lower(amount),FfiConverterBool.lower(disableDepthDetection)
+                uniffi_image_flow_fn_func_image_flow_evaluation(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterUInt32.lower(amount),FfiConverterBool.lower(includeDepth)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_u64,
@@ -2612,11 +2580,11 @@ public func recognizeLocationTags(location: Coordinate, auth: AuthToHost?, imgPa
  * # Errors
  * TODO
  */
-public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecognizer)async throws  -> ImageDetections  {
+public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecognizer, includeDepth: Bool)async throws  -> ImageDetections  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_recognize_objects_in_image(FfiConverterString.lower(path),FfiConverterTypeImageRecognizer_lower(imageRecognizer)
+                uniffi_image_flow_fn_func_recognize_objects_in_image(FfiConverterString.lower(path),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterBool.lower(includeDepth)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
@@ -2653,7 +2621,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_enable_tracing() != 62385) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 1354) {
+    if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 1920) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_image_flow_evaluation_read_from_json() != 20888) {
@@ -2665,13 +2633,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_recognize_location_tags() != 53088) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 53568) {
+    if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 17873) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_sort_location_tags() != 16255) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_image_flow_checksum_method_imageflowevaluation_depth_map() != 38626) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_method_imageflowevaluation_image_detections() != 12330) {
@@ -2704,7 +2669,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_method_depthmap_shape() != 55359) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_constructor_imageflowevaluation_new() != 29413) {
+    if (uniffi_image_flow_checksum_constructor_imageflowevaluation_new() != 50546) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_constructor_imageflowevaluationforrecording_new() != 5354) {

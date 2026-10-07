@@ -11,6 +11,7 @@ import SwiftUI
 struct PlatyDetection {
     public var confidence: Float
     public var detectionType: PlatyDetectionType
+    public var distance: Float?
     public var rect: CGRect
 
     let viewportSize: CGSize
@@ -50,8 +51,9 @@ extension PlatyDetection {
         return Self(
             confidence: detection.confidence,
             detectionType: platyDetection,
+            distance: detection.distance,
             rect: rect,
-            viewportSize: viewportSize
+            viewportSize: viewportSize,
         )
     }
 

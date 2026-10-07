@@ -24,7 +24,7 @@ final class ImageRecognizerStore: ObservableObject {
 
         do {
             recognizer = try await ImageRecognizer(
-                modelVariant: .medium,
+                modelVariant: .large,
                 downlaodPath: dlPath
             )
             logger.log("... loaded recognizer models")
