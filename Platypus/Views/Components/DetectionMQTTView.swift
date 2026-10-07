@@ -134,7 +134,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     await earconEngine.play(
                         detectionType,
                         volume: volume,
-                        azimuth: Double(detection.azimuth())
+                        azimuth: earconAzimuth(for: detection)
                     )
                 }
 
@@ -154,6 +154,13 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 }
             }
         }
+    }
+
+    private func earconAzimuth(for detection: PlatyDetection) -> Double {
+        let x = Double(detection.normVector().0)
+        // Spread the visible width across wider sound angles; boost positions
+        // near the center so left and right are easier to distinguish.
+        return (x < 0 ? -1 : 1) * 90 * pow(abs(x), 0.45)
     }
 
     // MARK: - Callbacks Sub

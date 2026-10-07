@@ -49,13 +49,11 @@ actor CameraSessionActor {
         session.sessionPreset = .high
         defer { session.commitConfiguration() }
 
-        guard
-            let videoDevice = AVCaptureDevice.default(
-                .builtInWideAngleCamera,
-                for: .video,
-                position: .back
-            )
-        else {
+        guard let videoDevice = AVCaptureDevice.default(
+            .builtInWideAngleCamera,
+            for: .video,
+            position: .back
+        ) ?? AVCaptureDevice.default(for: .video) else {
             throw CameraError.deviceNotFound
         }
 

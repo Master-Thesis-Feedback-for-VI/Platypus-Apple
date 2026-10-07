@@ -97,9 +97,13 @@ private final class EarconBackend {
     private var lastPlayed: [SoundFile: ContinuousClock.Instant] = [:]
 
     func setUp(files: [SoundFile]) async throws {
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playback)
-        guard try await session.activate() else {
+        let activated = try await Task.detached {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback)
+            return try await session.activate()
+        }.value
+        try Task.checkCancellation()
+        guard activated else {
             throw EarconPlayer.EarconError.activationFailed
         }
 
