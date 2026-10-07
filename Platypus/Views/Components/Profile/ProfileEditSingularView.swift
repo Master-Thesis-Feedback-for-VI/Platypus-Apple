@@ -5,12 +5,76 @@
 //  Created by Yann Bernard on 30.09.26.
 //
 
+import SwiftData
 import SwiftUI
 
 // MARK: - Parent
 
 struct ProfileEditSingularView: View {
-    @Binding var profile: ProfileSingularSettings
+    @Bindable var profile: ProfileSettings
+
+    var body: some View {
+        Form {
+            Section {
+                NavigationLink("Default detection settings") {
+                    ProfileDetectionSettingsView(settings: $profile.defaultSettings)
+                        .navigationTitle("Default")
+                }
+            } footer: {
+                Text(
+                    "These settings apply to all locations unless a location is enabled below."
+                )
+            }
+
+            Section("Locations") {
+                ForEach(PlatyLocationTag.allCases) { location in
+                    Toggle(
+                        location.rawValue,
+                        isOn: locationEnabledBinding(for: location)
+                    )
+
+                    if profile.isLocationEnabled(location),
+                        let binding = settingsBinding(for: location)
+                    {
+                        NavigationLink("Edit \(location.rawValue) settings") {
+                            ProfileDetectionSettingsView(settings: binding)
+                                .navigationTitle(location.rawValue)
+                        }
+                    }
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func locationEnabledBinding(for location: PlatyLocationTag)
+        -> Binding<Bool>
+    {
+        Binding(
+            get: { profile.isLocationEnabled(location) },
+            set: { enabled in
+                withAnimation { profile.setLocation(location, enabled: enabled) }
+            }
+        )
+    }
+
+    private func settingsBinding(for location: PlatyLocationTag) -> Binding<
+        ProfileSingularSettings
+    >? {
+        guard let current = profile.settings[location] else { return nil }
+        return Binding(
+            get: { profile.settings[location] ?? current },
+            set: { newValue in
+                var overrides = profile.settings
+                overrides[location] = newValue
+                profile.settings = overrides
+            }
+        )
+    }
+}
+
+struct ProfileDetectionSettingsView: View {
+    @Binding var settings: ProfileSingularSettings
 
     var body: some View {
         Form {
@@ -29,14 +93,14 @@ struct ProfileEditSingularView: View {
     private func binding(for type: PlatyDetectionType) -> Binding<
         ProfileDetectionSettings
     >? {
-        guard let current = profile.detectionSettings[type] else { return nil }
+        guard let current = settings.detectionSettings[type] else { return nil }
         return Binding(
             get: {
-                profile.detectionSettings[type] ?? current
+                settings.detectionSettings[type] ?? current
             },
             set: { newVal in
                 withAnimation(.snappy) {
-                    profile.detectionSettings[type] = newVal
+                    settings.detectionSettings[type] = newVal
                 }
             }
         )

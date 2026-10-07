@@ -49,7 +49,10 @@ extension ProfileManager {
 
     func settings(for location: PlatyLocationTag) -> SettingsSnapshot? {
         let profile = currentProfile
-        guard let settings = profile.settings[location] else { return nil }
+        let settings =
+            profile.isLocationEnabled(location)
+            ? profile.settings[location] ?? profile.defaultSettings
+            : profile.defaultSettings
         return SettingsSnapshot(
             profileID: profile.persistentModelID,
             settings: settings

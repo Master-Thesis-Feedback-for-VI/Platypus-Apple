@@ -80,9 +80,7 @@ struct ProfileDetectionSettings: Codable, Equatable {
     var sound: SoundVariant
     var haptic: HapticSettings
 
-    static func defaults(location: PlatyLocationTag) -> [PlatyDetectionType:
-        ProfileDetectionSettings]
-    {
+    static func defaults() -> [PlatyDetectionType: ProfileDetectionSettings] {
         var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]
 
         for type in PlatyDetectionType.allCases {

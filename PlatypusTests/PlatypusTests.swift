@@ -22,6 +22,7 @@ struct PlatypusTests {
         let original = manager.currentProfile
 
         let added = ProfileSettings(name: "TTS")
+        added.setLocation(.inside, enabled: true)
         var inside = added.settings[.inside]!
         inside.detectionSettings[.car]!.sound = .tts(TtsSetting(volume: 0.5))
         added.settings[.inside] = inside
@@ -44,5 +45,45 @@ struct PlatypusTests {
         try manager.next()
         #expect(manager.currentProfile === added)
         #expect(manager.profiles.count == 1)
+    }
+
+    @MainActor
+    @Test func disabledLocationsUseDefaultAndRetainOverrides() throws {
+        let container = try ModelContainer(
+            for: Schema([ProfileSettings.self]),
+            configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
+        )
+        let context = container.mainContext
+        let manager = ProfileManager(context: context)
+        let profile = manager.currentProfile
+
+        #expect(profile.enabledLocations.isEmpty)
+        #expect(profile.settings.isEmpty)
+
+        var defaults = profile.defaultSettings
+        defaults.detectionSettings[.car]!.sound = .tts(TtsSetting(volume: 0.5))
+        profile.defaultSettings = defaults
+        #expect(manager.settings(for: .forest)?.settings == defaults)
+        #expect(manager.settings(for: .inside)?.settings == defaults)
+
+        profile.setLocation(.forest, enabled: true)
+        #expect(profile.settings[.forest] == defaults)
+        var override = profile.settings[.forest]!
+        override.detectionSettings[.car]!.sound = .earcon(EarconSetting(volume: 0.5))
+        var overrides = profile.settings
+        overrides[.forest] = override
+        profile.settings = overrides
+
+        #expect(manager.settings(for: .forest)?.settings == override)
+        #expect(manager.settings(for: .inside)?.settings == defaults)
+
+        profile.setLocation(.forest, enabled: false)
+        #expect(manager.settings(for: .forest)?.settings == defaults)
+        try context.save()
+
+        let reopened = ProfileManager(context: ModelContext(container))
+        #expect(reopened.settings(for: .forest)?.settings == defaults)
+        reopened.currentProfile.setLocation(.forest, enabled: true)
+        #expect(reopened.settings(for: .forest)?.settings == override)
     }
 }
