@@ -15,10 +15,8 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     let contentMode: ContentMode
 
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
-    private let earconEngine: EarconPlayer = EarconPlayer(
-        earcons: PlatyDetectionType.allCases
-    )
-    private let tts = Speaker()
+    @EnvironmentObject private var earconEngine: EarconPlayer
+    @State private var tts = Speaker()
     @Environment(ProfileManager.self) private var profileManager
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
@@ -133,7 +131,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     let volume = earconSetting.volume
                     let detectionType = detection.detectionType
 
-                    earconEngine.play(
+                    await earconEngine.play(
                         detectionType,
                         volume: volume,
                         azimuth: Double(detection.azimuth())

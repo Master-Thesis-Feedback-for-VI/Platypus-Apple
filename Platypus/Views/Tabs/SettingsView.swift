@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct SettingsView: View {
-    private let earconEngine = EarconPlayer(earcons: PlatyDetectionType.allCases)
+    @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Environment(ProfileManager.self) private var profileManager
     @Environment(\.scenePhase) private var scenePhase

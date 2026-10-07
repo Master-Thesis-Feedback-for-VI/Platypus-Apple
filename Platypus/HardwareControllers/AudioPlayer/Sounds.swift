@@ -39,7 +39,7 @@ final class Speaker {
 
     func speak(_ text: String, _ volume: Float = 1.0) {
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-EN")
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
         utterance.volume = min(1.0, max(0.0, volume))
         synthesizer.speak(utterance)
     }

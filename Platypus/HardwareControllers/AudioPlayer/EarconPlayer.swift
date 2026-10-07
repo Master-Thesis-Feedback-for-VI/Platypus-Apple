@@ -82,11 +82,10 @@ extension AVAudio3DPoint {
     }
 }
 
-// Direction enum and AVAudio3DPoint.polar extension stay exactly as they are.
+// MARK: - Audio backend
 
-// MARK: - Audio backend (off the main thread)
-
-private actor EarconBackend {
+@MainActor
+private final class EarconBackend {
     private struct Voice {
         let node: AVAudioPlayerNode
         let buffer: AVAudioPCMBuffer
@@ -95,6 +94,7 @@ private actor EarconBackend {
     private let engine = AVAudioEngine()
     private let environment = AVAudioEnvironmentNode()
     private var voices: [SoundFile: Voice] = [:]
+    private var lastPlayed: [SoundFile: ContinuousClock.Instant] = [:]
 
     func setUp(files: [SoundFile]) async throws {
         let session = AVAudioSession.sharedInstance()
@@ -117,6 +117,9 @@ private actor EarconBackend {
             else { throw EarconPlayer.EarconError.fileNotFound(file.fileName) }
 
             let audioFile = try AVAudioFile(forReading: url)
+            guard audioFile.length > 0 else {
+                throw EarconPlayer.EarconError.bufferFailed(file.fileName)
+            }
             guard
                 let buf = AVAudioPCMBuffer(
                     pcmFormat: audioFile.processingFormat,
@@ -124,11 +127,14 @@ private actor EarconBackend {
                 )
             else { throw EarconPlayer.EarconError.bufferFailed(file.fileName) }
             try audioFile.read(into: buf)
+            guard buf.frameLength > 0 else {
+                throw EarconPlayer.EarconError.bufferFailed(file.fileName)
+            }
 
             let node = AVAudioPlayerNode()
             engine.attach(node)
             try engine.connectNode(node, to: environment, format: buf.format)
-            node.renderingAlgorithm = .HRTFHQ
+            node.renderingAlgorithm = .HRTF
             node.sourceMode = .spatializeIfMono
             node.reverbBlend = 0
             voices[file] = Voice(node: node, buffer: buf)
@@ -154,6 +160,13 @@ private actor EarconBackend {
             print("Earcon not loaded: \(file.fileName)")
             return
         }
+        let now = ContinuousClock.now
+        if let previous = lastPlayed[file],
+            now - previous < .milliseconds(400)
+        {
+            return
+        }
+        lastPlayed[file] = now
         voice.node.volume = volume
         voice.node.position = .polar(
             azimuth: azimuth,
@@ -172,6 +185,7 @@ private actor EarconBackend {
         voices.values.forEach { $0.node.stop() }
         engine.stop()
         voices.removeAll()
+        lastPlayed.removeAll()
     }
 }
 
@@ -186,29 +200,35 @@ final class EarconPlayer: ObservableObject {
         case activationFailed
     }
 
-    private let backend = EarconBackend()
+    private lazy var backend = EarconBackend()
+    private let files: [SoundFile]
     private var setupTask: Task<Void, Never>?
 
     private(set) var isReady = false
 
     init(earcons: [any Earconable]) {
-        let files = earcons.map(\.soundFile)
-        let backend = backend
-        setupTask = Task { [weak self] in
-            do {
-                try await backend.setUp(files: files)  // runs on the actor, not main
-                self?.isReady = true
-            } catch {
-                print("EarconPlayer setup failed: \(error)")
-            }
-        }
+        files = earcons.map(\.soundFile)
     }
 
     convenience init<E: Earconable & CaseIterable>(_ type: E.Type) {
         self.init(earcons: Array(E.allCases))
     }
 
-    func waitUntilReady() async { await setupTask?.value }
+    func waitUntilReady() async {
+        if setupTask == nil {
+            let backend = backend
+            let files = files
+            setupTask = Task { [weak self] in
+                do {
+                    try await backend.setUp(files: files)
+                    self?.isReady = true
+                } catch {
+                    print("EarconPlayer setup failed: \(error)")
+                }
+            }
+        }
+        await setupTask?.value
+    }
 
     // MARK: Playing
 
@@ -218,8 +238,8 @@ final class EarconPlayer: ObservableObject {
         from direction: Direction,
         elevation: Double = 0,
         distance: Float = 2
-    ) {
-        play(
+    ) async {
+        await play(
             earcon,
             volume: volume,
             azimuth: direction.azimuth,
@@ -234,22 +254,16 @@ final class EarconPlayer: ObservableObject {
         azimuth: Double,
         elevation: Double = 0,
         distance: Float = 2
-    ) {
-        guard isReady else {
-            print("Earcon not ready: \(earcon.soundFile.fileName)")
-            return
-        }
-        let file = earcon.soundFile
-        let backend = backend
-        Task {
-            await backend.play(
-                file: file,
-                volume: volume,
-                azimuth: azimuth,
-                elevation: elevation,
-                distance: distance
-            )
-        }
+    ) async {
+        await waitUntilReady()
+        guard !Task.isCancelled, isReady else { return }
+        backend.play(
+            file: earcon.soundFile,
+            volume: volume,
+            azimuth: azimuth,
+            elevation: elevation,
+            distance: distance
+        )
     }
 
     func playSweep(
@@ -259,7 +273,7 @@ final class EarconPlayer: ObservableObject {
     ) async {
         for direction in Direction.allCases {
             if Task.isCancelled { return }
-            play(earcon, volume: volume, from: direction)
+            await play(earcon, volume: volume, from: direction)
             do { try await Task.sleep(for: interval) } catch { return }
         }
     }
@@ -267,7 +281,6 @@ final class EarconPlayer: ObservableObject {
     func stop() {
         isReady = false
         setupTask?.cancel()
-        let backend = backend
-        Task { await backend.stop() }
+        backend.stop()
     }
 }

@@ -55,6 +55,9 @@ struct PlatypusApp: App {
     @StateObject private var locationRecorder = LocationRecorder()
     @StateObject private var cameraManager = CameraManager()
     @StateObject private var imageRecognizerStore = ImageRecognizerStore()
+    @StateObject private var earconEngine = EarconPlayer(
+        earcons: PlatyDetectionType.allCases
+    )
 
     private let logger = PlatyLogger(tag: "Root")
 
@@ -100,5 +103,6 @@ struct PlatypusApp: App {
         .environmentObject(cameraManager)
         .environmentObject(imageRecognizerStore)
         .environmentObject(mqttClient)
+        .environmentObject(earconEngine)
     }
 }
