@@ -7,6 +7,7 @@
 
 import SwiftData
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @EnvironmentObject private var earconEngine: EarconPlayer
@@ -18,16 +19,12 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                sweepButton
-
-                profileList(profileManager)
-            }
-            .navigationTitle("Available Profiles")
-            .toolbar { toolbarContent }
-            .onChange(of: scenePhase) { _, phase in
-                if phase == .background { try? profileManager.purgeTrash() }
-            }
+            profileList(profileManager)
+                .navigationTitle("Available Profiles")
+                .toolbar { toolbarContent }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .background { try? profileManager.purgeTrash() }
+                }
         }
     }
 
@@ -50,9 +47,10 @@ struct SettingsView: View {
         }
     }
 
+    @ViewBuilder
     private func profileList(_ manager: ProfileManager) -> some View {
         let profiles = manager.profiles
-        return List {
+        let list = List {
             ForEach(profiles) { profile in
                 HStack {
                     Toggle(
@@ -60,7 +58,16 @@ struct SettingsView: View {
                         isOn: activeBinding(for: profile, in: manager)
                     )
                     .labelsHidden()
-                    .disabled(profiles.count <= 1)
+                    .accessibilityLabel("Profile \(profile.name)")
+                    .accessibilityValue(
+                        profile.isActive ? "Active" : "Inactive"
+                    )
+                    .accessibilityHint(
+                        profile.isActive
+                            ? "Choose another profile to make it active."
+                            : "Makes this the active profile."
+                    )
+                    .disabled(profile.isActive || profiles.count <= 1)
                     NavigationLink(profile.name) {
                         ProfileEditView(
                             allOtherProfileNames: profiles.filter {
@@ -69,12 +76,38 @@ struct SettingsView: View {
                             profile: profile
                         )
                     }
+                    .accessibilityLabel("Edit \(profile.name)")
+                    .accessibilityValue(
+                        profile.isActive
+                            ? "Active profile" : "Inactive profile"
+                    )
+                    .accessibilityHint("Opens this profile's settings.")
                 }
                 .deleteDisabled(profiles.count <= 1)
             }
             .onDelete { try? manager.deleteProfiles(at: $0) }
         }
         .animation(.default, value: profiles.map(\.isActive))
+
+        if profiles.count > 1 {
+            list.accessibilityAction(.magicTap, switchToNextProfile)
+        } else {
+            list
+        }
+    }
+
+    private func switchToNextProfile() {
+        guard profileManager.profiles.count > 1 else { return }
+        do {
+            try withAnimation { try profileManager.next() }
+            UIAccessibility.post(
+                notification: .announcement,
+                argument:
+                    "Active profile: \(profileManager.currentProfile.name)"
+            )
+        } catch {
+            logger.log("Could not switch profile: \(error)", level: .error)
+        }
     }
 
     @ToolbarContentBuilder
@@ -83,6 +116,8 @@ struct SettingsView: View {
             Button(action: profileManager.undoDelete) {
                 Label("Undo", systemImage: "arrow.uturn.backward")
             }
+            .accessibilityLabel("Undo profile deletion")
+            .accessibilityHint("Restores the most recently deleted profile.")
             .disabled(profileManager.trashed.isEmpty)
 
             Button(
@@ -90,6 +125,8 @@ struct SettingsView: View {
                 systemImage: "plus",
                 action: { try? profileManager.addProfile() }
             )
+            .accessibilityLabel("Add profile")
+            .accessibilityHint("Creates a new profile.")
         }
     }
 

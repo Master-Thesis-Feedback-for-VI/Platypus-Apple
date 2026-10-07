@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ActiveProfileView: View {
+    let logger = PlatyLogger(tag: "ActiveProfileView")
+    
     @Environment(ProfileManager.self) private var profileManager
 
     var body: some View {
@@ -17,7 +19,7 @@ struct ActiveProfileView: View {
                     try? profileManager.prev()
                 }
 
-                Text(
+                let profileText = Text(
                     profileManager.currentProfile.name
                 )
                 .contentTransition(.numericText())
@@ -26,6 +28,17 @@ struct ActiveProfileView: View {
                 .frame(width: 170)
                 .padding(.vertical, 8)
                 .glassEffect()
+                .accessibilityAction(.magicTap) {}
+
+                let profiles = profileManager.profiles
+                if profiles.count > 1 {
+                    profileText.accessibilityAction(
+                        .magicTap,
+                        switchToNextProfile
+                    )
+                } else {
+                    profileText
+                }
 
                 activeProfileButton(name: "arrowshape.right") {
                     try? profileManager.next()
@@ -33,6 +46,21 @@ struct ActiveProfileView: View {
             }
         }
         .padding()
+    }
+
+    private func switchToNextProfile() {
+        guard profileManager.profiles.count > 1 else { return }
+
+        do {
+            try profileManager.next()
+            UIAccessibility.post(
+                notification: .announcement,
+                argument:
+                    "Active profile: \(profileManager.currentProfile.name)"
+            )
+        } catch {
+            logger.log("Could not switch profile: \(error)", level: .error)
+        }
     }
 
     private func activeProfileButton(

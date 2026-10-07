@@ -25,6 +25,10 @@ struct ProfileEditView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     TextField("Profile name", text: $draftName)
+                        .accessibilityLabel("Profile name")
+                        .accessibilityHint(
+                            "Edit the profile name, then tap Done to save it."
+                        )
                         .onSubmit {
                             let trimmed = draftName.trimmingCharacters(
                                 in: .whitespacesAndNewlines
@@ -51,13 +55,17 @@ struct ProfileEditView: View {
             }
             .alert(
                 rejectedName.isEmpty
-                    ? "Name can't be empty"
+                    ? "Profile name can't be empty"
                     : "\(rejectedName) already exists",
                 isPresented: $showAlert,
             ) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("Please select a unique name.")
+                Text(
+                    rejectedName.isEmpty
+                        ? "Enter a name for this profile."
+                        : "Choose a different name for this profile."
+                )
             }
     }
 }

@@ -18,8 +18,11 @@ struct ProfileEditSingularView: View {
             Section {
                 NavigationLink("Default detection settings") {
                     ProfileDetectionSettingsView(settings: $profile.defaultSettings)
-                        .navigationTitle("Default")
+                        .navigationTitle("Default detection settings")
                 }
+                .accessibilityHint(
+                    "Used for locations without their own detection settings."
+                )
             } footer: {
                 Text(
                     "These settings apply to all locations unless a location is enabled below."
@@ -32,13 +35,19 @@ struct ProfileEditSingularView: View {
                         location.rawValue,
                         isOn: locationEnabledBinding(for: location)
                     )
+                    .accessibilityLabel("Enable \(location.rawValue) settings")
+                    .accessibilityHint(
+                        "When on, this location uses its own detection settings."
+                    )
 
                     if profile.isLocationEnabled(location),
                         let binding = settingsBinding(for: location)
                     {
                         NavigationLink("Edit \(location.rawValue) settings") {
                             ProfileDetectionSettingsView(settings: binding)
-                                .navigationTitle(location.rawValue)
+                                .navigationTitle(
+                                    "\(location.rawValue) detection settings"
+                                )
                         }
                     }
                 }
@@ -81,8 +90,14 @@ struct ProfileDetectionSettingsView: View {
             ForEach(PlatyDetectionType.allCases, id: \.self) { detectionType in
                 if let binding = binding(for: detectionType) {
                     Section(detectionType.rawValue.capitalized) {
-                        SoundSettingsRows(sound: binding.sound)
-                        HapticSettingsRows(haptic: binding.haptic)
+                        SoundSettingsRows(
+                            detectionName: detectionType.rawValue,
+                            sound: binding.sound
+                        )
+                        HapticSettingsRows(
+                            detectionName: detectionType.rawValue,
+                            haptic: binding.haptic
+                        )
                     }
                 }
             }
@@ -110,21 +125,30 @@ struct ProfileDetectionSettingsView: View {
 // MARK: - Audio
 
 struct SoundSettingsRows: View {
+    let detectionName: String
     @Binding var sound: SoundVariant
 
     var body: some View {
         Picker(selection: nameBinding) {
             ForEach(SoundVariant.allNames, id: \.self) { name in
-                Text(name.capitalized).tag(name)
+                Text(name == "tts" ? "Text to speech" : name.capitalized)
+                    .tag(name)
             }
         } label: {
             Label("Sound", systemImage: "speaker.wave.2.fill")
         }
         .pickerStyle(.menu)
+        .accessibilityLabel("\(detectionName) sound")
+        .accessibilityValue(
+            sound.description == "tts"
+                ? "Text to speech" : sound.description.capitalized
+        )
+        .accessibilityHint("Choose off, earcon, or text to speech.")
 
         if !sound.isOff {
             SliderRow(
                 label: "Volume",
+                accessibilityName: "\(detectionName) volume",
                 value: volumeBinding,
                 minIcon: "speaker.fill",
                 maxIcon: "speaker.wave.3.fill"
@@ -144,6 +168,8 @@ struct SoundSettingsRows: View {
                         .foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityLabel("\(detectionName) direction announcements")
+                .accessibilityHint("Speaks the detection's direction.")
             }
         }
     }
@@ -206,16 +232,19 @@ struct SoundSettingsRows: View {
 // MARK: - Haptics
 
 struct HapticSettingsRows: View {
+    let detectionName: String
     @Binding var haptic: HapticSettings  // replace with your actual haptic type
 
     var body: some View {
         Toggle(isOn: $haptic.switchedOn) {
             Label("Haptics", systemImage: "iphone.radiowaves.left.and.right")
         }
+        .accessibilityLabel("\(detectionName) haptics")
 
         if haptic.switchedOn {
             SliderRow(
                 label: "Intensity",
+                accessibilityName: "\(detectionName) haptic intensity",
                 value: $haptic.intensity,
                 minIcon: "circle",
                 maxIcon: "circle.fill"
@@ -229,6 +258,7 @@ struct HapticSettingsRows: View {
 struct SliderRow<V>: View
 where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
     let label: String
+    let accessibilityName: String
     @Binding var value: V
     var minIcon: String
     var maxIcon: String
@@ -246,15 +276,22 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
             }
+            .accessibilityHidden(true)
 
             Slider(value: $value, in: 0...1, step: 0.2) {
                 Text(label)
             } minimumValueLabel: {
                 Image(systemName: minIcon)
+                    .accessibilityHidden(true)
             } maximumValueLabel: {
                 Image(systemName: maxIcon)
+                    .accessibilityHidden(true)
             }
             .foregroundStyle(.secondary)
+            .accessibilityLabel(accessibilityName)
+            .accessibilityValue(
+                Double(value).formatted(.percent.precision(.fractionLength(0)))
+            )
         }
         .padding(.vertical, 2)
     }
