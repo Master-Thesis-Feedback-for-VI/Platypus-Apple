@@ -17,8 +17,10 @@ struct ProfileEditSingularView: View {
         Form {
             Section {
                 NavigationLink("Default detection settings") {
-                    ProfileDetectionSettingsView(settings: $profile.defaultSettings)
-                        .navigationTitle("Default detection settings")
+                    ProfileDetectionSettingsView(
+                        settings: $profile.defaultSettings
+                    )
+                    .navigationTitle("Default detection settings")
                 }
                 .accessibilityHint(
                     "Used for locations without their own detection settings."
@@ -62,7 +64,9 @@ struct ProfileEditSingularView: View {
         Binding(
             get: { profile.isLocationEnabled(location) },
             set: { enabled in
-                withAnimation { profile.setLocation(location, enabled: enabled) }
+                withAnimation {
+                    profile.setLocation(location, enabled: enabled)
+                }
             }
         )
     }
@@ -170,6 +174,22 @@ struct SoundSettingsRows: View {
                 }
                 .accessibilityLabel("\(detectionName) direction announcements")
                 .accessibilityHint("Speaks the detection's direction.")
+
+                Toggle(isOn: distanceEstimationBinding) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Label(
+                            "Distance Estimator",
+                            systemImage: "base.unit"
+                        )
+                        Text(
+                            "Announces how far the detection is relative to you."
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+                .accessibilityLabel("\(detectionName) distance announcements")
+                .accessibilityHint("Speaks the detection's distance.")
             }
         }
     }
@@ -222,6 +242,23 @@ struct SoundSettingsRows: View {
             set: { newValue in
                 if case .tts(var s) = sound {
                     s.enableDirectionControl = newValue
+                    sound = .tts(s)
+                }
+            }
+        )
+    }
+
+    private var distanceEstimationBinding: Binding<Bool> {
+        Binding(
+            get: {
+                if case .tts(let s) = sound {
+                    return s.enableDistanceEstimation
+                }
+                return false
+            },
+            set: { newValue in
+                if case .tts(var s) = sound {
+                    s.enableDistanceEstimation = newValue
                     sound = .tts(s)
                 }
             }

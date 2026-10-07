@@ -27,6 +27,7 @@ struct TtsSetting: SpecificSoundSetting {
         didSet { volume = min(max(volume, 0), 1) }
     }
     var enableDirectionControl: Bool = false
+    var enableDistanceEstimation: Bool = false
 }
 
 enum SoundVariant: Codable, Equatable {

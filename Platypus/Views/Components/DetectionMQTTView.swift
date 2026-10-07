@@ -15,19 +15,23 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     let contentMode: ContentMode
 
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
-    @EnvironmentObject private var earconEngine: EarconPlayer
+
     @State private var tts = Speaker()
+    
     @Environment(ProfileManager.self) private var profileManager
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
+    @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Namespace private var namespace
 
     // MARK: - View
 
     var body: some View {
-        let settings = PlatyLocationTag.from(uniqueLocationTags: uniqueLocationTag)
-            .flatMap { profileManager.settings(for: $0) }
+        let settings = PlatyLocationTag.from(
+            uniqueLocationTags: uniqueLocationTag
+        )
+        .flatMap { profileManager.settings(for: $0) }
 
         Color.clear
             .task(
@@ -70,13 +74,23 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
         }
-        let detections = PlatyDetection.from(
+        var detections = PlatyDetection.from(
             detections: detectionsFiltered,
             frameSize: frameSize,
             viewportSize: viewportSize,
             imageTransform: imageTransform,
             contentMode: contentMode
         )
+
+        let distanceDetections = detections.filter {
+            $0.distance != nil
+        }
+        if distanceDetections.count > 0 {
+            let minVal = distanceDetections.min { det1, det2 in
+                det1.distance! < det2.distance!
+            }!
+            detections = [minVal]
+        }
 
         for detection in detections {
             guard !Task.isCancelled else { return }
@@ -147,7 +161,12 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                         let direction = String(
                             describing: detection.direction()
                         )
-                        name = "\(name), \(direction)"
+                        name += ", \(direction)"
+                    }
+                    
+                    if ttsSetting.enableDistanceEstimation, let distance = detection.distance {
+                        let distance = String(format: "%.1f meters", distance)
+                        name += ", \(distance)"
                     }
 
                     tts.speak(name, volume)
