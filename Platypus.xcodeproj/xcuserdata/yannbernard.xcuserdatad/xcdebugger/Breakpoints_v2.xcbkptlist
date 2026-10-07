@@ -7,24 +7,8 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "CBF7DDE4-9288-4C58-8F9C-66509C932F5A"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Platypus/Views/Components/DetectionMQTTView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "152"
-            endingLineNumber = "152"
-            landmarkName = "publishHaptics(for:location:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "9DEDDD7E-1FE7-4CF8-A90A-9E2A925B3325"
-            shouldBeEnabled = "No"
+            uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Platypus/Views/Components/DetectionMQTTView.swift"
@@ -34,6 +18,50 @@
             endingLineNumber = "135"
             landmarkName = "publishHaptics(for:location:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - 8e23492e39afc6f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  moduleName = "Platypus.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137">
+               </Location>
+               <Location
+                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - 92735250b6f95851"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  moduleName = "Platypus.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137">
+               </Location>
+               <Location
+                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - e73be0f05c8f164a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(4) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  moduleName = "Platypus.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "137"
+                  endingLineNumber = "137">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

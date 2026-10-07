@@ -8,7 +8,7 @@
 import AVFoundation
 import Foundation
 
-struct SoundFile: Hashable {
+nonisolated struct SoundFile: Hashable {
     let fileName: String
     let ext: String
 
@@ -32,7 +32,6 @@ extension PlatyDetectionType: Earconable {
         }
     }
 }
-
 
 // TODO: Front front right or front front right it should depend on the screen where something is positioned
 final class Speaker {

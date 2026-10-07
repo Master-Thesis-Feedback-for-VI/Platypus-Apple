@@ -16,11 +16,13 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     let contentMode: ContentMode
 
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
+    private let earconEngine: EarconPlayer = EarconPlayer(
+        earcons: PlatyDetectionType.allCases
+    )
     private let tts = Speaker()
     @State private var profileManager: ProfileManager?
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
-    @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Environment(\.modelContext) private var ctx
     @Namespace private var namespace
