@@ -3,7 +3,6 @@
 //  Platypus
 //
 
-import SwiftData
 import SwiftUI
 
 struct DetectionMQTTView<Frame: PlatySize>: View {
@@ -20,30 +19,30 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         earcons: PlatyDetectionType.allCases
     )
     private let tts = Speaker()
-    @State private var profileManager: ProfileManager?
+    @Environment(ProfileManager.self) private var profileManager
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
 
-    @Environment(\.modelContext) private var ctx
     @Namespace private var namespace
 
     // MARK: - View
 
     var body: some View {
+        let settings = PlatyLocationTag.from(uniqueLocationTags: uniqueLocationTag)
+            .flatMap { profileManager.settings(for: $0) }
+
         Color.clear
             .task(
                 id: HardwareInput(
                     detectedObjects: detectedObjects,
-                    uniqueLocationTag: uniqueLocationTag
+                    uniqueLocationTag: uniqueLocationTag,
+                    settings: settings
                 )
             ) {
-                await publishHaptics(
+                await onSituationChange(
                     for: detectedObjects,
-                    location: uniqueLocationTag
+                    settings: settings?.settings
                 )
-            }
-            .task {
-                profileManager = ProfileManager(context: ctx)
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
@@ -60,25 +59,15 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
 
     // MARK: - Callbacks Pub
 
-    private func publishHaptics(
+    private func onSituationChange(
         for detections: ImageDetections,
-        location: UniqueLocationTags
+        settings: ProfileSingularSettings?
     ) async {
         guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
             viewportSize.width > 0, viewportSize.height > 0
         else { return }
 
-        // TODO: Finish
-        guard
-            let locationTag = PlatyLocationTag.from(
-                uniqueLocationTags: location
-            )
-        else { return }
-        guard let profileManager else { return }
-
-        let currentSettingsSet = profileManager.currentProfile.settings[
-            locationTag
-        ]!
+        guard let settings else { return }
 
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
@@ -92,8 +81,9 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         )
 
         for detection in detections {
+            guard !Task.isCancelled else { return }
             guard
-                let setting = currentSettingsSet.detectionSettings[
+                let setting = settings.detectionSettings[
                     detection.detectionType
                 ]
             else {
@@ -134,6 +124,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             }
 
             // Sound Settings and callback
+            guard !Task.isCancelled else { return }
             switch setting.sound {
             case .off: break
 
@@ -174,8 +165,8 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             logger.log("Received: \(msg)")
 
             switch msg.cmd {
-            case .next: try? profileManager?.next()
-            case .prev: try? profileManager?.prev()
+            case .next: try? profileManager.next()
+            case .prev: try? profileManager.prev()
             case .empty: return
             }
         }
@@ -185,4 +176,5 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
 private struct HardwareInput: Equatable {
     let detectedObjects: ImageDetections
     let uniqueLocationTag: UniqueLocationTags
+    let settings: ProfileManager.SettingsSnapshot?
 }

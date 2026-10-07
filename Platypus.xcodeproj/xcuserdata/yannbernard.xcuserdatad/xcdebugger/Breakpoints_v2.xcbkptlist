@@ -7,59 +7,59 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF"
+            uuid = "5340802C-A9A0-4C50-AB16-1FE0B3CB08C4"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Platypus/Views/Components/DetectionMQTTView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "135"
-            endingLineNumber = "135"
-            landmarkName = "publishHaptics(for:location:)"
+            startingLineNumber = "131"
+            endingLineNumber = "131"
+            landmarkName = "onSituationChange(for:settings:)"
             landmarkType = "7">
             <Locations>
                <Location
-                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - 8e23492e39afc6f"
+                  uuid = "5340802C-A9A0-4C50-AB16-1FE0B3CB08C4 - 10aca1e6d9ac627"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  symbolName = "(1) suspend resume partial function for Platypus.DetectionMQTTView.onSituationChange(for: Platypus.ImageDetections, settings: Swift.Optional&lt;Platypus.ProfileSingularSettings&gt;) async -&gt; ()"
                   moduleName = "Platypus.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "137"
-                  endingLineNumber = "137">
+                  startingLineNumber = "132"
+                  endingLineNumber = "132">
                </Location>
                <Location
-                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - 92735250b6f95851"
+                  uuid = "5340802C-A9A0-4C50-AB16-1FE0B3CB08C4 - c5ec9c19c7b30221"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "(3) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  symbolName = "(3) suspend resume partial function for Platypus.DetectionMQTTView.onSituationChange(for: Platypus.ImageDetections, settings: Swift.Optional&lt;Platypus.ProfileSingularSettings&gt;) async -&gt; ()"
                   moduleName = "Platypus.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "137"
-                  endingLineNumber = "137">
+                  startingLineNumber = "132"
+                  endingLineNumber = "132">
                </Location>
                <Location
-                  uuid = "CB6CE3C9-1885-48C7-88A3-B090DD8B98DF - e73be0f05c8f164a"
+                  uuid = "5340802C-A9A0-4C50-AB16-1FE0B3CB08C4 - 2671871b0cdcac20"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "(4) suspend resume partial function for Platypus.DetectionMQTTView.publishHaptics(for: Platypus.ImageDetections, location: Platypus.UniqueLocationTags) async -&gt; ()"
+                  symbolName = "(4) suspend resume partial function for Platypus.DetectionMQTTView.onSituationChange(for: Platypus.ImageDetections, settings: Swift.Optional&lt;Platypus.ProfileSingularSettings&gt;) async -&gt; ()"
                   moduleName = "Platypus.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/yannbernard/Projects/Uni/Master/Platypus-Apple/Platypus/Views/Components/DetectionMQTTView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "137"
-                  endingLineNumber = "137">
+                  startingLineNumber = "132"
+                  endingLineNumber = "132">
                </Location>
             </Locations>
          </BreakpointContent>

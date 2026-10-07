@@ -11,10 +11,9 @@ import SwiftUI
 struct SettingsView: View {
     private let earconEngine = EarconPlayer(earcons: PlatyDetectionType.allCases)
 
-    @Environment(\.modelContext) private var ctx
+    @Environment(ProfileManager.self) private var profileManager
     @Environment(\.scenePhase) private var scenePhase
 
-    @State private var profileManager: ProfileManager?
     private let logger = PlatyLogger(tag: "StringSettingsView")
 
     var body: some View {
@@ -22,19 +21,12 @@ struct SettingsView: View {
             VStack {
                 sweepButton
 
-                if let profileManager {
-                    profileList(profileManager)
-                }
+                profileList(profileManager)
             }
             .navigationTitle("Available Profiles")
             .toolbar { toolbarContent }
-            .onAppear {
-                if profileManager == nil {
-                    profileManager = ProfileManager(context: ctx)
-                }
-            }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .background { try? profileManager?.purgeTrash() }
+                if phase == .background { try? profileManager.purgeTrash() }
             }
         }
     }
@@ -88,18 +80,16 @@ struct SettingsView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            if let profileManager {
-                Button(action: profileManager.undoDelete) {
-                    Label("Undo", systemImage: "arrow.uturn.backward")
-                }
-                .disabled(profileManager.trashed.isEmpty)
-
-                Button(
-                    "Add",
-                    systemImage: "plus",
-                    action: { try? profileManager.addProfile() }
-                )
+            Button(action: profileManager.undoDelete) {
+                Label("Undo", systemImage: "arrow.uturn.backward")
             }
+            .disabled(profileManager.trashed.isEmpty)
+
+            Button(
+                "Add",
+                systemImage: "plus",
+                action: { try? profileManager.addProfile() }
+            )
         }
     }
 
@@ -110,14 +100,7 @@ struct SettingsView: View {
         Binding(
             get: { profile.isActive },
             set: { newValue in
-                let profiles = manager.profiles
-                withAnimation {
-                    if newValue || profiles.count == 1 {
-                        for p in profiles { p.isActive = (p === profile) }
-                    } else {
-                        profile.isActive = false
-                    }
-                }
+                if newValue { withAnimation { try? manager.activate(profile) } }
             }
         )
     }

@@ -12,6 +12,11 @@ import SwiftData
 @MainActor
 @Observable
 final class ProfileManager {
+    struct SettingsSnapshot: Equatable {
+        let profileID: PersistentIdentifier
+        let settings: ProfileSingularSettings
+    }
+
     private let ctx: ModelContext
     private(set) var profiles: [ProfileSettings] = []
     private(set) var trashed: [ProfileSettings] = []
@@ -42,11 +47,28 @@ extension ProfileManager {
         profiles.first(where: \.isActive)!
     }
 
+    func settings(for location: PlatyLocationTag) -> SettingsSnapshot? {
+        let profile = currentProfile
+        guard let settings = profile.settings[location] else { return nil }
+        return SettingsSnapshot(
+            profileID: profile.persistentModelID,
+            settings: settings
+        )
+    }
+
     var currentProfileIndex: Int {
         profiles.firstIndex(where: \.isActive)!
     }
 
+    func activate(_ profile: ProfileSettings) throws {
+        guard let target = profiles.firstIndex(where: { $0 === profile }),
+            target != currentProfileIndex
+        else { return }
+        try swapActive(toActivate: target)
+    }
+
     func prev() throws {
+        reload()
         if profiles.count == 1 { return }
 
         let target =
@@ -56,6 +78,7 @@ extension ProfileManager {
     }
 
     func next() throws {
+        reload()
         if profiles.count == 1 { return }
 
         let target = (currentProfileIndex + 1) % profiles.count

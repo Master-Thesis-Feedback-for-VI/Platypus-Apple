@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct ProfileSingularSettings: Codable {
+struct ProfileSingularSettings: Codable, Equatable {
     var detectionSettings: [PlatyDetectionType: ProfileDetectionSettings]
 }

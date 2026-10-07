@@ -5,39 +5,34 @@
 //  Created by Yann Bernard on 02.10.26.
 //
 
-import SwiftData
 import SwiftUI
 
 struct ActiveProfileView: View {
-    @State private var profileManager: ProfileManager?
-    @Environment(\.modelContext) private var ctx
+    @Environment(ProfileManager.self) private var profileManager
 
     var body: some View {
         GlassEffectContainer {
             HStack(spacing: 2) {
                 activeProfileButton(name: "arrowshape.left") {
-                    try? profileManager?.prev()
+                    try? profileManager.prev()
                 }
 
                 Text(
-                    "\(profileManager?.currentProfile.name ?? "Loading...")"
+                    profileManager.currentProfile.name
                 )
                 .contentTransition(.numericText())
-                .animation(.default, value: profileManager?.currentProfile.name)
+                .animation(.default, value: profileManager.currentProfile.name)
                 .font(.title2)
                 .frame(width: 170)
                 .padding(.vertical, 8)
                 .glassEffect()
 
                 activeProfileButton(name: "arrowshape.right") {
-                    try? profileManager?.next()
+                    try? profileManager.next()
                 }
             }
         }
         .padding()
-        .onAppear {
-            profileManager = ProfileManager(context: ctx)
-        }
     }
 
     private func activeProfileButton(
