@@ -74,7 +74,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
         }
-        var detections = PlatyDetection.from(
+        let detections = PlatyDetection.from(
             detections: detectionsFiltered,
             frameSize: frameSize,
             viewportSize: viewportSize,
@@ -86,9 +86,15 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
         if let minVal = detections.min(by: { det1, det2 in
             det1.distance < det2.distance
         }) {
+//            let acceptableDistance = minVal.distance * 0.1
+//            filteredDetections = detections.filter { det in
+//                let diff = abs(det.distance - minVal.distance)
+//                return diff <= acceptableDistance
+//            }
             filteredDetections = [minVal]
         }
 
+        // Maybe some kind of grouping would make sense ie TTS: 3 Persons front avergae 3 meters
         for detection in filteredDetections {
             guard !Task.isCancelled else { return }
             guard
