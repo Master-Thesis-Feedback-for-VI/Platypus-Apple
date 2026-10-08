@@ -23,7 +23,7 @@ struct CameraView: View {
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(
-                        RoundedRectangle(cornerRadius: Constants.cornerRadius)
+                        RoundedRectangle(cornerRadius: 12)
                     )
 
                     Button {

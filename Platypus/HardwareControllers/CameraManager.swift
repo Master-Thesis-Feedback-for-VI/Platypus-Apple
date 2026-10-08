@@ -32,7 +32,7 @@ actor CameraSessionActor {
 
     private let videoOutput = AVCaptureMovieFileOutput()
     private let recordingDelegate = RecordingDelegateProxy()
-    
+
     private let photoOutput = AVCapturePhotoOutput()
     private let photoCaptureDelegate = PhotoCaptureDelegateProxy()
 
@@ -49,13 +49,11 @@ actor CameraSessionActor {
         session.sessionPreset = .high
         defer { session.commitConfiguration() }
 
-        guard
-            let videoDevice = AVCaptureDevice.default(
-                .builtInWideAngleCamera,
-                for: .video,
-                position: .back
-            )
-        else {
+        guard let videoDevice = AVCaptureDevice.default(
+            .builtInWideAngleCamera,
+            for: .video,
+            position: .back
+        ) ?? AVCaptureDevice.default(for: .video) else {
             throw CameraError.deviceNotFound
         }
 
@@ -67,10 +65,11 @@ actor CameraSessionActor {
         if session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
         }
-        
+
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
-            photoOutput.isResponsiveCaptureEnabled = photoOutput.isZeroShutterLagSupported
+            photoOutput.isResponsiveCaptureEnabled =
+                photoOutput.isZeroShutterLagSupported
             if photoOutput.isZeroShutterLagSupported {
                 photoOutput.isZeroShutterLagEnabled = true
             }
@@ -204,15 +203,22 @@ actor CameraSessionActor {
         guard videoOutput.isRecording else { return }
         videoOutput.stopRecording()
     }
-    
+
     // MARK: - Photo Capture
     func snapPhoto() async throws -> Data {
         let settings = AVCapturePhotoSettings()
         settings.photoQualityPrioritization = .speed
 
+        if photoOutput.isShutterSoundSuppressionSupported {
+            settings.isShutterSoundSuppressionEnabled = true
+        }
+
         return try await withCheckedThrowingContinuation { continuation in
             photoCaptureDelegate.continuation = continuation
-            photoOutput.capturePhoto(with: settings, delegate: photoCaptureDelegate)
+            photoOutput.capturePhoto(
+                with: settings,
+                delegate: photoCaptureDelegate
+            )
         }
     }
 
@@ -368,7 +374,7 @@ final class CameraManager: ObservableObject {
         await cameraActor.stopRecording()
         _ = try? await recordingTask?.value
     }
-    
+
     // MARK: - Photo
     func snapPhoto() async throws -> PlatyImage {
         let img = try await cameraActor.snapPhoto()

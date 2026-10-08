@@ -48,7 +48,6 @@ struct PlatypusApp: App {
         }
     }()
 
-    @StateObject private var earconEngine = EarconPlayer(earcons: PlatyDetectionType.allCases)
     @StateObject private var mqttClient = PlatyMQTT(
         userName: infoValue("MQTT_USER"),
         passwd: infoValue("PASSWORD")
@@ -56,6 +55,9 @@ struct PlatypusApp: App {
     @StateObject private var locationRecorder = LocationRecorder()
     @StateObject private var cameraManager = CameraManager()
     @StateObject private var imageRecognizerStore = ImageRecognizerStore()
+    @StateObject private var earconEngine = EarconPlayer(
+        earcons: PlatyDetectionType.allCases
+    )
 
     private let logger = PlatyLogger(tag: "Root")
 
@@ -70,6 +72,7 @@ struct PlatypusApp: App {
                     case .active:
                         guard !didConnect else { return }
                         didConnect = true
+//                        let _ = enableTracing(rustLog: .debug)
                         Task {
                             logger.log("Connecting to mqtt server...")
                             do {

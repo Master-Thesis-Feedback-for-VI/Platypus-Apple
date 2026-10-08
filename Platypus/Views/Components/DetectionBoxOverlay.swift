@@ -26,9 +26,25 @@ struct DetectionBoxOverlay<Frame: PlatySize>: View {
                         imageTransform: imageTransform,
                         contentMode: contentMode
                     ) {
-                        Rectangle()
-                            .path(in: detection.rect)
-                            .stroke(Color.red, lineWidth: 2)
+                        ZStack {
+                            Rectangle()
+                                .path(in: detection.rect)
+                                .stroke(Color.red, lineWidth: 2)
+
+                            Text(String(format: "%.1f m", Double(detection.distance)))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Color.red,
+                                    in: RoundedRectangle(cornerRadius: 3)
+                                )
+                                .position(
+                                    x: detection.rect.minX + 20,
+                                    y: max(detection.rect.minY - 10, 10)
+                                )
+                        }
                     }
                 }
             }
