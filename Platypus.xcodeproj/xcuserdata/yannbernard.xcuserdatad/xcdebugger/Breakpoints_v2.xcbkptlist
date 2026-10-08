@@ -7,16 +7,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "B4853050-986E-440C-9B75-CFC381319A2F"
+            uuid = "3B19CFEE-1997-4152-B893-69658ACD43CB"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Platypus/Views/Components/DetectionMQTTView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "105"
-            endingLineNumber = "105"
-            landmarkName = "publishHaptics(for:location:)"
+            startingLineNumber = "88"
+            endingLineNumber = "88"
+            landmarkName = "onSituationChange(for:settings:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

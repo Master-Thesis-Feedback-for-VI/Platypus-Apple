@@ -7,166 +7,139 @@
 
 import SwiftData
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
-    @EnvironmentObject var earconEngine: EarconPlayer
-    
-    @Environment(\.modelContext) private var ctx
+    @EnvironmentObject private var earconEngine: EarconPlayer
+
+    @Environment(ProfileManager.self) private var profileManager
     @Environment(\.scenePhase) private var scenePhase
 
-    @Query(
-        filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
-        sort: \ProfileSettings.created,
-        animation: .default
-    )
-    private var profiles: [ProfileSettings]
-
-    @Query(
-        filter: #Predicate<ProfileSettings> { $0.deletedAt != nil },
-        sort: \ProfileSettings.deletedAt
-    )
-    private var trashed: [ProfileSettings]
-    
     private let logger = PlatyLogger(tag: "StringSettingsView")
 
     var body: some View {
         NavigationStack {
-            VStack {
-                Button {
-                    Task {
-                        for detectionType in PlatyDetectionType.allCases {
-                            logger.log("Now playing: \(detectionType.rawValue)", level: .warning)
-                            await earconEngine.playSweep(detectionType, interval: .seconds(1))
-                        }
-                    }
-                } label: {
-                    Label("Sweep", systemImage: "speaker")
-                }
-                
-                List {
-                    ForEach(profiles) { profile in
-                        HStack {
-                            Toggle("Active", isOn: activeBinding(for: profile))
-                                .labelsHidden()
-                                .disabled(profiles.count <= 1)
-                            NavigationLink(profile.name) {
-                                ProfileEditView(
-                                    allOtherProfileNames:
-                                        profiles
-                                        .filter { $0 !== profile }
-                                        .map(\.name),
-                                    profile: profile
-                                )
-                            }
-                        }
-                        .deleteDisabled(profiles.count <= 1)
-                    }
-                    .onDelete(perform: deleteProfiles)
-                }
-                .animation(.default, value: profiles.map(\.isActive))
+            profileList(profileManager)
                 .navigationTitle("Available Profiles")
-                .toolbar {
-                    ToolbarItemGroup(placement: .primaryAction) {
-                        Button(action: undoDelete) {
-                            Label("Undo", systemImage: "arrow.uturn.backward")
-                        }
-                        .disabled(trashed.isEmpty)
-                        
-                        Button("Add", systemImage: "plus", action: addProfile)
-                    }
-                }
-                .onAppear(perform: ensureAtLeastOneProfile)
+                .toolbar { toolbarContent }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .background { purgeTrash() }
+                    if phase == .background { try? profileManager.purgeTrash() }
+                }
+        }
+    }
+
+    private var sweepButton: some View {
+        Button {
+            Task {
+                for detectionType in PlatyDetectionType.allCases {
+                    logger.log(
+                        "Now playing: \(detectionType.rawValue)",
+                        level: .warning
+                    )
+                    await earconEngine.playSweep(
+                        detectionType,
+                        interval: .seconds(1)
+                    )
                 }
             }
+        } label: {
+            Label("Sweep", systemImage: "speaker")
         }
     }
 
-    // MARK: - Helpers
+    @ViewBuilder
+    private func profileList(_ manager: ProfileManager) -> some View {
+        let profiles = manager.profiles
+        let list = List {
+            ForEach(profiles) { profile in
+                HStack {
+                    Toggle(
+                        "Active",
+                        isOn: activeBinding(for: profile, in: manager)
+                    )
+                    .labelsHidden()
+                    .accessibilityLabel("Profile \(profile.name)")
+                    .accessibilityValue(
+                        profile.isActive ? "Active" : "Inactive"
+                    )
+                    .accessibilityHint(
+                        profile.isActive
+                            ? "Choose another profile to make it active."
+                            : "Makes this the active profile."
+                    )
+                    .disabled(profile.isActive || profiles.count <= 1)
+                    NavigationLink(profile.name) {
+                        ProfileEditView(
+                            allOtherProfileNames: profiles.filter {
+                                $0 !== profile
+                            }.map(\.name),
+                            profile: profile
+                        )
+                    }
+                    .accessibilityLabel("Edit \(profile.name)")
+                    .accessibilityValue(
+                        profile.isActive
+                            ? "Active profile" : "Inactive profile"
+                    )
+                    .accessibilityHint("Opens this profile's settings.")
+                }
+                .deleteDisabled(profiles.count <= 1)
+            }
+            .onDelete { try? manager.deleteProfiles(at: $0) }
+        }
+        .animation(.default, value: profiles.map(\.isActive))
 
-    private func uniqueName(from base: String) -> String {
-        let names = Set(profiles.map(\.name))
-        guard names.contains(base) else { return base }
-        var i = 1
-        while names.contains("\(base) - \(i)") { i += 1 }
-        return "\(base) - \(i)"
+        if profiles.count > 1 {
+            list.accessibilityAction(.magicTap, switchToNextProfile)
+        } else {
+            list
+        }
     }
 
-    private func purgeTrash() {
-        trashed.forEach(ctx.delete)
-    }
-
-    // MARK: - Actions
-
-    private func addProfile() {
-        withAnimation {
-            ctx.insert(
-                ProfileSettings(
-                    name: uniqueName(from: "Profile")
-                )
+    private func switchToNextProfile() {
+        guard profileManager.profiles.count > 1 else { return }
+        do {
+            try withAnimation { try profileManager.next() }
+            UIAccessibility.post(
+                notification: .announcement,
+                argument:
+                    "Active profile: \(profileManager.currentProfile.name)"
             )
+        } catch {
+            logger.log("Could not switch profile: \(error)", level: .error)
         }
     }
 
-    private func undoDelete() {
-        guard let profile = trashed.last else { return }
-        withAnimation {
-            profile.name = uniqueName(from: profile.name)
-            profile.isActive = false
-            profile.deletedAt = nil
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItemGroup(placement: .primaryAction) {
+            Button(action: profileManager.undoDelete) {
+                Label("Undo", systemImage: "arrow.uturn.backward")
+            }
+            .accessibilityLabel("Undo profile deletion")
+            .accessibilityHint("Restores the most recently deleted profile.")
+            .disabled(profileManager.trashed.isEmpty)
+
+            Button(
+                "Add",
+                systemImage: "plus",
+                action: { try? profileManager.addProfile() }
+            )
+            .accessibilityLabel("Add profile")
+            .accessibilityHint("Creates a new profile.")
         }
     }
 
-    private func activeBinding(for profile: ProfileSettings) -> Binding<Bool> {
+    private func activeBinding(
+        for profile: ProfileSettings,
+        in manager: ProfileManager
+    ) -> Binding<Bool> {
         Binding(
             get: { profile.isActive },
             set: { newValue in
-                withAnimation {
-                    if newValue || profiles.count == 1 {
-                        for p in profiles { p.isActive = (p === profile) }
-                    } else {
-                        profile.isActive = false
-                    }
-                }
+                if newValue { withAnimation { try? manager.activate(profile) } }
             }
         )
     }
 
-    private func deleteProfiles(at offsets: IndexSet) {
-        guard profiles.count - offsets.count >= 1 else { return }
-
-        let toDelete = offsets.map { profiles[$0] }
-        let wasActiveDeleted = toDelete.contains { $0.isActive }
-        let remaining = profiles.filter { p in !toDelete.contains { $0 === p } }
-
-        withAnimation(.snappy) {
-            let now = Date()
-            for (i, p) in toDelete.enumerated() {
-                p.isActive = false
-                p.deletedAt = now.addingTimeInterval(Double(i) * 0.001)  // keeps undo order stable
-            }
-            if wasActiveDeleted { remaining.first?.isActive = true }
-        }
-    }
-
-    private func ensureAtLeastOneProfile() {
-        purgeTrash()
-        if profiles.isEmpty {
-            let profile = ProfileSettings(
-                name: uniqueName(from: "Profile")
-            )
-            profile.isActive = true
-            withAnimation {
-                ctx.insert(profile)
-            }
-            return
-        }
-        let active = profiles.filter(\.isActive)
-        switch active.count {
-        case 1: break
-        case 0: profiles.first?.isActive = true
-        default: for p in profiles { p.isActive = (p === active.first!) }
-        }
-    }
 }

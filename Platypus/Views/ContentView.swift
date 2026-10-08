@@ -15,54 +15,62 @@ struct ContentView: View {
     @EnvironmentObject var imageRecognizerStore: ImageRecognizerStore
 
     @State private var selection: Tab = .settings
+    @State private var profileManager: ProfileManager?
 
     enum Tab { case settings, live, camera, replay }
 
     var body: some View {
-        TabView(selection: $selection) {
-            LiveviewModeView()
-                .tabItem {
-                    Image(systemName: "camera")
-                    Text("Live")
-                }
-                .tag(Tab.live)
-
-            CameraView()
-                .tabItem {
-                    Image(systemName: "folder.fill")
-                    Text("Record")
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .tag(Tab.camera)
-
-            ReplayView()
-                .tabItem {
-                    Image(systemName: "play.square.fill")
-                    Text("Replay")
-                }.tag(Tab.replay)
-            
-            SettingsView()
-                .tabItem {
-                    Image(systemName: "gearshape.fill")
-                    Text("Settings")
-                }
-                .tag(Tab.settings)
-
-        }
-        .task {
-            await imageRecognizerStore.load()
-        }
-        .onChange(of: selection) { _, newValue in
-            Task {
-                switch newValue {
-                case .live, .camera:
-                    await cameraManager.startSession()
-                case .settings, .replay:
-                    if cameraManager.isRecording {
-                        await cameraManager.stopRecording()
+        if let profileManager {
+            TabView(selection: $selection) {
+                LiveviewModeView()
+                    .tabItem {
+                        Image(systemName: "camera")
+                        Text("Live")
                     }
-                    await cameraManager.stopSession()
+                    .tag(Tab.live)
+
+                CameraView()
+                    .tabItem {
+                        Image(systemName: "folder.fill")
+                        Text("Record")
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .tag(Tab.camera)
+
+                ReplayView()
+                    .tabItem {
+                        Image(systemName: "play.square.fill")
+                        Text("Replay")
+                    }.tag(Tab.replay)
+
+                SettingsView()
+                    .tabItem {
+                        Image(systemName: "gearshape.fill")
+                        Text("Settings")
+                    }
+                    .tag(Tab.settings)
+
+            }
+            .environment(profileManager)
+            .task {
+                await imageRecognizerStore.load()
+            }
+            .onChange(of: selection) { _, newValue in
+                Task {
+                    switch newValue {
+                    case .live, .camera:
+                        await cameraManager.startSession()
+                    case .settings, .replay:
+                        if cameraManager.isRecording {
+                            await cameraManager.stopRecording()
+                        }
+                        await cameraManager.stopSession()
+                    }
                 }
+            }
+        } else {
+            Color.clear.task {
+                profileManager = ProfileManager(context: modelContext)
             }
         }
     }

@@ -5,27 +5,76 @@
 //  Created by Yann Bernard on 02.10.26.
 //
 
-import SwiftData
 import SwiftUI
 
 struct ActiveProfileView: View {
-    @Query(
-        filter: #Predicate<ProfileSettings> { $0.deletedAt == nil },
-        sort: \ProfileSettings.created,
-        animation: .default
-    )
-    private var profiles: [ProfileSettings]
-    private var currentProfile: ProfileSettings {
-        let activeProfiles = profiles.filter({ $0.isActive })
-        precondition(activeProfiles.count == 1)
-        return activeProfiles.first!
-    }
+    let logger = PlatyLogger(tag: "ActiveProfileView")
+    
+    @Environment(ProfileManager.self) private var profileManager
 
     var body: some View {
-        VStack {
-            Text("Profile: \(currentProfile.name)")
+        GlassEffectContainer {
+            HStack(spacing: 2) {
+                activeProfileButton(name: "arrowshape.left") {
+                    try? profileManager.prev()
+                }
+
+                let profileText = Text(
+                    profileManager.currentProfile.name
+                )
+                .contentTransition(.numericText())
+                .animation(.default, value: profileManager.currentProfile.name)
+                .font(.title2)
+                .frame(width: 170)
+                .padding(.vertical, 8)
+                .glassEffect()
+                .accessibilityAction(.magicTap) {}
+
+                let profiles = profileManager.profiles
+                if profiles.count > 1 {
+                    profileText.accessibilityAction(
+                        .magicTap,
+                        switchToNextProfile
+                    )
+                } else {
+                    profileText
+                }
+
+                activeProfileButton(name: "arrowshape.right") {
+                    try? profileManager.next()
+                }
+            }
         }
         .padding()
-        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func switchToNextProfile() {
+        guard profileManager.profiles.count > 1 else { return }
+
+        do {
+            try profileManager.next()
+            UIAccessibility.post(
+                notification: .announcement,
+                argument:
+                    "Active profile: \(profileManager.currentProfile.name)"
+            )
+        } catch {
+            logger.log("Could not switch profile: \(error)", level: .error)
+        }
+    }
+
+    private func activeProfileButton(
+        name: String,
+        perform: @escaping () -> Void
+    ) -> some View {
+        Button {
+            perform()
+        } label: {
+            Image(systemName: name)
+        }
+        .font(.title2)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .glassEffect()
     }
 }

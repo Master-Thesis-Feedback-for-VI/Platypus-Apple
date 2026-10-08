@@ -11,6 +11,7 @@ import SwiftUI
 struct PlatyDetection {
     public var confidence: Float
     public var detectionType: PlatyDetectionType
+    public var distance: Float
     public var rect: CGRect
 
     let viewportSize: CGSize
@@ -50,8 +51,9 @@ extension PlatyDetection {
         return Self(
             confidence: detection.confidence,
             detectionType: platyDetection,
+            distance: detection.distance,
             rect: rect,
-            viewportSize: viewportSize
+            viewportSize: viewportSize,
         )
     }
 
@@ -98,6 +100,16 @@ extension PlatyDetection {
         )
     }
 
+    public func azimuth(_ horizontalFOV: Double = 65) -> Float {
+        let x = Double(normVector().0)
+        let halfFOV = horizontalFOV * .pi / 180 / 2
+
+        let angle = atan(x * tan(halfFOV)) * 180 / .pi
+
+        let wrapped = angle.truncatingRemainder(dividingBy: 360)
+        return Float(wrapped < 0 ? wrapped + 360 : wrapped)
+    }
+
     public func yFromCenter() -> (Float, Float) {
         return (
             normalized(rect.minY, relativeTo: viewportSize.height / 2),
@@ -111,7 +123,12 @@ extension PlatyDetection {
             normalized(rect.maxX, relativeTo: viewportSize.width / 2)
         )
     }
-} // End PlatyDetection extension
+
+    public func direction(_ horizontalFOV: Double = 65) -> Direction {
+        let azi = azimuth(horizontalFOV)
+        return Direction.closest(to: Double(azi))
+    }
+}  // End PlatyDetection extension
 
 extension PlatyDetection: Equatable {}
 
