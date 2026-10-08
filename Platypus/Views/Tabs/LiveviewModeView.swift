@@ -153,7 +153,6 @@ struct CameraActiveLiveView: View {
                             imgPath: imgPath,
                             imageRecognizer: imgRecognizer,
                             amount: amountDominantColor,
-                            includeDepth: true
                         )
 
                         detectedObjects = imageFlowData.imageDetections()

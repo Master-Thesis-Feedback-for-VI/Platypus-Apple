@@ -17,7 +17,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
 
     @State private var tts = Speaker()
-    
+
     @Environment(ProfileManager.self) private var profileManager
 
     @EnvironmentObject private var mqttClient: PlatyMQTT
@@ -82,17 +82,14 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             contentMode: contentMode
         )
 
-        let distanceDetections = detections.filter {
-            $0.distance != nil
-        }
-        if distanceDetections.count > 0 {
-            let minVal = distanceDetections.min { det1, det2 in
-                det1.distance! < det2.distance!
-            }!
-            detections = [minVal]
+        var filteredDetections = detections
+        if let minVal = detections.min(by: { det1, det2 in
+            det1.distance < det2.distance
+        }) {
+            filteredDetections = [minVal]
         }
 
-        for detection in detections {
+        for detection in filteredDetections {
             guard !Task.isCancelled else { return }
             guard
                 let setting = settings.detectionSettings[
@@ -158,14 +155,31 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     var name = detection.detectionType.rawValue
 
                     if ttsSetting.enableDirectionControl {
-                        let direction = String(
-                            describing: detection.direction()
-                        )
-                        name += ", \(direction)"
+                        let direction: Direction?
+                        switch detection.direction() {
+                        case .front: direction = .front
+                        case .frontLeft, .frontLeftLeft, .frontFrontLeft, .left:
+                            direction = .left
+                        case .frontRight, .frontRightRight, .frontFrontRight,
+                            .right:
+                            direction = .right
+                        default:
+                            direction = nil
+                        }
+
+                        if let direction {
+                            let describedDirection = String(
+                                describing: direction
+                            )
+                            name += ", \(describedDirection)"
+                        }
                     }
-                    
-                    if ttsSetting.enableDistanceEstimation, let distance = detection.distance {
-                        let distance = String(format: "%.1f meters", distance)
+
+                    if ttsSetting.enableDistanceEstimation {
+                        let distance = String(
+                            format: "%.1f meters",
+                            detection.distance
+                        )
                         name += ", \(distance)"
                     }
 

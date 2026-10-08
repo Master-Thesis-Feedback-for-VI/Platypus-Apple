@@ -95,6 +95,7 @@ private final class EarconBackend {
     private let environment = AVAudioEnvironmentNode()
     private var voices: [SoundFile: Voice] = [:]
     private var lastPlayed: [SoundFile: ContinuousClock.Instant] = [:]
+    private var playing: [SoundFile: UUID] = [:]
 
     func setUp(files: [SoundFile]) async throws {
         let activated = try await Task.detached {
@@ -164,24 +165,41 @@ private final class EarconBackend {
             print("Earcon not loaded: \(file.fileName)")
             return
         }
+        guard playing[file] == nil else { return }
         let now = ContinuousClock.now
         if let previous = lastPlayed[file],
             now - previous < .milliseconds(400)
         {
             return
         }
-        lastPlayed[file] = now
         voice.node.volume = volume
         voice.node.position = .polar(
             azimuth: azimuth,
             elevation: elevation,
             distance: distance
         )
-        voice.node.scheduleBuffer(voice.buffer, at: nil, options: .interrupts)
-        if !voice.node.isPlaying {
-            do { try voice.node.playAudio() } catch {
-                print("Earcon \(file.fileName) failed to play: \(error)")
+        let playbackID = UUID()
+        playing[file] = playbackID
+        voice.node.scheduleBuffer(
+            voice.buffer,
+            at: nil,
+            options: [],
+            completionCallbackType: .dataPlayedBack
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard self?.playing[file] == playbackID else { return }
+                self?.playing.removeValue(forKey: file)
             }
+        }
+        do {
+            if !voice.node.isPlaying {
+                try voice.node.playAudio()
+            }
+            lastPlayed[file] = now
+        } catch {
+            playing.removeValue(forKey: file)
+            voice.node.stop()
+            print("Earcon \(file.fileName) failed to play: \(error)")
         }
     }
 
@@ -190,6 +208,7 @@ private final class EarconBackend {
         engine.stop()
         voices.removeAll()
         lastPlayed.removeAll()
+        playing.removeAll()
     }
 }
 

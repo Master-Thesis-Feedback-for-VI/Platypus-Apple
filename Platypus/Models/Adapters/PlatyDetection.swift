@@ -11,7 +11,7 @@ import SwiftUI
 struct PlatyDetection {
     public var confidence: Float
     public var detectionType: PlatyDetectionType
-    public var distance: Float?
+    public var distance: Float
     public var rect: CGRect
 
     let viewportSize: CGSize
