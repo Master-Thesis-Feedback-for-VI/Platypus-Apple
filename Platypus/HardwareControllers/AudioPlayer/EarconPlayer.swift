@@ -98,6 +98,7 @@ private final class EarconBackend {
     private var playing: [SoundFile: UUID] = [:]
 
     func setUp(files: [SoundFile]) async throws {
+        let files = files.filter { !$0.skip }
         let activated = try await Task.detached {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback)
@@ -161,7 +162,7 @@ private final class EarconBackend {
         elevation: Double,
         distance: Float
     ) {
-        guard let voice = voices[file] else {
+        guard let voice = voices[file], !file.skip else {
             print("Earcon not loaded: \(file.fileName)")
             return
         }
@@ -230,7 +231,9 @@ final class EarconPlayer: ObservableObject {
     private(set) var isReady = false
 
     init(earcons: [any Earconable]) {
-        files = earcons.map(\.soundFile)
+        files = earcons
+            .map(\.soundFile)
+            .filter { !$0.skip }
     }
 
     convenience init<E: Earconable & CaseIterable>(_ type: E.Type) {
@@ -279,7 +282,7 @@ final class EarconPlayer: ObservableObject {
         distance: Float = 2
     ) async {
         await waitUntilReady()
-        guard !Task.isCancelled, isReady else { return }
+        guard !Task.isCancelled, isReady, !earcon.soundFile.skip else { return }
         backend.play(
             file: earcon.soundFile,
             volume: volume,

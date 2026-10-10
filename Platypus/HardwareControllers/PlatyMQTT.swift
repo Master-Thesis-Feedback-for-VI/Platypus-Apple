@@ -51,7 +51,7 @@ final class PlatyMQTT: ObservableObject {
 }
 
 extension PlatyMQTT {
-    enum RecMessageVariants: Int, Codable {
+    enum RecMessageVariants: Int, Codable, CaseIterable {
         case prev = 0
         case next = 1
         case empty = 2

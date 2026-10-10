@@ -11,15 +11,27 @@ import Foundation
 nonisolated struct SoundFile: Hashable {
     let fileName: String
     let ext: String
+    let skip: Bool
 
-    init(_ fileName: String, ext: String = "wav") {
-        self.fileName = fileName
+    init(_ fileName: String?, ext: String = "wav") {
+        self.fileName = fileName ?? ""
         self.ext = ext
+        self.skip = fileName == nil
     }
 }
 
 protocol Earconable {
     var soundFile: SoundFile { get }
+}
+
+extension PlatyMQTT.RecMessageVariants: Earconable {
+    var soundFile: SoundFile {
+        switch self {
+        case .next: SoundFile("next_profile")
+        case .prev: SoundFile("prev_profile")
+        case .empty: SoundFile(nil)
+        }
+    }
 }
 
 extension PlatyDetectionType: Earconable {
