@@ -99,7 +99,7 @@ struct SettingsView: View {
     private func switchToNextProfile() {
         guard profileManager.profiles.count > 1 else { return }
         do {
-            try withAnimation { try profileManager.next() }
+            try withAnimation { try profileManager.next(earconEngine) }
             UIAccessibility.post(
                 notification: .announcement,
                 argument:

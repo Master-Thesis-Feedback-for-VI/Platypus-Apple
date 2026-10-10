@@ -70,7 +70,7 @@ extension ProfileManager {
         try swapActive(toActivate: target)
     }
 
-    func prev() throws {
+    func prev(_ earconPlayer: EarconPlayer) throws {
         reload()
         if profiles.count == 1 { return }
 
@@ -78,14 +78,22 @@ extension ProfileManager {
             (currentProfileIndex - 1 + profiles.count)
             % profiles.count
         try swapActive(toActivate: target)
+        
+        Task {
+            await earconPlayer.play(PlatyMQTT.RecMessageVariants.prev, volume: 0.5, from: .front)
+        }
     }
 
-    func next() throws {
+    func next(_ earconPlayer: EarconPlayer) throws {
         reload()
         if profiles.count == 1 { return }
 
         let target = (currentProfileIndex + 1) % profiles.count
         try swapActive(toActivate: target)
+        
+        Task {
+            await earconPlayer.play(PlatyMQTT.RecMessageVariants.next, volume: 0.5, from: .front)
+        }
     }
 
     func addProfile() throws {

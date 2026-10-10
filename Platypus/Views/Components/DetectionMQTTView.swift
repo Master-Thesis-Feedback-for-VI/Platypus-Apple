@@ -8,31 +8,31 @@ import SwiftUI
 struct DetectionMQTTView<Frame: PlatySize>: View {
     let detectedObjects: ImageDetections
     let uniqueLocationTag: UniqueLocationTags
-
+    
     let frameSize: Frame
     let viewportSize: CGSize
     let imageTransform: CGAffineTransform
     let contentMode: ContentMode
-
+    
     private let logger = PlatyLogger(tag: "DetectionMQTTView")
-
+    
     @State private var tts = Speaker()
-
+    
     @Environment(ProfileManager.self) private var profileManager
-
+    
     @EnvironmentObject private var mqttClient: PlatyMQTT
     @EnvironmentObject private var earconEngine: EarconPlayer
-
+    
     @Namespace private var namespace
-
+    
     // MARK: - View
-
+    
     var body: some View {
         let settings = PlatyLocationTag.from(
             uniqueLocationTags: uniqueLocationTag
         )
-        .flatMap { profileManager.settings(for: $0) }
-
+            .flatMap { profileManager.settings(for: $0) }
+        
         Color.clear
             .task(
                 id: HardwareInput(
@@ -58,19 +58,19 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 mqttClient.flushCallbacks(namespace: namespace)
             }
     }
-
+    
     // MARK: - Callbacks Pub
-
+    
     private func onSituationChange(
         for detections: ImageDetections,
         settings: ProfileSingularSettings?
     ) async {
         guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
-            viewportSize.width > 0, viewportSize.height > 0
-        else { return }
-
+              viewportSize.width > 0, viewportSize.height > 0
+                else { return }
+        
         guard let settings else { return }
-
+        
         let detectionsFiltered = detections.detections.filter {
             $0.name == .person || $0.name == .car
         }
@@ -81,19 +81,14 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             imageTransform: imageTransform,
             contentMode: contentMode
         )
-
+        
         var filteredDetections = detections
         if let minVal = detections.min(by: { det1, det2 in
             det1.distance < det2.distance
         }) {
-//            let acceptableDistance = minVal.distance * 0.1
-//            filteredDetections = detections.filter { det in
-//                let diff = abs(det.distance - minVal.distance)
-//                return diff <= acceptableDistance
-//            }
             filteredDetections = [minVal]
         }
-
+        
         // Maybe some kind of grouping would make sense ie TTS: 3 Persons front avergae 3 meters
         for detection in filteredDetections {
             guard !Task.isCancelled else { return }
@@ -101,10 +96,10 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                 let setting = settings.detectionSettings[
                     detection.detectionType
                 ]
-            else {
+                    else {
                 continue
             }
-
+            
             // Haptic settings and callback
             let hapticSettings = setting.haptic
             if hapticSettings.switchedOn {
@@ -114,15 +109,15 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     (Double(right), AvailableTopics.hapticRight, right > 0),
                 ]
                 let hapticSignals: [(AvailableTopics, Int)] =
-                    candidates.compactMap { value, topic, shouldSend in
-                        let signalStrength = Int(
-                            (abs(value) * 10.0 * hapticSettings.intensity)
-                                .rounded()
-                        )
-
-                        return shouldSend ? (topic, signalStrength) : nil
-                    }
-
+                candidates.compactMap { value, topic, shouldSend in
+                    let signalStrength = Int(
+                        (abs(value) * 10.0 * hapticSettings.intensity)
+                            .rounded()
+                    )
+                    
+                    return shouldSend ? (topic, signalStrength) : nil
+                }
+                
                 for (channel, scale) in hapticSignals {
                     do {
                         try await mqttClient.publish(
@@ -137,29 +132,29 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                     }
                 }
             }
-
+            
             // Sound Settings and callback
             guard !Task.isCancelled else { return }
             switch setting.sound {
             case .off: break
-
+                
             case .earcon(let earconSetting):
                 do {
                     let volume = earconSetting.volume
                     let detectionType = detection.detectionType
-
+                    
                     await earconEngine.play(
                         detectionType,
                         volume: volume,
                         azimuth: earconAzimuth(for: detection)
                     )
                 }
-
+                
             case .tts(let ttsSetting):
                 do {
                     let volume = ttsSetting.volume
                     var name = detection.detectionType.rawValue
-
+                    
                     if ttsSetting.enableDirectionControl {
                         let direction: Direction?
                         switch detection.direction() {
@@ -167,12 +162,12 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                         case .frontLeft, .frontLeftLeft, .frontFrontLeft, .left:
                             direction = .left
                         case .frontRight, .frontRightRight, .frontFrontRight,
-                            .right:
+                                .right:
                             direction = .right
                         default:
                             direction = nil
                         }
-
+                        
                         if let direction {
                             let describedDirection = String(
                                 describing: direction
@@ -180,7 +175,7 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                             name += ", \(describedDirection)"
                         }
                     }
-
+                    
                     if ttsSetting.enableDistanceEstimation {
                         let distance = String(
                             format: "%.1f meters",
@@ -188,29 +183,31 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                         )
                         name += ", \(distance)"
                     }
-
+                    
                     tts.speak(name, volume)
                 }
             }
         }
     }
-
+    
     private func earconAzimuth(for detection: PlatyDetection) -> Double {
         let x = Double(detection.normVector().0)
         // Spread the visible width across wider sound angles; boost positions
         // near the center so left and right are easier to distinguish.
         return (x < 0 ? -1 : 1) * 90 * pow(abs(x), 0.45)
     }
-
+    
     // MARK: - Callbacks Sub
-
+    
     private func swapProfile(msg: PlatyMQTT.RecMessage) {
         Task { @MainActor in
             logger.log("Received: \(msg)")
-
+            
             switch msg.cmd {
-            case .next: try? profileManager.next()
-            case .prev: try? profileManager.prev()
+            case .next:
+                try? profileManager.next(earconEngine)
+            case .prev:
+                try? profileManager.prev(earconEngine)
             case .empty: return
             }
         }

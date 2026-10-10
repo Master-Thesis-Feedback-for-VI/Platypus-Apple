@@ -9,14 +9,18 @@ import SwiftUI
 
 struct ActiveProfileView: View {
     let logger = PlatyLogger(tag: "ActiveProfileView")
-    
+
     @Environment(ProfileManager.self) private var profileManager
+    @EnvironmentObject private var earconEngine: EarconPlayer
 
     var body: some View {
         GlassEffectContainer {
             HStack(spacing: 2) {
-                activeProfileButton(name: "arrowshape.left") {
-                    try? profileManager.prev()
+                activeProfileButton(
+                    name: "arrowshape.left",
+                    accessibilityLabel: "Previous profile"
+                ) {
+                    try? profileManager.prev(earconEngine)
                 }
 
                 let profileText = Text(
@@ -40,19 +44,27 @@ struct ActiveProfileView: View {
                     profileText
                 }
 
-                activeProfileButton(name: "arrowshape.right") {
-                    try? profileManager.next()
+                activeProfileButton(
+                    name: "arrowshape.right",
+                    accessibilityLabel: "Next profile"
+                ) {
+                    try? profileManager.next(earconEngine)
                 }
             }
         }
         .padding()
+        .onChange(of: profileManager.currentProfile.name) { _, newName in
+            AccessibilityNotification.Announcement(
+                "Active profile: \(newName)"
+            ).post()
+        }
     }
 
     private func switchToNextProfile() {
         guard profileManager.profiles.count > 1 else { return }
 
         do {
-            try profileManager.next()
+            try profileManager.next(earconEngine)
             UIAccessibility.post(
                 notification: .announcement,
                 argument:
@@ -65,6 +77,7 @@ struct ActiveProfileView: View {
 
     private func activeProfileButton(
         name: String,
+        accessibilityLabel: String,
         perform: @escaping () -> Void
     ) -> some View {
         Button {
@@ -72,6 +85,7 @@ struct ActiveProfileView: View {
         } label: {
             Image(systemName: name)
         }
+        .accessibilityLabel(accessibilityLabel)
         .font(.title2)
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
