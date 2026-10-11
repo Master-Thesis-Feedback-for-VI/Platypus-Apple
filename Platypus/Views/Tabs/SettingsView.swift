@@ -44,7 +44,7 @@ struct SettingsView: View {
                 }
             }
         } label: {
-            Label("Sweep", systemImage: "speaker")
+            Label(language.localized("Sweep"), systemImage: "speaker")
         }
     }
 
@@ -55,21 +55,17 @@ struct SettingsView: View {
             ForEach(profiles) { profile in
                 HStack {
                     Toggle(
-                        "Active",
+                        language.localized("Active"),
                         isOn: activeBinding(for: profile, in: manager)
                     )
                     .labelsHidden()
-                    .accessibilityLabel("Profile \(profile.name)")
+                    .accessibilityLabel(Text(verbatim: language.format("Profile %@", profile.name)))
                     .accessibilityValue(
-                        Text(
-                            profile.isActive
-                                ? LocalizedStringKey("Active")
-                                : LocalizedStringKey("Inactive")
-                        )
+                        Text(verbatim: language.localized(profile.isActive ? "Active" : "Inactive"))
                     )
                     .accessibilityHint(
-                        Text(
-                            LocalizedStringKey(
+                        Text(verbatim:
+                            language.localized(
                                 profile.isActive
                                     ? "Choose another profile to make it active."
                                     : "Makes this the active profile."
@@ -85,16 +81,16 @@ struct SettingsView: View {
                             profile: profile
                         )
                     }
-                    .accessibilityLabel("Edit \(profile.name)")
+                    .accessibilityLabel(Text(verbatim: language.format("Edit %@", profile.name)))
                     .accessibilityValue(
-                        Text(
-                            LocalizedStringKey(
+                        Text(verbatim:
+                            language.localized(
                                 profile.isActive
                                     ? "Active profile" : "Inactive profile"
                             )
                         )
                     )
-                    .accessibilityHint("Opens this profile's settings.")
+                    .accessibilityHint(Text(verbatim: language.localized("Opens this profile's settings.")))
                 }
                 .deleteDisabled(profiles.count <= 1)
             }
@@ -132,19 +128,19 @@ struct SettingsView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button(action: profileManager.undoDelete) {
-                Label("Undo", systemImage: "arrow.uturn.backward")
+                Label(language.localized("Undo"), systemImage: "arrow.uturn.backward")
             }
-            .accessibilityLabel("Undo profile deletion")
-            .accessibilityHint("Restores the most recently deleted profile.")
+            .accessibilityLabel(Text(verbatim: language.localized("Undo profile deletion")))
+            .accessibilityHint(Text(verbatim: language.localized("Restores the most recently deleted profile.")))
             .disabled(profileManager.trashed.isEmpty)
 
             Button(
-                "Add",
+                language.localized("Add"),
                 systemImage: "plus",
                 action: { try? profileManager.addProfile() }
             )
-            .accessibilityLabel("Add profile")
-            .accessibilityHint("Creates a new profile.")
+            .accessibilityLabel(Text(verbatim: language.localized("Add profile")))
+            .accessibilityHint(Text(verbatim: language.localized("Creates a new profile.")))
         }
     }
 

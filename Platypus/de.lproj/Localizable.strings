@@ -97,3 +97,5 @@
 "left" = "links";
 "right" = "rechts";
 "%.1f meters" = "%.1f Meter";
+"Close playback" = "Wiedergabe schließen";
+"%.1f m" = "%.1f m";

@@ -25,14 +25,14 @@ struct ContentView: View {
                 LiveviewModeView()
                     .tabItem {
                         Image(systemName: "camera")
-                        Text("Live")
+                        Text(verbatim: AppLanguage.current.localized("Live"))
                     }
                     .tag(Tab.live)
 
                 CameraView()
                     .tabItem {
                         Image(systemName: "folder.fill")
-                        Text("Record")
+                        Text(verbatim: AppLanguage.current.localized("Record"))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .tag(Tab.camera)
@@ -40,13 +40,13 @@ struct ContentView: View {
                 ReplayView()
                     .tabItem {
                         Image(systemName: "play.square.fill")
-                        Text("Replay")
+                        Text(verbatim: AppLanguage.current.localized("Replay"))
                     }.tag(Tab.replay)
 
                 SettingsView()
                     .tabItem {
                         Image(systemName: "gearshape.fill")
-                        Text("Settings")
+                        Text(verbatim: AppLanguage.current.localized("Settings"))
                     }
                     .tag(Tab.settings)
 

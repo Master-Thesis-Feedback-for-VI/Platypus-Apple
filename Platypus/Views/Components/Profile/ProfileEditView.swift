@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct ProfileEditView: View {
+    private var language: AppLanguage { .current }
     let allOtherProfileNames: [String]
 
     @Bindable var profile: ProfileSettings
@@ -24,10 +25,14 @@ struct ProfileEditView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    TextField("Profile name", text: $draftName)
-                        .accessibilityLabel("Profile name")
+                    TextField(language.localized("Profile name"), text: $draftName)
+                        .accessibilityLabel(
+                            Text(verbatim: language.localized("Profile name"))
+                        )
                         .accessibilityHint(
-                            "Edit the profile name, then tap Done to save it."
+                            Text(verbatim: language.localized(
+                                "Edit the profile name, then tap Done to save it."
+                            ))
                         )
                         .onSubmit {
                             let trimmed = draftName.trimmingCharacters(
@@ -54,15 +59,15 @@ struct ProfileEditView: View {
                 }
             }
             .alert(
-                LocalizedStringKey(rejectedName.isEmpty
-                    ? "Profile name can't be empty"
-                    : AppLanguage.current.format("%@ already exists", rejectedName)),
+                rejectedName.isEmpty
+                    ? language.localized("Profile name can't be empty")
+                    : language.format("%@ already exists", rejectedName),
                 isPresented: $showAlert,
             ) {
-                Button("OK", role: .cancel) {}
+                Button(language.localized("OK"), role: .cancel) {}
             } message: {
-                Text(
-                    LocalizedStringKey(rejectedName.isEmpty
+                Text(verbatim:
+                    language.localized(rejectedName.isEmpty
                         ? "Enter a name for this profile."
                         : "Choose a different name for this profile.")
                 )

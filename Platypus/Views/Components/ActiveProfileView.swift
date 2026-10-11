@@ -23,7 +23,7 @@ struct ActiveProfileView: View {
                     try? profileManager.prev(earconEngine)
                 }
 
-                let profileText = Text(
+                let profileText = Text(verbatim:
                     profileManager.currentProfile.name
                 )
                 .contentTransition(.numericText())
@@ -85,7 +85,7 @@ struct ActiveProfileView: View {
         } label: {
             Image(systemName: name)
         }
-        .accessibilityLabel(Text(LocalizedStringKey(accessibilityLabel)))
+        .accessibilityLabel(Text(verbatim: AppLanguage.current.localized(accessibilityLabel)))
         .font(.title2)
         .padding(.vertical, 8)
         .padding(.horizontal, 12)

@@ -31,7 +31,7 @@ struct DetectionBoxOverlay<Frame: PlatySize>: View {
                                 .path(in: detection.rect)
                                 .stroke(Color.red, lineWidth: 2)
 
-                            Text(String(format: "%.1f m", Double(detection.distance)))
+                            Text(verbatim: AppLanguage.current.format("%.1f m", Double(detection.distance)))
                                 .font(.caption2.monospacedDigit())
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)

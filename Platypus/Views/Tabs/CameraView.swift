@@ -34,7 +34,7 @@ struct CameraView: View {
                         }
                     } label: {
                         Label(
-                            LocalizedStringKey(cameraManager.isRecording
+                            AppLanguage.current.localized(cameraManager.isRecording
                                 ? "Stop Recording" : "Start Recording"),
                             systemImage: cameraManager.isRecording
                                 ? "stop.circle.fill" : "record.circle"
@@ -46,22 +46,22 @@ struct CameraView: View {
                     .tint(cameraManager.isRecording ? .red : .accentColor)
 
                     if let error = cameraManager.recordingError {
-                        Text(error.localizedDescription)
+                        Text(verbatim: error.localizedDescription)
                             .font(.footnote)
                             .foregroundStyle(.red)
                     }
                 } else {
                     ContentUnavailableView(
-                        "Camera Access Needed",
+                        AppLanguage.current.localized("Camera Access Needed"),
                         systemImage: "camera.fill",
-                        description: Text(
+                        description: Text(verbatim: AppLanguage.current.localized(
                             "Allow camera access in Settings to record video."
-                        )
+                        ))
                     )
                 }
             }
             .padding()
-            .navigationTitle("Camera")
+            .navigationTitle(AppLanguage.current.localized("Camera"))
             .onAppear {
                 isPreviewActive = false
                 previewAttachTask?.cancel()

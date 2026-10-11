@@ -37,7 +37,7 @@ struct ProgressCategoriesIndicator: View {
                         isPulsing = (newValue == .evaluating)
                     }
 
-                Text(LocalizedStringKey(progress.label))
+                Text(verbatim: AppLanguage.current.localized(progress.label))
                     .font(.subheadline.weight(.semibold))
                     .contentTransition(.numericText())
             }

@@ -17,40 +17,70 @@ struct ProfileEditSingularView: View {
     var body: some View {
         Form {
             Section {
-                NavigationLink("Default detection settings") {
+                NavigationLink(language.localized("Default detection settings"))
+                {
                     ProfileDetectionSettingsView(
                         settings: $profile.defaultSettings
                     )
-                    .navigationTitle("Default detection settings")
+                    .navigationTitle(
+                        language.localized("Default detection settings")
+                    )
+                    .navigationBarTitleDisplayMode(.inline)
                 }
                 .accessibilityHint(
-                    "Used for locations without their own detection settings."
+                    Text(
+                        verbatim: language.localized(
+                            "Used for locations without their own detection settings."
+                        )
+                    )
                 )
             } footer: {
                 Text(
-                    "These settings apply to all locations unless a location is enabled below."
+                    verbatim: language.localized(
+                        "These settings apply to all locations unless a location is enabled below."
+                    )
                 )
             }
 
-            Section("Locations") {
+            Section(language.localized("Locations")) {
                 ForEach(PlatyLocationTag.allCases) { location in
                     Toggle(
                         language.localized(location.rawValue),
                         isOn: locationEnabledBinding(for: location)
                     )
-                    .accessibilityLabel("Enable \(language.localized(location.rawValue)) settings")
+                    .accessibilityLabel(
+                        Text(
+                            verbatim: language.format(
+                                "Enable %@ settings",
+                                language.localized(location.rawValue)
+                            )
+                        )
+                    )
                     .accessibilityHint(
-                        "When on, this location uses its own detection settings."
+                        Text(
+                            verbatim: language.localized(
+                                "When on, this location uses its own detection settings."
+                            )
+                        )
                     )
 
                     if profile.isLocationEnabled(location),
                         let binding = settingsBinding(for: location)
                     {
-                        NavigationLink("Edit \(language.localized(location.rawValue)) settings") {
+                        NavigationLink(
+                            language.format(
+                                "Edit %@ settings",
+                                language.localized(location.rawValue)
+                            )
+                        ) {
                             ProfileDetectionSettingsView(settings: binding)
                                 .navigationTitle(
-                                    "\(language.localized(location.rawValue)) detection settings"
+                                    language.format(
+                                        "%@ detection settings",
+                                        language.localized(location.rawValue)
+                                    )
                                 )
+                                .navigationBarTitleDisplayMode(.inline)
                         }
                     }
                 }
@@ -97,11 +127,15 @@ struct ProfileDetectionSettingsView: View {
                 if let binding = binding(for: detectionType) {
                     Section(language.localized(detectionType.rawValue)) {
                         SoundSettingsRows(
-                            detectionName: language.localized(detectionType.rawValue),
+                            detectionName: language.localized(
+                                detectionType.rawValue
+                            ),
                             sound: binding.sound
                         )
                         HapticSettingsRows(
-                            detectionName: language.localized(detectionType.rawValue),
+                            detectionName: language.localized(
+                                detectionType.rawValue
+                            ),
                             haptic: binding.haptic
                         )
                     }
@@ -131,30 +165,53 @@ struct ProfileDetectionSettingsView: View {
 // MARK: - Audio
 
 struct SoundSettingsRows: View {
+    private var language: AppLanguage { .current }
     let detectionName: String
     @Binding var sound: SoundVariant
 
     var body: some View {
         Picker(selection: nameBinding) {
             ForEach(SoundVariant.allNames, id: \.self) { name in
-                Text(LocalizedStringKey(name == "tts" ? "Text to speech" : name.capitalized))
-                    .tag(name)
+                Text(
+                    verbatim: language.localized(
+                        name == "tts" ? "Text to speech" : name.capitalized
+                    )
+                )
+                .tag(name)
             }
         } label: {
-            Label("Sound", systemImage: "speaker.wave.2.fill")
+            Label(
+                language.localized("Sound"),
+                systemImage: "speaker.wave.2.fill"
+            )
         }
         .pickerStyle(.menu)
-        .accessibilityLabel("\(detectionName) sound")
-        .accessibilityValue(
-            Text(LocalizedStringKey(sound.description == "tts"
-                ? "Text to speech" : sound.description.capitalized))
+        .accessibilityLabel(
+            Text(verbatim: language.format("%@ sound", detectionName))
         )
-        .accessibilityHint("Choose off, earcon, or text to speech.")
+        .accessibilityValue(
+            Text(
+                verbatim: language.localized(
+                    sound.description == "tts"
+                        ? "Text to speech" : sound.description.capitalized
+                )
+            )
+        )
+        .accessibilityHint(
+            Text(
+                verbatim: language.localized(
+                    "Choose off, earcon, or text to speech."
+                )
+            )
+        )
 
         if !sound.isOff {
             SliderRow(
                 label: "Volume",
-                accessibilityName: AppLanguage.current.format("%@ volume", detectionName),
+                accessibilityName: AppLanguage.current.format(
+                    "%@ volume",
+                    detectionName
+                ),
                 value: volumeBinding,
                 minIcon: "speaker.fill",
                 maxIcon: "speaker.wave.3.fill"
@@ -164,34 +221,64 @@ struct SoundSettingsRows: View {
                 Toggle(isOn: directionControlBinding) {
                     VStack(alignment: .leading, spacing: 2) {
                         Label(
-                            "Direction Control",
+                            language.localized("Direction Control"),
                             systemImage: "location.north.line.fill"
                         )
                         Text(
-                            "Announces where the detection is relative to you."
+                            verbatim: language.localized(
+                                "Announces where the detection is relative to you."
+                            )
                         )
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     }
                 }
-                .accessibilityLabel("\(detectionName) direction announcements")
-                .accessibilityHint("Speaks the detection's direction.")
+                .accessibilityLabel(
+                    Text(
+                        verbatim: language.format(
+                            "%@ direction announcements",
+                            detectionName
+                        )
+                    )
+                )
+                .accessibilityHint(
+                    Text(
+                        verbatim: language.localized(
+                            "Speaks the detection's direction."
+                        )
+                    )
+                )
 
                 Toggle(isOn: distanceEstimationBinding) {
                     VStack(alignment: .leading, spacing: 2) {
                         Label(
-                            "Distance Estimator",
+                            language.localized("Distance Estimator"),
                             systemImage: "base.unit"
                         )
                         Text(
-                            "Announces how far the detection is relative to you."
+                            verbatim: language.localized(
+                                "Announces how far the detection is relative to you."
+                            )
                         )
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     }
                 }
-                .accessibilityLabel("\(detectionName) distance announcements")
-                .accessibilityHint("Speaks the detection's distance.")
+                .accessibilityLabel(
+                    Text(
+                        verbatim: language.format(
+                            "%@ distance announcements",
+                            detectionName
+                        )
+                    )
+                )
+                .accessibilityHint(
+                    Text(
+                        verbatim: language.localized(
+                            "Speaks the detection's distance."
+                        )
+                    )
+                )
             }
         }
     }
@@ -276,14 +363,27 @@ struct HapticSettingsRows: View {
 
     var body: some View {
         Toggle(isOn: $haptic.switchedOn) {
-            Label("Haptics", systemImage: "iphone.radiowaves.left.and.right")
+            Label(
+                AppLanguage.current.localized("Haptics"),
+                systemImage: "iphone.radiowaves.left.and.right"
+            )
         }
-        .accessibilityLabel("\(detectionName) haptics")
+        .accessibilityLabel(
+            Text(
+                verbatim: AppLanguage.current.format(
+                    "%@ haptics",
+                    detectionName
+                )
+            )
+        )
 
         if haptic.switchedOn {
             SliderRow(
                 label: "Intensity",
-                accessibilityName: AppLanguage.current.format("%@ haptic intensity", detectionName),
+                accessibilityName: AppLanguage.current.format(
+                    "%@ haptic intensity",
+                    detectionName
+                ),
                 value: $haptic.intensity,
                 minIcon: "circle",
                 maxIcon: "circle.fill"
@@ -305,11 +405,13 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(LocalizedStringKey(label))
+                Text(verbatim: AppLanguage.current.localized(label))
                 Spacer()
                 Text(
                     Double(value).formatted(
-                        .percent.precision(.fractionLength(0))
+                        .percent.precision(.fractionLength(0)).locale(
+                            AppLanguage.current.locale
+                        )
                     )
                 )
                 .foregroundStyle(.secondary)
@@ -318,7 +420,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
             .accessibilityHidden(true)
 
             Slider(value: $value, in: 0...1, step: 0.2) {
-                Text(LocalizedStringKey(label))
+                Text(verbatim: AppLanguage.current.localized(label))
             } minimumValueLabel: {
                 Image(systemName: minIcon)
                     .accessibilityHidden(true)
@@ -327,9 +429,15 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
                     .accessibilityHidden(true)
             }
             .foregroundStyle(.secondary)
-            .accessibilityLabel(accessibilityName)
+            .accessibilityLabel(Text(verbatim: accessibilityName))
             .accessibilityValue(
-                Double(value).formatted(.percent.precision(.fractionLength(0)))
+                Text(
+                    verbatim: Double(value).formatted(
+                        .percent.precision(.fractionLength(0)).locale(
+                            AppLanguage.current.locale
+                        )
+                    )
+                )
             )
         }
         .padding(.vertical, 2)
