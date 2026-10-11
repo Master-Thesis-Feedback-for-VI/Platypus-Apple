@@ -60,7 +60,7 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
         guard currentUtterance == nil else { return }
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
+        utterance.voice = AVSpeechSynthesisVoice(language: AppLanguage.current.speechLanguage)
         utterance.volume = min(1.0, max(0.0, volume))
         currentUtterance = utterance
         synthesizer.speak(utterance)

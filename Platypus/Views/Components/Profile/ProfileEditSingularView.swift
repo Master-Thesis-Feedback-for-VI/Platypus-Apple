@@ -11,6 +11,7 @@ import SwiftUI
 // MARK: - Parent
 
 struct ProfileEditSingularView: View {
+    private var language: AppLanguage { .current }
     @Bindable var profile: ProfileSettings
 
     var body: some View {
@@ -34,10 +35,10 @@ struct ProfileEditSingularView: View {
             Section("Locations") {
                 ForEach(PlatyLocationTag.allCases) { location in
                     Toggle(
-                        location.rawValue,
+                        language.localized(location.rawValue),
                         isOn: locationEnabledBinding(for: location)
                     )
-                    .accessibilityLabel("Enable \(location.rawValue) settings")
+                    .accessibilityLabel("Enable \(language.localized(location.rawValue)) settings")
                     .accessibilityHint(
                         "When on, this location uses its own detection settings."
                     )
@@ -45,10 +46,10 @@ struct ProfileEditSingularView: View {
                     if profile.isLocationEnabled(location),
                         let binding = settingsBinding(for: location)
                     {
-                        NavigationLink("Edit \(location.rawValue) settings") {
+                        NavigationLink("Edit \(language.localized(location.rawValue)) settings") {
                             ProfileDetectionSettingsView(settings: binding)
                                 .navigationTitle(
-                                    "\(location.rawValue) detection settings"
+                                    "\(language.localized(location.rawValue)) detection settings"
                                 )
                         }
                     }
@@ -87,19 +88,20 @@ struct ProfileEditSingularView: View {
 }
 
 struct ProfileDetectionSettingsView: View {
+    private var language: AppLanguage { .current }
     @Binding var settings: ProfileSingularSettings
 
     var body: some View {
         Form {
             ForEach(PlatyDetectionType.allCases, id: \.self) { detectionType in
                 if let binding = binding(for: detectionType) {
-                    Section(detectionType.rawValue.capitalized) {
+                    Section(language.localized(detectionType.rawValue)) {
                         SoundSettingsRows(
-                            detectionName: detectionType.rawValue,
+                            detectionName: language.localized(detectionType.rawValue),
                             sound: binding.sound
                         )
                         HapticSettingsRows(
-                            detectionName: detectionType.rawValue,
+                            detectionName: language.localized(detectionType.rawValue),
                             haptic: binding.haptic
                         )
                     }
@@ -135,7 +137,7 @@ struct SoundSettingsRows: View {
     var body: some View {
         Picker(selection: nameBinding) {
             ForEach(SoundVariant.allNames, id: \.self) { name in
-                Text(name == "tts" ? "Text to speech" : name.capitalized)
+                Text(LocalizedStringKey(name == "tts" ? "Text to speech" : name.capitalized))
                     .tag(name)
             }
         } label: {
@@ -144,15 +146,15 @@ struct SoundSettingsRows: View {
         .pickerStyle(.menu)
         .accessibilityLabel("\(detectionName) sound")
         .accessibilityValue(
-            sound.description == "tts"
-                ? "Text to speech" : sound.description.capitalized
+            Text(LocalizedStringKey(sound.description == "tts"
+                ? "Text to speech" : sound.description.capitalized))
         )
         .accessibilityHint("Choose off, earcon, or text to speech.")
 
         if !sound.isOff {
             SliderRow(
                 label: "Volume",
-                accessibilityName: "\(detectionName) volume",
+                accessibilityName: AppLanguage.current.format("%@ volume", detectionName),
                 value: volumeBinding,
                 minIcon: "speaker.fill",
                 maxIcon: "speaker.wave.3.fill"
@@ -281,7 +283,7 @@ struct HapticSettingsRows: View {
         if haptic.switchedOn {
             SliderRow(
                 label: "Intensity",
-                accessibilityName: "\(detectionName) haptic intensity",
+                accessibilityName: AppLanguage.current.format("%@ haptic intensity", detectionName),
                 value: $haptic.intensity,
                 minIcon: "circle",
                 maxIcon: "circle.fill"
@@ -303,7 +305,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(label)
+                Text(LocalizedStringKey(label))
                 Spacer()
                 Text(
                     Double(value).formatted(
@@ -316,7 +318,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
             .accessibilityHidden(true)
 
             Slider(value: $value, in: 0...1, step: 0.2) {
-                Text(label)
+                Text(LocalizedStringKey(label))
             } minimumValueLabel: {
                 Image(systemName: minIcon)
                     .accessibilityHidden(true)

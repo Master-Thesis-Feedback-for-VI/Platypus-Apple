@@ -153,7 +153,8 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
             case .tts(let ttsSetting):
                 do {
                     let volume = ttsSetting.volume
-                    var name = detection.detectionType.rawValue
+                    let language = AppLanguage.current
+                    var name = language.localized(detection.detectionType.rawValue)
                     
                     if ttsSetting.enableDirectionControl {
                         let direction: Direction?
@@ -172,13 +173,13 @@ struct DetectionMQTTView<Frame: PlatySize>: View {
                             let describedDirection = String(
                                 describing: direction
                             )
-                            name += ", \(describedDirection)"
+                            name += ", \(language.localized(describedDirection))"
                         }
                     }
                     
                     if ttsSetting.enableDistanceEstimation {
-                        let distance = String(
-                            format: "%.1f meters",
+                        let distance = language.format(
+                            "%.1f meters",
                             detection.distance
                         )
                         name += ", \(distance)"

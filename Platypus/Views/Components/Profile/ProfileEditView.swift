@@ -54,17 +54,17 @@ struct ProfileEditView: View {
                 }
             }
             .alert(
-                rejectedName.isEmpty
+                LocalizedStringKey(rejectedName.isEmpty
                     ? "Profile name can't be empty"
-                    : "\(rejectedName) already exists",
+                    : AppLanguage.current.format("%@ already exists", rejectedName)),
                 isPresented: $showAlert,
             ) {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(
-                    rejectedName.isEmpty
+                    LocalizedStringKey(rejectedName.isEmpty
                         ? "Enter a name for this profile."
-                        : "Choose a different name for this profile."
+                        : "Choose a different name for this profile.")
                 )
             }
     }

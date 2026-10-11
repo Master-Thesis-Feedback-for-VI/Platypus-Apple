@@ -7,6 +7,10 @@
 
 extension Detection: DisplayableProto {
     var displayName: String {
+        AppLanguage.current.localized(englishName)
+    }
+
+    private var englishName: String {
         switch name {
         case .person: return "Person"
         case .trafficLight: return "Traffic Light"

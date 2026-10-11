@@ -34,8 +34,8 @@ struct CameraView: View {
                         }
                     } label: {
                         Label(
-                            cameraManager.isRecording
-                                ? "Stop Recording" : "Start Recording",
+                            LocalizedStringKey(cameraManager.isRecording
+                                ? "Stop Recording" : "Start Recording"),
                             systemImage: cameraManager.isRecording
                                 ? "stop.circle.fill" : "record.circle"
                         )

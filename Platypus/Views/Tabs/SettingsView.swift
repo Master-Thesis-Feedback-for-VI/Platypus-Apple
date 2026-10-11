@@ -10,6 +10,7 @@ import SwiftUI
 import UIKit
 
 struct SettingsView: View {
+    private var language: AppLanguage { .current }
     @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Environment(ProfileManager.self) private var profileManager
@@ -20,7 +21,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             profileList(profileManager)
-                .navigationTitle("Available Profiles")
+                .navigationTitle(language.localized("Available Profiles"))
                 .toolbar { toolbarContent }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background { try? profileManager.purgeTrash() }
@@ -60,12 +61,20 @@ struct SettingsView: View {
                     .labelsHidden()
                     .accessibilityLabel("Profile \(profile.name)")
                     .accessibilityValue(
-                        profile.isActive ? "Active" : "Inactive"
+                        Text(
+                            profile.isActive
+                                ? LocalizedStringKey("Active")
+                                : LocalizedStringKey("Inactive")
+                        )
                     )
                     .accessibilityHint(
-                        profile.isActive
-                            ? "Choose another profile to make it active."
-                            : "Makes this the active profile."
+                        Text(
+                            LocalizedStringKey(
+                                profile.isActive
+                                    ? "Choose another profile to make it active."
+                                    : "Makes this the active profile."
+                            )
+                        )
                     )
                     .disabled(profile.isActive || profiles.count <= 1)
                     NavigationLink(profile.name) {
@@ -78,15 +87,21 @@ struct SettingsView: View {
                     }
                     .accessibilityLabel("Edit \(profile.name)")
                     .accessibilityValue(
-                        profile.isActive
-                            ? "Active profile" : "Inactive profile"
+                        Text(
+                            LocalizedStringKey(
+                                profile.isActive
+                                    ? "Active profile" : "Inactive profile"
+                            )
+                        )
                     )
                     .accessibilityHint("Opens this profile's settings.")
                 }
                 .deleteDisabled(profiles.count <= 1)
             }
             .onDelete { try? manager.deleteProfiles(at: $0) }
+
         }
+        .contentMargins(.top, 22, for: .scrollContent)
         .animation(.default, value: profiles.map(\.isActive))
 
         if profiles.count > 1 {
@@ -103,7 +118,10 @@ struct SettingsView: View {
             UIAccessibility.post(
                 notification: .announcement,
                 argument:
-                    "Active profile: \(profileManager.currentProfile.name)"
+                    language.format(
+                        "Active profile: %@",
+                        profileManager.currentProfile.name
+                    )
             )
         } catch {
             logger.log("Could not switch profile: \(error)", level: .error)
