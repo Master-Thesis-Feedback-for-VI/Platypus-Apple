@@ -19,7 +19,7 @@ struct DetectionBoxOverlay<Frame: PlatySize>: View {
                 ForEach(detectedObjects.detections.indices, id: \.self) {
                     index in
                     let defDetection = detectedObjects.detections[index]
-                    if let detection = PlatyDetection.from(
+                    if let detection = PlatyDetection(
                         detection: defDetection,
                         frameSize: frameSize,
                         viewportSize: geo.size,

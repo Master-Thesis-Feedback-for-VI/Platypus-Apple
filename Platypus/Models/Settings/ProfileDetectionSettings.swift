@@ -16,6 +16,7 @@ struct OffSetting: SpecificSoundSetting {
 
 struct EarconSetting: SpecificSoundSetting {
     var description: String = "earcon"
+    var groupedFeedback: Bool = false
     var volume: Float {
         didSet { volume = min(max(volume, 0), 1) }
     }
@@ -26,6 +27,7 @@ struct TtsSetting: SpecificSoundSetting {
     var volume: Float {
         didSet { volume = min(max(volume, 0), 1) }
     }
+    var groupedFeedback: Bool = false
     var enableDirectionControl: Bool = false
     var enableDistanceEstimation: Bool = false
 }
@@ -67,6 +69,7 @@ extension SoundVariant: CustomStringConvertible, CaseIterable {
 
 struct HapticSettings: Codable, Equatable {
     var switchedOn: Bool
+    var groupedFeedback: Bool
     var intensity: Double {
         didSet { intensity = min(max(intensity, 0), 1) }
     }
@@ -74,6 +77,7 @@ struct HapticSettings: Codable, Equatable {
     init(switchedOn: Bool, intensity: Double) {
         self.switchedOn = switchedOn
         self.intensity = min(max(intensity, 0), 1)
+        self.groupedFeedback = false
     }
 }
 
