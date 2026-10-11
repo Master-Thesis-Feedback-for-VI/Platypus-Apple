@@ -153,7 +153,9 @@ struct ProfileDetectionSettingsView: View {
         Form {
             ForEach(PlatyDetectionType.allCases, id: \.self) { detectionType in
                 if let binding = binding(for: detectionType) {
-                    Section(language.localized(detectionType.rawValue)) {
+                    Section(
+                        language.localized(detectionType.rawValue.capitalized)
+                    ) {
                         SoundSettingsRows(
                             detectionName: language.localized(
                                 detectionType.rawValue
@@ -170,6 +172,26 @@ struct ProfileDetectionSettingsView: View {
                             focus: $a11yFocus,
                             focusID: .haptic(detectionType)
                         )
+
+                        if binding.haptic.switchedOn.wrappedValue
+                            || !binding.sound.wrappedValue.isOff
+                        {
+                            Toggle(isOn: binding.groupFeedback) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Label(
+                                        language.localized("Group Feedback"),
+                                        systemImage: "rectangle.3.group"
+                                    )
+                                    Text(
+                                        verbatim: language.localized(
+                                            "When enabled, nearby detections are combined into one group with an average distance and a single bounding box surrounding them."
+                                        )
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -319,6 +341,7 @@ struct SoundSettingsRows: View {
                     )
                 )
             }
+
         }
     }
 
@@ -410,17 +433,19 @@ struct HapticSettingsRows: View {
     var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
     let focusID: SettingsA11yFocus
 
+    private var language: AppLanguage { .current }
+
     var body: some View {
         Toggle(isOn: switchBinding) {
             Label(
-                AppLanguage.current.localized("Haptics"),
+                language.localized("Haptics"),
                 systemImage: "iphone.radiowaves.left.and.right"
             )
         }
         .accessibilityFocused(focus, equals: focusID)
         .accessibilityLabel(
             Text(
-                verbatim: AppLanguage.current.format(
+                verbatim: language.format(
                     "%@ haptics",
                     detectionName
                 )

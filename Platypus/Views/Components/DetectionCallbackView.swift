@@ -87,6 +87,8 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         )
 
         var filteredDetections = detections
+        // TODO Fix the issue where only one detction passes instead there we should loop over evry type and the deciee waht we do with
+        // each type currently we will never group anything
         if let minVal = detections.closestDetection {
             filteredDetections = PlatyDetections(detection: minVal)
         }
@@ -103,21 +105,24 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             }
 
             var selectedGroup: SelectedGrouped? = nil
+            if setting.groupFeedback {
+                selectedGroup = initSelectedGroup(
+                    detections: filteredDetections,
+                    detectionType: detection.detectionType
+                )
+            }
 
             // Haptic settings and callback
             let hapticSettings = setting.haptic
             if hapticSettings.switchedOn {
-                let bounds: (Double, Double)
-                if hapticSettings.groupedFeedback {
-                    selectedGroup = initSelectedGroup(
-                        detections: filteredDetections,
-                        detectionType: detection.detectionType
-                    )
-                    bounds = selectedGroup?.xFromCenter ?? (0.0, 0.0)
+
+                var bound: (Double, Double)
+                if let selectedGroup {
+                    bound = selectedGroup.xFromCenter
                 } else {
-                    bounds = detection.xFromCenter()
+                    bound = detection.xFromCenter()
                 }
-                let (left, right) = bounds
+                let (left, right) = bound
 
                 let candidates = [
                     (Double(left), AvailableTopics.hapticLeft, left < 0),
@@ -159,14 +164,8 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
                     let detectionType = detection.detectionType
 
                     let playedDirection: any Normalizable
-                    if earconSetting.groupedFeedback {
-                        if selectedGroup == nil {
-                            selectedGroup = initSelectedGroup(
-                                detections: filteredDetections,
-                                detectionType: detection.detectionType
-                            )
-                        }
-                        playedDirection = selectedGroup!
+                    if let selectedGroup {
+                        playedDirection = selectedGroup
                     } else {
                         playedDirection = detection
                     }
@@ -180,34 +179,30 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
 
             case .tts(let ttsSetting):
                 do {
-                    if ttsSetting.groupedFeedback && selectedGroup == nil {
-                        selectedGroup = initSelectedGroup(
-                            detections: filteredDetections,
-                            detectionType: detection.detectionType
-                        )
-                    }
-
                     let volume = ttsSetting.volume
                     let language = AppLanguage.current
                     var name = language.localized(
                         detection.detectionType.rawValue
                     )
-                    if ttsSetting.groupedFeedback {
-                        name = "\(selectedGroup?.detections.inner.count ?? 0) \(name)"
+                    if let selectedGroup {
+                        name = "\(selectedGroup.detections.inner.count) \(name)"
                     }
 
                     if ttsSetting.enableDirectionControl {
-                        let direction: Direction?
-
-                        let switchableDirection: Direction
                         let horizontalFOV = 65.0
-                        if ttsSetting.groupedFeedback, let selectedGroup {
+                        let switchableDirection: Direction
+                        if let selectedGroup {
                             let azi = azimuth(selectedGroup, horizontalFOV)
-                            switchableDirection = Direction.closest(to: Double(azi))
+                            switchableDirection = Direction.closest(
+                                to: Double(azi)
+                            )
                         } else {
-                            switchableDirection = detection.direction()
+                            switchableDirection = detection.direction(
+                                horizontalFOV
+                            )
                         }
-                        
+
+                        let direction: Direction?
                         switch switchableDirection {
                         case .front: direction = .front
                         case .frontLeft, .frontLeftLeft, .frontFrontLeft, .left:
@@ -257,7 +252,7 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             from: detections,
             on: detectionType
         )
-        return groupedDetections.groupedSelection(0.3)
+        return groupedDetections.groupedSelection(3)
     }
 
     // MARK: - Callbacks Sub

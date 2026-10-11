@@ -25,6 +25,7 @@
 "Profile name" = "Profilname";
 "Edit the profile name, then tap Done to save it." = "Bearbeite den Profilnamen und tippe zum Speichern auf Fertig.";
 "Profile name can't be empty" = "Der Profilname darf nicht leer sein";
+"When enabled, nearby detections are combined into one group with an average distance and a single bounding box surrounding them." = "Wenn aktiviert, werden nahe beieinanderliegende Erkennungen zu einer Gruppe zusammengefasst. Dabei werden ein durchschnittlicher Abstand und ein gemeinsamer Begrenzungsrahmen berechnet, der alle Erkennungen umschließt.";
 "%@ already exists" = "%@ existiert bereits";
 "Enter a name for this profile." = "Gib einen Namen für dieses Profil ein.";
 "Choose a different name for this profile." = "Wähle einen anderen Namen für dieses Profil.";
@@ -62,6 +63,7 @@
 "Please go to Settings and allow camera access" = "Bitte erlaube den Kamerazugriff in den Systemeinstellungen";
 "Camera Access Needed" = "Kamerazugriff erforderlich";
 "Allow camera access in Settings to record video." = "Erlaube den Kamerazugriff in den Systemeinstellungen, um Videos aufzunehmen.";
+"%@ grouped feedback" = "%@ gruppierte Rückmeldung";
 "Camera" = "Kamera";
 "Stop Recording" = "Aufnahme stoppen";
 "Start Recording" = "Aufnahme starten";
@@ -99,3 +101,4 @@
 "%.1f meters" = "%.1f Meter";
 "Close playback" = "Wiedergabe schließen";
 "%.1f m" = "%.1f m";
+"Group Feedback" = "Gruppierte Wiedergabe";

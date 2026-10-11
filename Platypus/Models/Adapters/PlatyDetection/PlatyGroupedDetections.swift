@@ -51,8 +51,9 @@ extension PlatyGroupedDetections {
         guard let closest = self.closestDetection,
             !self.detectionsUnwrap.isEmpty
         else { return nil }
-
-        let detectionsIntersecting = self.detectionsUnwrap.filter { current in
+        
+        let filteredGroup = self.closestWihtin(distanceInMetersDiff)
+        let detectionsIntersecting = filteredGroup.inner.filter { current in
             current.rect.intersects(closest.rect)
         }.collect()
         let boundingRect = detectionsIntersecting.inner.map(\.rect).reduce(
