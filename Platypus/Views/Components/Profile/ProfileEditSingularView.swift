@@ -8,11 +8,21 @@
 import SwiftData
 import SwiftUI
 
+// MARK: - Accessibility focus
+
+enum SettingsA11yFocus: Hashable {
+    case sound(PlatyDetectionType)
+    case haptic(PlatyDetectionType)
+    case location(PlatyLocationTag)
+}
+
 // MARK: - Parent
 
 struct ProfileEditSingularView: View {
     private var language: AppLanguage { .current }
     @Bindable var profile: ProfileSettings
+    @AccessibilityFocusState private var a11yFocus: SettingsA11yFocus?
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
 
     var body: some View {
         Form {
@@ -47,6 +57,10 @@ struct ProfileEditSingularView: View {
                     Toggle(
                         language.localized(location.rawValue),
                         isOn: locationEnabledBinding(for: location)
+                    )
+                    .accessibilityFocused(
+                        $a11yFocus,
+                        equals: .location(location)
                     )
                     .accessibilityLabel(
                         Text(
@@ -95,11 +109,23 @@ struct ProfileEditSingularView: View {
         Binding(
             get: { profile.isLocationEnabled(location) },
             set: { enabled in
-                withAnimation {
+                if voiceOverOn {
                     profile.setLocation(location, enabled: enabled)
+                } else {
+                    withAnimation {
+                        profile.setLocation(location, enabled: enabled)
+                    }
                 }
+                restoreFocus(.location(location))
             }
         )
+    }
+
+    private func restoreFocus(_ target: SettingsA11yFocus) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+            a11yFocus = target
+        }
     }
 
     private func settingsBinding(for location: PlatyLocationTag) -> Binding<
@@ -120,6 +146,8 @@ struct ProfileEditSingularView: View {
 struct ProfileDetectionSettingsView: View {
     private var language: AppLanguage { .current }
     @Binding var settings: ProfileSingularSettings
+    @AccessibilityFocusState private var a11yFocus: SettingsA11yFocus?
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
 
     var body: some View {
         Form {
@@ -130,13 +158,17 @@ struct ProfileDetectionSettingsView: View {
                             detectionName: language.localized(
                                 detectionType.rawValue
                             ),
-                            sound: binding.sound
+                            sound: binding.sound,
+                            focus: $a11yFocus,
+                            focusID: .sound(detectionType)
                         )
                         HapticSettingsRows(
                             detectionName: language.localized(
                                 detectionType.rawValue
                             ),
-                            haptic: binding.haptic
+                            haptic: binding.haptic,
+                            focus: $a11yFocus,
+                            focusID: .haptic(detectionType)
                         )
                     }
                 }
@@ -154,8 +186,12 @@ struct ProfileDetectionSettingsView: View {
                 settings.detectionSettings[type] ?? current
             },
             set: { newVal in
-                withAnimation(.snappy) {
+                if voiceOverOn {
                     settings.detectionSettings[type] = newVal
+                } else {
+                    withAnimation(.snappy) {
+                        settings.detectionSettings[type] = newVal
+                    }
                 }
             }
         )
@@ -168,6 +204,8 @@ struct SoundSettingsRows: View {
     private var language: AppLanguage { .current }
     let detectionName: String
     @Binding var sound: SoundVariant
+    var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
+    let focusID: SettingsA11yFocus
 
     var body: some View {
         Picker(selection: nameBinding) {
@@ -186,6 +224,7 @@ struct SoundSettingsRows: View {
             )
         }
         .pickerStyle(.menu)
+        .accessibilityFocused(focus, equals: focusID)
         .accessibilityLabel(
             Text(verbatim: language.format("%@ sound", detectionName))
         )
@@ -283,6 +322,13 @@ struct SoundSettingsRows: View {
         }
     }
 
+    private func restoreFocus() {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+            focus.wrappedValue = focusID
+        }
+    }
+
     private var nameBinding: Binding<String> {
         Binding(
             get: { sound.description },
@@ -291,6 +337,7 @@ struct SoundSettingsRows: View {
                     $0.description == name
                 }) {
                     sound = match
+                    restoreFocus()
                 }
             }
         )
@@ -359,15 +406,18 @@ struct SoundSettingsRows: View {
 
 struct HapticSettingsRows: View {
     let detectionName: String
-    @Binding var haptic: HapticSettings  // replace with your actual haptic type
+    @Binding var haptic: HapticSettings
+    var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
+    let focusID: SettingsA11yFocus
 
     var body: some View {
-        Toggle(isOn: $haptic.switchedOn) {
+        Toggle(isOn: switchBinding) {
             Label(
                 AppLanguage.current.localized("Haptics"),
                 systemImage: "iphone.radiowaves.left.and.right"
             )
         }
+        .accessibilityFocused(focus, equals: focusID)
         .accessibilityLabel(
             Text(
                 verbatim: AppLanguage.current.format(
@@ -389,6 +439,23 @@ struct HapticSettingsRows: View {
                 maxIcon: "circle.fill"
             )
         }
+    }
+
+    private func restoreFocus() {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(100))
+            focus.wrappedValue = focusID
+        }
+    }
+
+    private var switchBinding: Binding<Bool> {
+        Binding(
+            get: { haptic.switchedOn },
+            set: { newValue in
+                haptic.switchedOn = newValue
+                restoreFocus()
+            }
+        )
     }
 }
 
@@ -419,7 +486,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
             }
             .accessibilityHidden(true)
 
-            Slider(value: $value, in: 0...1, step: 0.2) {
+            Slider(value: $value, in: 0...1, step: 0.1) {
                 Text(verbatim: AppLanguage.current.localized(label))
             } minimumValueLabel: {
                 Image(systemName: minIcon)
