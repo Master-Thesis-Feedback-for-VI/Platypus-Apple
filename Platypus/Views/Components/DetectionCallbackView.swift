@@ -24,6 +24,7 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
     @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Namespace private var namespace
+    @State private var lastFlush: ContinuousClock.Instant?
 
     // MARK: - View
 
@@ -68,7 +69,6 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         guard frameSize.pixelWidth > 0, frameSize.pixelHeight > 0,
             viewportSize.width > 0, viewportSize.height > 0
         else { return }
-
         guard let settings else { return }
 
         let detectionsFiltered: [Detection] = detections.detections.filter {
@@ -87,7 +87,10 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         )
 
         for detType in PlatyDetectionType.allCases {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else {
+                await flushHapticFeedback()
+                return
+            }
 
             let detectionsInCat = PlatyGroupedDetections(
                 from: detections,
@@ -96,8 +99,9 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             guard
                 let setting = settings.detectionSettings[
                     detType
-                ]
+                ], !detectionsInCat.isEmpty
             else {
+                await flushHapticFeedback()
                 continue
             }
 
@@ -142,12 +146,35 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         }
     }
 
+    private func flushHapticFeedback() async {
+        guard let lastFlush else {
+            lastFlush = ContinuousClock.now
+            return
+        }
+        if lastFlush - ContinuousClock.now <= .milliseconds(700) {
+            return
+        }
+
+        async let pub1 = try? mqttClient.publish(
+            to: AvailableTopics.hapticLeft,
+            payload: .init(increaseDiff: 0)
+        )
+
+        async let pub2 = try? mqttClient.publish(
+            to: AvailableTopics.hapticRight,
+            payload: .init(increaseDiff: 0)
+        )
+
+        let _ = await (pub1, pub2)
+    }
+
     private func hapticFeedbackReact(
         hapticSettings: HapticSettings,
         groupedDetection: PlatyGroupedDetections,
         selectedGroup: SelectedGrouped?
     ) async {
         guard hapticSettings.switchedOn, !groupedDetection.isEmpty else {
+            await flushHapticFeedback()
             return
         }
 
@@ -322,7 +349,7 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             from: detections,
             on: detectionType
         )
-        return groupedDetections.groupedSelection(3)
+        return groupedDetections.groupedSelection(0.3)  // TODO make this a setting
     }
 }
 
