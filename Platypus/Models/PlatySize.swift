@@ -8,7 +8,7 @@
 import Foundation
 import AVFoundation
 
-public protocol PlatySize {
+public protocol PlatySize: Sendable {
     var pixelHeight: Int { get }
     var pixelWidth: Int { get }
 }

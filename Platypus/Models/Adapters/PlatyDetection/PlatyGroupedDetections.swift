@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlatyGroupedDetections {
-    private let inner: PlatyDetections
+    let inner: PlatyDetections
     let containedType: PlatyDetectionType
 }
 
@@ -16,7 +16,6 @@ extension PlatyGroupedDetections {
     init(
         from detections: PlatyDetections,
         on detectionType: PlatyDetectionType,
-        distanceInMeters: Float? = nil
     ) {
         let detections: PlatyDetections = detections
             .inner

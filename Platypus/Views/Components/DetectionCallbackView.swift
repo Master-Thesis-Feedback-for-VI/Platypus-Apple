@@ -94,6 +94,31 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         }
 
         // Maybe some kind of grouping would make sense ie TTS: 3 Persons front avergae 3 meters
+        // TODO: This
+        //        for detType in PlatyDetectionType.allCases {
+        //            guard !Task.isCancelled else { return }
+        //
+        //            let detectionsInCat = PlatyGroupedDetections(
+        //                from: detections,
+        //                on: detType
+        //            )
+        //            guard
+        //                let setting = settings.detectionSettings[
+        //                    detType
+        //                ]
+        //            else {
+        //                continue
+        //            }
+        //
+        //            var selectedGroup: SelectedGrouped? = nil
+        //            if setting.groupFeedback {
+        //                selectedGroup = initSelectedGroup(
+        //                    detections: detectionsInCat.inner,
+        //                    detectionType: detType
+        //                )
+        //            }
+        //        }
+
         for detection in filteredDetections.inner {
             guard !Task.isCancelled else { return }
             guard
@@ -104,138 +129,190 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
                 continue
             }
 
-            var selectedGroup: SelectedGrouped? = nil
-            if setting.groupFeedback {
-                selectedGroup = initSelectedGroup(
-                    detections: filteredDetections,
-                    detectionType: detection.detectionType
-                )
-            }
+            let selectedGroup: SelectedGrouped? =
+                if setting.groupFeedback {
+                    initSelectedGroup(
+                        detections: filteredDetections,
+                        detectionType: detection.detectionType
+                    )
+                } else { nil }
 
             // Haptic settings and callback
             let hapticSettings = setting.haptic
-            if hapticSettings.switchedOn {
-
-                var bound: (Double, Double)
-                if let selectedGroup {
-                    bound = selectedGroup.xFromCenter
-                } else {
-                    bound = detection.xFromCenter()
-                }
-                let (left, right) = bound
-
-                let candidates = [
-                    (Double(left), AvailableTopics.hapticLeft, left < 0),
-                    (Double(right), AvailableTopics.hapticRight, right > 0),
-                ]
-                let hapticSignals: [(AvailableTopics, Int)] =
-                    candidates.compactMap { value, topic, shouldSend in
-                        let signalStrength = Int(
-                            (abs(value) * 10.0 * hapticSettings.intensity)
-                                .rounded()
-                        )
-
-                        return shouldSend ? (topic, signalStrength) : nil
-                    }
-
-                for (channel, scale) in hapticSignals {
-                    do {
-                        try await mqttClient.publish(
-                            to: channel,
-                            payload: .init(increaseDiff: scale)
-                        )
-                    } catch {
-                        logger.log(
-                            "Could not send to \(channel.rawValue)",
-                            level: .error
-                        )
-                    }
-                }
-            }
+            async let hapticFeedbackFut = hapticFeedbackReact(
+                hapticSettings,
+                detection,
+                selectedGroup: selectedGroup
+            )
 
             // Sound Settings and callback
             guard !Task.isCancelled else { return }
-            switch setting.sound {
-            case .off: break
-
-            case .earcon(let earconSetting):
-                do {
-                    let volume = earconSetting.volume
-                    let detectionType = detection.detectionType
-
-                    let playedDirection: any Normalizable
-                    if let selectedGroup {
-                        playedDirection = selectedGroup
-                    } else {
-                        playedDirection = detection
-                    }
-
-                    await earconEngine.play(
-                        detectionType,
-                        volume: volume,
-                        azimuth: earconAzimuth(for: playedDirection)
+            let handle = Task {
+                let soundSettings = setting.sound
+                switch soundSettings {
+                case .off: break
+                case .earcon(let earconSetting):
+                    await earconFeedbackReact(
+                        earconSetting: earconSetting,
+                        detection: detection,
+                        selectedGroup: selectedGroup
+                    )
+                case .tts(let ttsSetting):
+                    ttsFeedbackReact(
+                        ttsSetting: ttsSetting,
+                        detection: detection,
+                        selectedGroup: selectedGroup
                     )
                 }
+            }
+            
+            let _ = await (handle, hapticFeedbackFut)
+        }
+    }
 
-            case .tts(let ttsSetting):
-                do {
-                    let volume = ttsSetting.volume
-                    let language = AppLanguage.current
-                    var name = language.localized(
-                        detection.detectionType.rawValue
-                    )
-                    if let selectedGroup {
-                        name = "\(selectedGroup.detections.inner.count) \(name)"
-                    }
+    private func hapticFeedbackReact(
+        _ hapticSettings: HapticSettings,
+        _ detection: PlatyDetection,
+        selectedGroup: SelectedGrouped?
+    ) async {
+        guard hapticSettings.switchedOn else { return }
 
-                    if ttsSetting.enableDirectionControl {
-                        let horizontalFOV = 65.0
-                        let switchableDirection: Direction
-                        if let selectedGroup {
-                            let azi = azimuth(selectedGroup, horizontalFOV)
-                            switchableDirection = Direction.closest(
-                                to: Double(azi)
-                            )
-                        } else {
-                            switchableDirection = detection.direction(
-                                horizontalFOV
-                            )
-                        }
+        var bound: (Double, Double)
+        if let selectedGroup {
+            bound = selectedGroup.xFromCenter
+        } else {
+            bound = detection.xFromCenter()
+        }
+        let (left, right) = bound
 
-                        let direction: Direction?
-                        switch switchableDirection {
-                        case .front: direction = .front
-                        case .frontLeft, .frontLeftLeft, .frontFrontLeft, .left:
-                            direction = .left
-                        case .frontRight, .frontRightRight, .frontFrontRight,
-                            .right:
-                            direction = .right
-                        default:
-                            direction = nil
-                        }
+        let candidates = [
+            (Double(left), AvailableTopics.hapticLeft, left < 0),
+            (Double(right), AvailableTopics.hapticRight, right > 0),
+        ]
+        let hapticSignals: [(AvailableTopics, Int)] =
+            candidates.compactMap { value, topic, shouldSend in
+                let signalStrength = Int(
+                    (abs(value) * 10.0 * hapticSettings.intensity)
+                        .rounded()
+                )
 
-                        if let direction {
-                            let describedDirection = String(
-                                describing: direction
-                            )
-                            name +=
-                                ", \(language.localized(describedDirection))"
-                        }
-                    }
+                return shouldSend ? (topic, signalStrength) : nil
+            }
 
-                    if ttsSetting.enableDistanceEstimation {
-                        let distance = language.format(
-                            "%.1f meters",
-                            detection.distance
-                        )
-                        name += ", \(distance)"
-                    }
-
-                    tts.speak(name, volume)
-                }
+        for (channel, scale) in hapticSignals {
+            do {
+                try await mqttClient.publish(
+                    to: channel,
+                    payload: .init(increaseDiff: scale)
+                )
+            } catch {
+                logger.log(
+                    "Could not send to \(channel.rawValue)",
+                    level: .error
+                )
             }
         }
     }
+
+    private func earconFeedbackReact(
+        earconSetting: EarconSetting,
+        detection: PlatyDetection,
+        selectedGroup: SelectedGrouped?
+    ) async {
+        let volume = earconSetting.volume
+        let detectionType = detection.detectionType
+
+        let playedDirection: any Normalizable
+        if let selectedGroup {
+            playedDirection = selectedGroup
+        } else {
+            playedDirection = detection
+        }
+
+        await earconEngine.play(
+            detectionType,
+            volume: volume,
+            azimuth: earconAzimuth(for: playedDirection)
+        )
+    }
+
+    private func ttsFeedbackReact(
+        ttsSetting: TtsSetting,
+        detection: PlatyDetection,
+        selectedGroup: SelectedGrouped?
+    ) {
+        let volume = ttsSetting.volume
+        let language = AppLanguage.current
+        var name = language.localized(
+            detection.detectionType.rawValue
+        )
+        if let selectedGroup {
+            name = "\(selectedGroup.detections.inner.count) \(name)"
+        }
+
+        if ttsSetting.enableDirectionControl {
+            let horizontalFOV = 65.0
+            let switchableDirection: Direction
+            if let selectedGroup {
+                let azi = azimuth(selectedGroup, horizontalFOV)
+                switchableDirection = Direction.closest(
+                    to: Double(azi)
+                )
+            } else {
+                switchableDirection = detection.direction(
+                    horizontalFOV
+                )
+            }
+
+            let direction: Direction?
+            switch switchableDirection {
+            case .front: direction = .front
+            case .frontLeft, .frontLeftLeft, .frontFrontLeft, .left:
+                direction = .left
+            case .frontRight, .frontRightRight, .frontFrontRight,
+                .right:
+                direction = .right
+            default:
+                direction = nil
+            }
+
+            if let direction {
+                let describedDirection = String(
+                    describing: direction
+                )
+                name +=
+                    ", \(language.localized(describedDirection))"
+            }
+        }
+
+        if ttsSetting.enableDistanceEstimation {
+            let distance = language.format(
+                "%.1f meters",
+                detection.distance
+            )
+            name += ", \(distance)"
+        }
+
+        tts.speak(name, volume)
+    }
+
+    // MARK: - Callbacks Sub
+
+    private func swapProfile(msg: PlatyMQTT.RecMessage) {
+        Task { @MainActor in
+            logger.log("Received: \(msg)")
+
+            switch msg.cmd {
+            case .next:
+                try? profileManager.next(earconEngine)
+            case .prev:
+                try? profileManager.prev(earconEngine)
+            case .empty: return
+            }
+        }
+    }
+
+    // MARK: - Utils
 
     private func earconAzimuth(for normalizable: some Normalizable) -> Double {
         let x = normalizable.normVector.x
@@ -253,22 +330,6 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             on: detectionType
         )
         return groupedDetections.groupedSelection(3)
-    }
-
-    // MARK: - Callbacks Sub
-
-    private func swapProfile(msg: PlatyMQTT.RecMessage) {
-        Task { @MainActor in
-            logger.log("Received: \(msg)")
-
-            switch msg.cmd {
-            case .next:
-                try? profileManager.next(earconEngine)
-            case .prev:
-                try? profileManager.prev(earconEngine)
-            case .empty: return
-            }
-        }
     }
 }
 
