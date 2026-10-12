@@ -86,44 +86,16 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             contentMode: contentMode
         )
 
-        var filteredDetections = detections
-        // TODO Fix the issue where only one detction passes instead there we should loop over evry type and the deciee waht we do with
-        // each type currently we will never group anything
-        if let minVal = detections.closestDetection {
-            filteredDetections = PlatyDetections(detection: minVal)
-        }
-
-        // Maybe some kind of grouping would make sense ie TTS: 3 Persons front avergae 3 meters
-        // TODO: This
-        //        for detType in PlatyDetectionType.allCases {
-        //            guard !Task.isCancelled else { return }
-        //
-        //            let detectionsInCat = PlatyGroupedDetections(
-        //                from: detections,
-        //                on: detType
-        //            )
-        //            guard
-        //                let setting = settings.detectionSettings[
-        //                    detType
-        //                ]
-        //            else {
-        //                continue
-        //            }
-        //
-        //            var selectedGroup: SelectedGrouped? = nil
-        //            if setting.groupFeedback {
-        //                selectedGroup = initSelectedGroup(
-        //                    detections: detectionsInCat.inner,
-        //                    detectionType: detType
-        //                )
-        //            }
-        //        }
-
-        for detection in filteredDetections.inner {
+        for detType in PlatyDetectionType.allCases {
             guard !Task.isCancelled else { return }
+
+            let detectionsInCat = PlatyGroupedDetections(
+                from: detections,
+                on: detType
+            )
             guard
                 let setting = settings.detectionSettings[
-                    detection.detectionType
+                    detType
                 ]
             else {
                 continue
@@ -132,16 +104,16 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             let selectedGroup: SelectedGrouped? =
                 if setting.groupFeedback {
                     initSelectedGroup(
-                        detections: filteredDetections,
-                        detectionType: detection.detectionType
+                        detections: detectionsInCat.inner,
+                        detectionType: detType
                     )
                 } else { nil }
 
             // Haptic settings and callback
             let hapticSettings = setting.haptic
             async let hapticFeedbackFut = hapticFeedbackReact(
-                hapticSettings,
-                detection,
+                hapticSettings: hapticSettings,
+                groupedDetection: detectionsInCat,
                 selectedGroup: selectedGroup
             )
 
@@ -154,33 +126,36 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
                 case .earcon(let earconSetting):
                     await earconFeedbackReact(
                         earconSetting: earconSetting,
-                        detection: detection,
+                        groupedDetection: detectionsInCat,
                         selectedGroup: selectedGroup
                     )
                 case .tts(let ttsSetting):
                     ttsFeedbackReact(
                         ttsSetting: ttsSetting,
-                        detection: detection,
+                        groupedDetection: detectionsInCat,
                         selectedGroup: selectedGroup
                     )
                 }
             }
-            
+
             let _ = await (handle, hapticFeedbackFut)
         }
     }
 
     private func hapticFeedbackReact(
-        _ hapticSettings: HapticSettings,
-        _ detection: PlatyDetection,
+        hapticSettings: HapticSettings,
+        groupedDetection: PlatyGroupedDetections,
         selectedGroup: SelectedGrouped?
     ) async {
-        guard hapticSettings.switchedOn else { return }
+        guard hapticSettings.switchedOn, !groupedDetection.isEmpty else {
+            return
+        }
 
         var bound: (Double, Double)
         if let selectedGroup {
             bound = selectedGroup.xFromCenter
         } else {
+            let detection = groupedDetection.closestDetection!
             bound = detection.xFromCenter()
         }
         let (left, right) = bound
@@ -216,21 +191,23 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
 
     private func earconFeedbackReact(
         earconSetting: EarconSetting,
-        detection: PlatyDetection,
+        groupedDetection: PlatyGroupedDetections,
         selectedGroup: SelectedGrouped?
     ) async {
+        guard !groupedDetection.isEmpty else { return }
+
         let volume = earconSetting.volume
-        let detectionType = detection.detectionType
 
         let playedDirection: any Normalizable
         if let selectedGroup {
             playedDirection = selectedGroup
         } else {
+            let detection = groupedDetection.closestDetection!
             playedDirection = detection
         }
 
         await earconEngine.play(
-            detectionType,
+            groupedDetection.containedType,
             volume: volume,
             azimuth: earconAzimuth(for: playedDirection)
         )
@@ -238,13 +215,22 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
 
     private func ttsFeedbackReact(
         ttsSetting: TtsSetting,
-        detection: PlatyDetection,
+        groupedDetection: PlatyGroupedDetections,
         selectedGroup: SelectedGrouped?
     ) {
+        guard !groupedDetection.isEmpty else { return }
+        let detection: PlatyDetection? =
+            if selectedGroup != nil {
+                nil
+            } else {
+                groupedDetection.closestDetection
+            }
+
         let volume = ttsSetting.volume
         let language = AppLanguage.current
+
         var name = language.localized(
-            detection.detectionType.rawValue
+            groupedDetection.containedType.rawValue
         )
         if let selectedGroup {
             name = "\(selectedGroup.detections.inner.count) \(name)"
@@ -259,7 +245,7 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
                     to: Double(azi)
                 )
             } else {
-                switchableDirection = detection.direction(
+                switchableDirection = detection!.direction(
                     horizontalFOV
                 )
             }
@@ -286,11 +272,18 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
         }
 
         if ttsSetting.enableDistanceEstimation {
-            let distance = language.format(
+            let distance =
+                if let selectedGroup {
+                    selectedGroup.distance
+                } else {
+                    Double(detection!.distance)
+                }
+
+            let formatedDistance = language.format(
                 "%.1f meters",
-                detection.distance
+                distance
             )
-            name += ", \(distance)"
+            name += ", \(formatedDistance)"
         }
 
         tts.speak(name, volume)

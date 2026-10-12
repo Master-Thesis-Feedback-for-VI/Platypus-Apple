@@ -33,6 +33,10 @@ extension PlatyGroupedDetections {
     var closestDetection: PlatyDetection? {
         self.inner.closestDetection
     }
+    
+    var isEmpty: Bool {
+        self.inner.inner.isEmpty
+    }
 
     var averageDistance: Double {
         let detections = self.detectionsUnwrap
