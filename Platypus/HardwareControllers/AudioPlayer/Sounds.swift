@@ -36,12 +36,7 @@ extension PlatyMQTT.RecMessageVariants: Earconable {
 
 extension PlatyDetectionType: Earconable {
     var soundFile: SoundFile {
-        switch self {
-        case .car: SoundFile("car")
-        case .person: SoundFile("person")
-        case .bench: SoundFile("bench")
-        case .bicycle: SoundFile("bicycle")
-        }
+        SoundFile(self.rawValue)
     }
 }
 

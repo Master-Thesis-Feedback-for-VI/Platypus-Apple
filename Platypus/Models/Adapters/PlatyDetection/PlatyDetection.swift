@@ -95,6 +95,7 @@ enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
     case person = "person"
     case bench = "bench"
     case bicycle = "bicycle"
+    case cyclist = "cyclist"
 
     var id: Self { self }
     var key: String { "settings.detection.\(rawValue.lowercased())" }

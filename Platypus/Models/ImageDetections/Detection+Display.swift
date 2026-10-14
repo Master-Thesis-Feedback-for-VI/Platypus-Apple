@@ -25,6 +25,7 @@ extension Detection: DisplayableProto {
         case .tv: return "Tv"
         case .keyboard: return "Keyboard"
         case .unknown: return "Unknown"
+        case .cyclist: return "Cyclist"
         }
     }
 
@@ -43,6 +44,7 @@ extension Detection: DisplayableProto {
         case .tv: return "tv.fill"
         case .keyboard: return "keyboard.fill"
         case .unknown: return "questionmark.square.fill"
+        case .cyclist: return "figure.outdoor.cycle"
         }
     }
 }

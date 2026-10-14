@@ -1518,18 +1518,18 @@ public func FfiConverterTypeCoordinate_lower(_ value: Coordinate) -> RustBuffer 
 
 
 public struct Detection: Equatable, Hashable {
-    public var confidence: Float
     public var name: DetectionType
     public var xyxy: BoundingBox
     public var distance: Float
+    public var confidence: Float
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(confidence: Float, name: DetectionType, xyxy: BoundingBox, distance: Float) {
-        self.confidence = confidence
+    public init(name: DetectionType, xyxy: BoundingBox, distance: Float, confidence: Float) {
         self.name = name
         self.xyxy = xyxy
         self.distance = distance
+        self.confidence = confidence
     }
 
     
@@ -1548,18 +1548,18 @@ public struct FfiConverterTypeDetection: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Detection {
         return
             try Detection(
-                confidence: FfiConverterFloat.read(from: &buf), 
                 name: FfiConverterTypeDetectionType.read(from: &buf), 
                 xyxy: FfiConverterTypeBoundingBox.read(from: &buf), 
-                distance: FfiConverterFloat.read(from: &buf)
+                distance: FfiConverterFloat.read(from: &buf), 
+                confidence: FfiConverterFloat.read(from: &buf)
         )
     }
 
     public static func write(_ value: Detection, into buf: inout [UInt8]) {
-        FfiConverterFloat.write(value.confidence, into: &buf)
         FfiConverterTypeDetectionType.write(value.name, into: &buf)
         FfiConverterTypeBoundingBox.write(value.xyxy, into: &buf)
         FfiConverterFloat.write(value.distance, into: &buf)
+        FfiConverterFloat.write(value.confidence, into: &buf)
     }
 }
 
@@ -1748,6 +1748,7 @@ public enum DetectionType: Equatable, Hashable {
     case trafficLight
     case tv
     case keyboard
+    case cyclist
     case unknown(String
     )
 
@@ -1795,7 +1796,9 @@ public struct FfiConverterTypeDetectionType: FfiConverterRustBuffer {
         
         case 12: return .keyboard
         
-        case 13: return .unknown(try FfiConverterString.read(from: &buf)
+        case 13: return .cyclist
+        
+        case 14: return .unknown(try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -1854,8 +1857,12 @@ public struct FfiConverterTypeDetectionType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(12))
         
         
-        case let .unknown(v1):
+        case .cyclist:
             writeInt(&buf, Int32(13))
+        
+        
+        case let .unknown(v1):
+            writeInt(&buf, Int32(14))
             FfiConverterString.write(v1, into: &buf)
             
         }
