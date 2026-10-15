@@ -77,6 +77,7 @@ struct ProfileEditSingularView: View {
                             )
                         )
                     )
+                    .id(SettingsA11yFocus.location(location))
 
                     if profile.isLocationEnabled(location),
                         let binding = settingsBinding(for: location)
@@ -101,6 +102,12 @@ struct ProfileEditSingularView: View {
             }
         }
         .formStyle(.grouped)
+        .transaction { transaction in
+            if voiceOverOn {
+                transaction.animation = nil
+                transaction.disablesAnimations = true
+            }
+        }
     }
 
     private func locationEnabledBinding(for location: PlatyLocationTag)
@@ -122,8 +129,12 @@ struct ProfileEditSingularView: View {
     }
 
     private func restoreFocus(_ target: SettingsA11yFocus) {
+        guard voiceOverOn else { return }
+        // Re-request focus even when this control was already focused before
+        // its dependent rows were removed from the form.
+        a11yFocus = nil
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(100))
+            try? await Task.sleep(for: .milliseconds(300))
             a11yFocus = target
         }
     }
@@ -197,6 +208,12 @@ struct ProfileDetectionSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .transaction { transaction in
+            if voiceOverOn {
+                transaction.animation = nil
+                transaction.disablesAnimations = true
+            }
+        }
     }
 
     private func binding(for type: PlatyDetectionType) -> Binding<
@@ -224,6 +241,7 @@ struct ProfileDetectionSettingsView: View {
 
 struct SoundSettingsRows: View {
     private var language: AppLanguage { .current }
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
     let detectionName: String
     @Binding var sound: SoundVariant
     var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
@@ -265,6 +283,8 @@ struct SoundSettingsRows: View {
                 )
             )
         )
+        // Keep the picker identity independent of the number of detail rows.
+        .id(focusID)
 
         if !sound.isOff {
             SliderRow(
@@ -346,8 +366,12 @@ struct SoundSettingsRows: View {
     }
 
     private func restoreFocus() {
+        guard voiceOverOn else { return }
+        focus.wrappedValue = nil
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(100))
+            // The menu must finish dismissing before it can return focus to
+            // the picker in the updated form.
+            try? await Task.sleep(for: .milliseconds(300))
             focus.wrappedValue = focusID
         }
     }
@@ -428,6 +452,7 @@ struct SoundSettingsRows: View {
 // MARK: - Haptics
 
 struct HapticSettingsRows: View {
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
     let detectionName: String
     @Binding var haptic: HapticSettings
     var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
@@ -451,6 +476,7 @@ struct HapticSettingsRows: View {
                 )
             )
         )
+        .id(focusID)
 
         if haptic.switchedOn {
             SliderRow(
@@ -467,8 +493,10 @@ struct HapticSettingsRows: View {
     }
 
     private func restoreFocus() {
+        guard voiceOverOn else { return }
+        focus.wrappedValue = nil
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(100))
+            try? await Task.sleep(for: .milliseconds(300))
             focus.wrappedValue = focusID
         }
     }

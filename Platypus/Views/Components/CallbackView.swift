@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-struct DetectionCallbackView<Frame: PlatySize>: View {
+struct CallbackView<Frame: PlatySize>: View {
     let detectedObjects: ImageDetections
     let uniqueLocationTag: UniqueLocationTags
 
@@ -78,6 +78,7 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
                 return detType != nil
             }
         }
+
         let detections = PlatyDetections(
             detections: detectionsFiltered,
             frameSize: frameSize,
@@ -86,64 +87,63 @@ struct DetectionCallbackView<Frame: PlatySize>: View {
             contentMode: contentMode
         )
 
-        for detType in PlatyDetectionType.allCases {
-            guard !Task.isCancelled else {
-                await flushHapticFeedback()
-                return
-            }
-
-            let detectionsInCat = PlatyGroupedDetections(
-                from: detections,
-                on: detType
-            )
-            guard
-                let setting = settings.detectionSettings[
-                    detType
-                ], !detectionsInCat.isEmpty
-            else {
-                await flushHapticFeedback()
-                continue
-            }
-
-            let selectedGroup: SelectedGrouped? =
-                if setting.groupFeedback {
-                    initSelectedGroup(
-                        detections: detectionsInCat.inner,
-                        detectionType: detType
-                    )
-                } else { nil }
-
-            // Haptic settings and callback
-            let hapticSettings = setting.haptic
-            async let hapticFeedbackFut = hapticFeedbackReact(
-                hapticSettings: hapticSettings,
-                groupedDetection: detectionsInCat,
-                selectedGroup: selectedGroup
-            )
-
-            // Sound Settings and callback
-            guard !Task.isCancelled else { return }
-            let handle = Task {
-                let soundSettings = setting.sound
-                switch soundSettings {
-                case .off: break
-                case .earcon(let earconSetting):
-                    await earconFeedbackReact(
-                        earconSetting: earconSetting,
-                        groupedDetection: detectionsInCat,
-                        selectedGroup: selectedGroup
-                    )
-                case .tts(let ttsSetting):
-                    ttsFeedbackReact(
-                        ttsSetting: ttsSetting,
-                        groupedDetection: detectionsInCat,
-                        selectedGroup: selectedGroup
-                    )
-                }
-            }
-
-            let _ = await (handle, hapticFeedbackFut)
+        guard !detections.inner.isEmpty else { return }
+        guard !Task.isCancelled else {
+            await flushHapticFeedback()
+            return
         }
+        let closestCategory = detections.closestDetection!
+        let detType = closestCategory.detectionType
+        let detectionsInCat = PlatyGroupedDetections(
+            from: detections,
+            on: detType
+        )
+        guard
+            let setting = settings.detectionSettings[
+                detType
+            ], !detectionsInCat.isEmpty
+        else {
+            await flushHapticFeedback()
+            return
+        }
+
+        let selectedGroup: SelectedGrouped? =
+            if setting.groupFeedback {
+                initSelectedGroup(
+                    detections: detectionsInCat.inner,
+                    detectionType: detType
+                )
+            } else { nil }
+
+        // Haptic settings and callback
+        let hapticSettings = setting.haptic
+        async let hapticFeedbackFut = hapticFeedbackReact(
+            hapticSettings: hapticSettings,
+            groupedDetection: detectionsInCat,
+            selectedGroup: selectedGroup
+        )
+
+        // Sound Settings and callback
+        let handle = Task {
+            let soundSettings = setting.sound
+            switch soundSettings {
+            case .off: break
+            case .earcon(let earconSetting):
+                await earconFeedbackReact(
+                    earconSetting: earconSetting,
+                    groupedDetection: detectionsInCat,
+                    selectedGroup: selectedGroup
+                )
+            case .tts(let ttsSetting):
+                ttsFeedbackReact(
+                    ttsSetting: ttsSetting,
+                    groupedDetection: detectionsInCat,
+                    selectedGroup: selectedGroup
+                )
+            }
+        }
+
+        let _ = await (handle, hapticFeedbackFut)
     }
 
     private func flushHapticFeedback() async {

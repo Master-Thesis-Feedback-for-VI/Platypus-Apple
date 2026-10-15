@@ -91,11 +91,11 @@ func azimuth(_ normalizable: some Normalizable, _ horizontalFOV: Double = 65) ->
 extension PlatyDetection: Equatable {}
 
 enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
-    case car = "car"
     case person = "person"
-    case bench = "bench"
-    case bicycle = "bicycle"
+    case car = "car"
     case cyclist = "cyclist"
+    case bicycle = "bicycle"
+    case bench = "bench"
 
     var id: Self { self }
     var key: String { "settings.detection.\(rawValue.lowercased())" }

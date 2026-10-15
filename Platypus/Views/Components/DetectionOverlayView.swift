@@ -22,7 +22,7 @@ struct DetectionOverlayView<Frame: PlatySize>: View {
                     contentMode: contentMode
                 )
 
-                DetectionCallbackView(
+                CallbackView(
                     detectedObjects: detectedObjects,
                     uniqueLocationTag: uniqueLocationTags,
                     frameSize: frameSize,
