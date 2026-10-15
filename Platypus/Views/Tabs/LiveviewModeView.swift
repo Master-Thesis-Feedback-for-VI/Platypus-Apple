@@ -22,8 +22,8 @@ struct LiveviewModeView: View {
                     .environmentObject(locationRecorder)
             } else {
                 VStack(spacing: 10) {
-                    Text("Camera not authorized").font(.title2)
-                    Text("Please go to Settings and allow camera access")
+                    Text(verbatim: AppLanguage.current.localized("Camera not authorized")).font(.title2)
+                    Text(verbatim: AppLanguage.current.localized("Please go to Settings and allow camera access"))
                 }
             }
 
