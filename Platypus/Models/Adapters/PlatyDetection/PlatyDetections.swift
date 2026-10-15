@@ -1,0 +1,71 @@
+//
+//  PlatyDetections.swift
+//  Platypus
+//
+//  Created by Yann Bernard on 11.10.26.
+//
+
+import Foundation
+import SwiftUI
+
+struct PlatyDetections {
+    let inner: [PlatyDetection]
+}
+
+extension PlatyDetections {
+    init(
+        detection: PlatyDetection
+    ) {
+        self.inner = [detection]
+    }
+
+    init<Frame: PlatySize, D: Sequence>(
+        detections: D,
+        frameSize: Frame,
+        viewportSize: CGSize,
+        imageTransform: CGAffineTransform,
+        contentMode: ContentMode
+    ) where D.Element == Detection {
+        let converted: [PlatyDetection] = detections.compactMap { detection in
+            PlatyDetection(
+                detection: detection,
+                frameSize: frameSize,
+                viewportSize: viewportSize,
+                imageTransform: imageTransform,
+                contentMode: contentMode
+            )
+        }
+
+        self = converted.collect()
+    }
+}
+
+extension PlatyDetections {
+    var closestDetection: PlatyDetection? {
+        self.inner.min { det1, det2 in
+            det1.distance < det2.distance
+        }
+    }
+
+    func closestWihtin(_ distanceInMetersDiff: Float) -> PlatyDetections {
+        guard let closest = self.closestDetection else {
+            return PlatyDetections(inner: [])
+        }
+
+        return self
+            .inner
+            .filter {
+                let diffDist = abs(closest.distance - $0.distance)
+                return diffDist < distanceInMetersDiff
+            }
+            .collect()
+    }
+}
+
+extension Array: Collectable where Element == PlatyDetection {
+    typealias Output = PlatyDetections
+
+    func collect() -> PlatyDetections {
+        PlatyDetections(inner: self)
+    }
+}

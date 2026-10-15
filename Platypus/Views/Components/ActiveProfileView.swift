@@ -23,7 +23,7 @@ struct ActiveProfileView: View {
                     try? profileManager.prev(earconEngine)
                 }
 
-                let profileText = Text(
+                let profileText = Text(verbatim:
                     profileManager.currentProfile.name
                 )
                 .contentTransition(.numericText())
@@ -55,7 +55,7 @@ struct ActiveProfileView: View {
         .padding()
         .onChange(of: profileManager.currentProfile.name) { _, newName in
             AccessibilityNotification.Announcement(
-                "Active profile: \(newName)"
+                AppLanguage.current.format("Active profile: %@", newName)
             ).post()
         }
     }
@@ -68,7 +68,7 @@ struct ActiveProfileView: View {
             UIAccessibility.post(
                 notification: .announcement,
                 argument:
-                    "Active profile: \(profileManager.currentProfile.name)"
+                    AppLanguage.current.format("Active profile: %@", profileManager.currentProfile.name)
             )
         } catch {
             logger.log("Could not switch profile: \(error)", level: .error)
@@ -85,7 +85,7 @@ struct ActiveProfileView: View {
         } label: {
             Image(systemName: name)
         }
-        .accessibilityLabel(accessibilityLabel)
+        .accessibilityLabel(Text(verbatim: AppLanguage.current.localized(accessibilityLabel)))
         .font(.title2)
         .padding(.vertical, 8)
         .padding(.horizontal, 12)

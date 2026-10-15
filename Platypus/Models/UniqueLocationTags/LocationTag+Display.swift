@@ -7,6 +7,10 @@
 
 extension LocationTag: DisplayableProto {
     var displayName: String {
+        AppLanguage.current.localized(englishName)
+    }
+
+    private var englishName: String {
         switch self {
         case .forest: return "Forest"
         case .outside: return "Outside"

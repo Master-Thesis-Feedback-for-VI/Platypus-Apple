@@ -24,7 +24,7 @@ struct ReplayView: View {
 
             }
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle("Available Videos")
+            .navigationTitle(AppLanguage.current.localized("Available Videos"))
             .task {
                 await loadReplayItems()
             }
@@ -107,7 +107,7 @@ struct FileItemView: View {
                     .font(.title2)
                     .foregroundStyle(.secondary)
 
-                Text(replayItem.title)
+                Text(verbatim: replayItem.title)
                     .font(.headline)
                     .foregroundStyle(.primary)
                     .frame(
@@ -136,7 +136,7 @@ struct FileItemView: View {
             }
         }
         .disabled(isLoading)
-        .accessibilityLabel(replayItem.title)
+        .accessibilityLabel(Text(verbatim: replayItem.title))
         .fullScreenCover(item: $evaluationData) { data in
             VideoPlaybackView(playback: data)
         }

@@ -20,15 +20,15 @@ struct PlatyDetection {
 extension PlatyDetection {
     // MARK: - Init
 
-    static func from<Frame: PlatySize>(
+    init?<Frame: PlatySize>(
         detection: Detection,
         frameSize: Frame,
         viewportSize: CGSize,
         imageTransform: CGAffineTransform,
         contentMode: ContentMode
-    ) -> PlatyDetection? {
+    ) {
         guard
-            let platyDetection = PlatyDetectionType.from(
+            let platyDetection = PlatyDetectionType(
                 detectionType: detection.name
             )
         else { return nil }
@@ -48,76 +48,24 @@ extension PlatyDetection {
             contentMode: contentMode
         )
 
-        return Self(
-            confidence: detection.confidence,
-            detectionType: platyDetection,
-            distance: detection.distance,
-            rect: rect,
-            viewportSize: viewportSize,
-        )
-    }
-
-    static func from<Frame: PlatySize>(
-        detections: [Detection],
-        frameSize: Frame,
-        viewportSize: CGSize,
-        imageTransform: CGAffineTransform,
-        contentMode: ContentMode
-    ) -> [PlatyDetection] {
-        detections.compactMap { detection in
-            PlatyDetection.from(
-                detection: detection,
-                frameSize: frameSize,
-                viewportSize: viewportSize,
-                imageTransform: imageTransform,
-                contentMode: contentMode
-            )
-        }
-    }
-
-    static func from<Frame: PlatySize>(
-        imageDetections: ImageDetections,
-        frameSize: Frame,
-        viewportSize: CGSize,
-        imageTransform: CGAffineTransform,
-        contentMode: ContentMode
-    ) -> [PlatyDetection] {
-        Self.from(
-            detections: imageDetections.detections,
-            frameSize: frameSize,
-            viewportSize: viewportSize,
-            imageTransform: imageTransform,
-            contentMode: contentMode
-        )
+        self.confidence = detection.confidence
+        self.detectionType = platyDetection
+        self.distance = detection.distance
+        self.rect = rect
+        self.viewportSize = viewportSize
     }
 
     // MARK: - Math functions
+    
 
-    public func normVector() -> (Float, Float) {
-        return (
-            normalized(rect.midX, relativeTo: viewportSize.width / 2),
-            normalized(rect.midY, relativeTo: viewportSize.height / 2)
-        )
-    }
-
-    public func azimuth(_ horizontalFOV: Double = 65) -> Float {
-        let x = Double(normVector().0)
-        let halfFOV = horizontalFOV * .pi / 180 / 2
-
-        let angle = atan(x * tan(halfFOV)) * 180 / .pi
-
-        let wrapped = angle.truncatingRemainder(dividingBy: 360)
-        return Float(wrapped < 0 ? wrapped + 360 : wrapped)
-    }
-
-    public func yFromCenter() -> (Float, Float) {
+    public func yFromCenter() -> (Double, Double) {
         return (
             normalized(rect.minY, relativeTo: viewportSize.height / 2),
             normalized(rect.maxY, relativeTo: viewportSize.height / 2)
         )
     }
 
-    public func xFromCenter() -> (Float, Float) {
+    public func xFromCenter() -> (Double, Double) {
         return (
             normalized(rect.minX, relativeTo: viewportSize.width / 2),
             normalized(rect.maxX, relativeTo: viewportSize.width / 2)
@@ -125,27 +73,42 @@ extension PlatyDetection {
     }
 
     public func direction(_ horizontalFOV: Double = 65) -> Direction {
-        let azi = azimuth(horizontalFOV)
+        let azi = azimuth(self, horizontalFOV)
         return Direction.closest(to: Double(azi))
     }
 }  // End PlatyDetection extension
 
+func azimuth(_ normalizable: some Normalizable, _ horizontalFOV: Double = 65) -> Float {
+    let x = normalizable.normVector.x
+    let halfFOV = horizontalFOV * .pi / 180 / 2
+
+    let angle = atan(x * tan(halfFOV)) * 180 / .pi
+
+    let wrapped = angle.truncatingRemainder(dividingBy: 360)
+    return Float(wrapped < 0 ? wrapped + 360 : wrapped)
+}
+
 extension PlatyDetection: Equatable {}
 
 enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
-    case car = "Car"
-    case person = "Person"
-    case bench = "Bench"
-    case bicycle = "Bicycle"
+    case person = "person"
+    case car = "car"
+    case cyclist = "cyclist"
+    case bicycle = "bicycle"
+    case bench = "bench"
 
     var id: Self { self }
     var key: String { "settings.detection.\(rawValue.lowercased())" }
 }
 
 extension PlatyDetectionType {
-    static func from(detectionType: DetectionType) -> PlatyDetectionType? {
-        let description = String(describing: detectionType).capitalized
-        return PlatyDetectionType(rawValue: description)
+    init?(detectionType: DetectionType) {
+        let description = String(describing: detectionType)
+        if let platyType = PlatyDetectionType(rawValue: description) {
+            self = platyType
+        } else {
+            return nil
+        }
     }
 }
 
@@ -185,13 +148,27 @@ private func rect(
 }
 
 func normalized(_ point: CGFloat, relativeTo center: CGFloat)
-    -> Float
+    -> Double
 {
-    Float((point - center) / center).clamped(to: -1...1)
+    Double((point - center) / center).clamped(to: -1...1)
 }
 
-extension Float {
-    fileprivate func clamped(to range: ClosedRange<Float>) -> Float {
+extension Double {
+    fileprivate func clamped(to range: ClosedRange<Double>) -> Double {
         Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
+    }
+}
+
+protocol Normalizable {
+    var normVector: CGPoint { get }
+}
+
+extension PlatyDetection: Normalizable {
+    var normVector: CGPoint {
+        let point = CGPoint(
+            x: normalized(rect.midX, relativeTo: viewportSize.width / 2),
+            y: normalized(rect.midY, relativeTo: viewportSize.height / 2)
+        )
+        return point
     }
 }

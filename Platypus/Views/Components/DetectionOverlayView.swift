@@ -22,7 +22,7 @@ struct DetectionOverlayView<Frame: PlatySize>: View {
                     contentMode: contentMode
                 )
 
-                DetectionMQTTView(
+                CallbackView(
                     detectedObjects: detectedObjects,
                     uniqueLocationTag: uniqueLocationTags,
                     frameSize: frameSize,

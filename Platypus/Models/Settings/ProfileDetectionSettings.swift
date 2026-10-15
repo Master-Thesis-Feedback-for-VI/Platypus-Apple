@@ -80,6 +80,7 @@ struct HapticSettings: Codable, Equatable {
 struct ProfileDetectionSettings: Codable, Equatable {
     var sound: SoundVariant
     var haptic: HapticSettings
+    var groupFeedback: Bool = false
 
     static func defaults() -> [PlatyDetectionType: ProfileDetectionSettings] {
         var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]

@@ -19,6 +19,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		B0300EB63080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
+		B0300EB73080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
+		B0300EB83080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
 		B0378816307A753F000DD50F /* prev_profile.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0378815307A753F000DD50F /* prev_profile.wav */; };
 		B0378817307A753F000DD50F /* next_profile.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0378814307A753F000DD50F /* next_profile.wav */; };
 		B0378818307A753F000DD50F /* prev_profile.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0378815307A753F000DD50F /* prev_profile.wav */; };
@@ -59,6 +62,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B0300EB53080FA5D0002AA15 /* cyclist.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = cyclist.wav; sourceTree = "<group>"; };
 		B0378814307A753F000DD50F /* next_profile.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = next_profile.wav; sourceTree = "<group>"; };
 		B0378815307A753F000DD50F /* prev_profile.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = prev_profile.wav; sourceTree = "<group>"; };
 		B09A4B853074EC9400F9A39B /* bench.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bench.wav; sourceTree = "<group>"; };
@@ -140,6 +144,7 @@
 		B09A4B893074EC9400F9A39B /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				B0300EB53080FA5D0002AA15 /* cyclist.wav */,
 				B0378814307A753F000DD50F /* next_profile.wav */,
 				B0378815307A753F000DD50F /* prev_profile.wav */,
 				B09A4B853074EC9400F9A39B /* bench.wav */,
@@ -248,6 +253,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				de,
 				Base,
 			);
 			mainGroup = B091269D30260A5E000E2487;
@@ -278,6 +284,7 @@
 				B09A4B8A3074EC9400F9A39B /* person.wav in Resources */,
 				B09A4B8B3074EC9400F9A39B /* bench.wav in Resources */,
 				B09A4B8C3074EC9400F9A39B /* car.wav in Resources */,
+				B0300EB63080FA5D0002AA15 /* cyclist.wav in Resources */,
 				B09A4B8D3074EC9400F9A39B /* bicycle.wav in Resources */,
 			);
 		};
@@ -288,6 +295,7 @@
 				B09A4B933074EC9400F9A39B /* bench.wav in Resources */,
 				B0378816307A753F000DD50F /* prev_profile.wav in Resources */,
 				B0378817307A753F000DD50F /* next_profile.wav in Resources */,
+				B0300EB73080FA5D0002AA15 /* cyclist.wav in Resources */,
 				B09A4B943074EC9400F9A39B /* car.wav in Resources */,
 				B09A4B953074EC9400F9A39B /* bicycle.wav in Resources */,
 			);
@@ -299,6 +307,7 @@
 				B09A4B8F3074EC9400F9A39B /* bench.wav in Resources */,
 				B0378818307A753F000DD50F /* prev_profile.wav in Resources */,
 				B0378819307A753F000DD50F /* next_profile.wav in Resources */,
+				B0300EB83080FA5D0002AA15 /* cyclist.wav in Resources */,
 				B09A4B903074EC9400F9A39B /* car.wav in Resources */,
 				B09A4B913074EC9400F9A39B /* bicycle.wav in Resources */,
 			);

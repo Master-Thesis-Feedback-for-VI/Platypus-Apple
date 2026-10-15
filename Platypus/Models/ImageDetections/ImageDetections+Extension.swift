@@ -52,6 +52,6 @@ struct DetectionSummary: Identifiable, Hashable, DisplayableProto {
             return displayName
         }
 
-        return "\(count) \(displayName)s"
+        return "\(count) × \(displayName)"
     }
 }

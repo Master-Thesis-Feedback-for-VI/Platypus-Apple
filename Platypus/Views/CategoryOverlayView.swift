@@ -78,7 +78,7 @@ where T.Element: Hashable & DisplayableProto {
     }
 
     private var emptyState: some View {
-        Label("Nothing detected", systemImage: "magnifyingglass")
+        Label(AppLanguage.current.localized("Nothing detected"), systemImage: "magnifyingglass")
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.secondary)
             .padding(.horizontal, 12)

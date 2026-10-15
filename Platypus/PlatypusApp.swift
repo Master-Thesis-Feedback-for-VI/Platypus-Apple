@@ -67,6 +67,7 @@ struct PlatypusApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.locale, AppLanguage.current.locale)
                 .onChange(of: scenePhase) { _, newPhase in
                     switch newPhase {
                     case .active:

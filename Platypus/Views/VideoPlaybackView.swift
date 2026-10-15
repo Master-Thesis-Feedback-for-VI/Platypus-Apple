@@ -60,6 +60,7 @@ struct VideoPlaybackView: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
+                    .accessibilityLabel(Text(verbatim: AppLanguage.current.localized("Close playback")))
                 }
             }
             .onAppear {
