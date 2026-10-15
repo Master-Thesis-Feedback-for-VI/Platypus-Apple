@@ -79,11 +79,11 @@ where T.Element: Hashable & DisplayableProto {
 
     private var emptyState: some View {
         Label(AppLanguage.current.localized("Nothing detected"), systemImage: "magnifyingglass")
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.secondary)
+            .font(.headline)
+            .foregroundStyle(AppTheme.secondaryText)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(.ultraThinMaterial, in: Capsule())
+            .background(AppTheme.background, in: Capsule())
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.horizontal, 16)
     }
@@ -93,9 +93,10 @@ where T.Element: Hashable & DisplayableProto {
             item.displayTitle,
             systemImage: item.symbolName
         )
-        .font(.subheadline.weight(.semibold))
+        .font(.headline)
+        .foregroundStyle(AppTheme.text)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(.ultraThinMaterial, in: Capsule())
+        .background(AppTheme.background, in: Capsule())
     }
 }

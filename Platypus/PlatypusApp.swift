@@ -12,6 +12,10 @@ let DOMAIN = "com.github.yannbernard.Platypus"
 
 @main
 struct PlatypusApp: App {
+    init() {
+        AppTheme.configureAppearance()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([ProfileSettings.self])
         let modelConfiguration = ModelConfiguration(
@@ -67,6 +71,7 @@ struct PlatypusApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .highContrastTheme()
                 .environment(\.locale, AppLanguage.current.locale)
                 .onChange(of: scenePhase) { _, newPhase in
                     switch newPhase {

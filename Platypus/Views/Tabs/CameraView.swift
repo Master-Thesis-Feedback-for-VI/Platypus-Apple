@@ -42,13 +42,12 @@ struct CameraView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(cameraManager.isRecording ? .red : .accentColor)
+                    .buttonStyle(HighContrastButtonStyle())
 
                     if let error = cameraManager.recordingError {
                         Text(verbatim: error.localizedDescription)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                            .font(.body)
+                            .foregroundStyle(AppTheme.error)
                     }
                 } else {
                     ContentUnavailableView(

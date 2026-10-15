@@ -29,15 +29,18 @@ struct DetectionBoxOverlay<Frame: PlatySize>: View {
                         ZStack {
                             Rectangle()
                                 .path(in: detection.rect)
-                                .stroke(Color.red, lineWidth: 2)
+                                .stroke(AppTheme.background, lineWidth: 6)
+                            Rectangle()
+                                .path(in: detection.rect)
+                                .stroke(AppTheme.text, lineWidth: 3)
 
                             Text(verbatim: AppLanguage.current.format("%.1f m", Double(detection.distance)))
-                                .font(.caption2.monospacedDigit())
-                                .foregroundStyle(.white)
+                                .font(.body.monospacedDigit().bold())
+                                .foregroundStyle(AppTheme.text)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 2)
                                 .background(
-                                    Color.red,
+                                    AppTheme.background,
                                     in: RoundedRectangle(cornerRadius: 3)
                                 )
                                 .position(

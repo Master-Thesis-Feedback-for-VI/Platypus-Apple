@@ -102,6 +102,7 @@ struct ProfileEditSingularView: View {
             }
         }
         .formStyle(.grouped)
+        .highContrastForm()
         .transaction { transaction in
             if voiceOverOn {
                 transaction.animation = nil
@@ -198,8 +199,8 @@ struct ProfileDetectionSettingsView: View {
                                             "When enabled, nearby detections are combined into one group with an average distance and a single bounding box surrounding them."
                                         )
                                     )
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.secondaryText)
                                 }
                             }
                         }
@@ -208,6 +209,7 @@ struct ProfileDetectionSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .highContrastForm()
         .transaction { transaction in
             if voiceOverOn {
                 transaction.animation = nil
@@ -310,8 +312,8 @@ struct SoundSettingsRows: View {
                                 "Announces where the detection is relative to you."
                             )
                         )
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.body)
+                        .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
                 .accessibilityLabel(
@@ -341,8 +343,8 @@ struct SoundSettingsRows: View {
                                 "Announces how far the detection is relative to you."
                             )
                         )
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.body)
+                        .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
                 .accessibilityLabel(
@@ -534,7 +536,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
                         )
                     )
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.secondaryText)
                 .monospacedDigit()
             }
             .accessibilityHidden(true)
@@ -548,7 +550,7 @@ where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
                 Image(systemName: maxIcon)
                     .accessibilityHidden(true)
             }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(AppTheme.secondaryText)
             .accessibilityLabel(Text(verbatim: accessibilityName))
             .accessibilityValue(
                 Text(

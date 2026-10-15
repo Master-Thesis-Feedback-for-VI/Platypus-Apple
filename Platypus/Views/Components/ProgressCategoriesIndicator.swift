@@ -38,12 +38,13 @@ struct ProgressCategoriesIndicator: View {
                     }
 
                 Text(verbatim: AppLanguage.current.localized(progress.label))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline)
+                    .foregroundStyle(AppTheme.text)
                     .contentTransition(.numericText())
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(.ultraThinMaterial, in: Capsule())
+            .background(AppTheme.background, in: Capsule())
             .animation(.easeInOut(duration: 0.25), value: progress)
         }
     }
@@ -54,11 +55,11 @@ enum ProgressStatus {
 
     var color: Color {
         switch self {
-        case .switchedOff: return .gray
-        case .hardware: return .blue
+        case .switchedOff: return .white
+        case .hardware: return .cyan
         case .evaluating: return .yellow
         case .downloading: return .yellow
-        case .failure: return .red
+        case .failure: return AppTheme.error
         case .success: return .green
         }
     }
