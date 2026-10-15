@@ -53,7 +53,9 @@ struct ProfileEditView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .glassEffect()
+                        .foregroundStyle(AppTheme.text)
+                        .background(AppTheme.background, in: Capsule())
+                        .overlay(Capsule().stroke(AppTheme.text, lineWidth: 2))
                         .frame(maxWidth: 220)
                         .submitLabel(.done)
                 }

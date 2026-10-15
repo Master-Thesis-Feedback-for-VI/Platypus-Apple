@@ -23,7 +23,7 @@ struct ReplayView: View {
                 .padding()
 
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(AppTheme.background)
             .navigationTitle(AppLanguage.current.localized("Available Videos"))
             .task {
                 await loadReplayItems()
@@ -105,11 +105,11 @@ struct FileItemView: View {
             HStack(spacing: 14) {
                 Image(systemName: "document")
                     .font(.title2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.text)
 
                 Text(verbatim: replayItem.title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppTheme.text)
                     .frame(
                         maxWidth: .infinity,
                         alignment: .leading
@@ -127,18 +127,13 @@ struct FileItemView: View {
                     )
                 )
             }
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: 16,
-                    style: .continuous
-                )
-                .stroke(Color.primary.opacity(0.08), lineWidth: 2)
-            }
         }
+        .buttonStyle(.plain)
         .disabled(isLoading)
         .accessibilityLabel(Text(verbatim: replayItem.title))
         .fullScreenCover(item: $evaluationData) { data in
             VideoPlaybackView(playback: data)
+                .highContrastTheme()
         }
     }
 }

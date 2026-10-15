@@ -29,9 +29,11 @@ struct ActiveProfileView: View {
                 .contentTransition(.numericText())
                 .animation(.default, value: profileManager.currentProfile.name)
                 .font(.title2)
-                .frame(width: 170)
+                .frame(maxWidth: .infinity)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.vertical, 8)
-                .glassEffect()
+                .foregroundStyle(AppTheme.text)
+                .background(AppTheme.background, in: Capsule())
                 .accessibilityAction(.magicTap) {}
 
                 let profiles = profileManager.profiles
@@ -87,8 +89,6 @@ struct ActiveProfileView: View {
         }
         .accessibilityLabel(Text(verbatim: AppLanguage.current.localized(accessibilityLabel)))
         .font(.title2)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .glassEffect()
+        .buttonStyle(HighContrastButtonStyle())
     }
 }

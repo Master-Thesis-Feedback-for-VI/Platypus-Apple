@@ -53,7 +53,7 @@ struct SettingsView: View {
         let profiles = manager.profiles
         let list = List {
             ForEach(profiles) { profile in
-                HStack {
+                HStack(spacing: 24) {
                     Toggle(
                         language.localized("Active"),
                         isOn: activeBinding(for: profile, in: manager)
@@ -98,6 +98,7 @@ struct SettingsView: View {
 
         }
         .contentMargins(.top, 22, for: .scrollContent)
+        .highContrastForm()
         .animation(.default, value: profiles.map(\.isActive))
 
         if profiles.count > 1 {
@@ -132,6 +133,7 @@ struct SettingsView: View {
             }
             .accessibilityLabel(Text(verbatim: language.localized("Undo profile deletion")))
             .accessibilityHint(Text(verbatim: language.localized("Restores the most recently deleted profile.")))
+            .buttonStyle(HighContrastButtonStyle(isToolbarButton: true))
             .disabled(profileManager.trashed.isEmpty)
 
             Button(
@@ -141,7 +143,9 @@ struct SettingsView: View {
             )
             .accessibilityLabel(Text(verbatim: language.localized("Add profile")))
             .accessibilityHint(Text(verbatim: language.localized("Creates a new profile.")))
+            .buttonStyle(HighContrastButtonStyle(isToolbarButton: true))
         }
+        .sharedBackgroundVisibility(.hidden)
     }
 
     private func activeBinding(
