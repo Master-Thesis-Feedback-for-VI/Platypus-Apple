@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import MQTTNIO
 import os
 
 var MINIMUM_LOG_LEVEL: PlatyLogger.LogLevel = .warning
 
 struct PlatyLogger {
+    static weak var mqttClient: PlatyMQTT?
+
     let tag: String
     private let logger: Logger
 
@@ -58,6 +61,21 @@ extension PlatyLogger {
             logger.error(
                 "[[ERROR]]: \(location, privacy: .public) \(message, privacy: .public)"
             )
+            let report = LogData(
+                device: .iOsApp,
+                tag: tag,
+                data: "[[ERROR]]: \(location) \(message)"
+            )
+            Task {
+                guard let mqttClient = Self.mqttClient,
+                    mqttClient.connectionStatus == .connected
+                else { return }
+                try? await mqttClient.publish(
+                    to: .telemetryReport,
+                    logData: report,
+                    qos: .atMostOnce
+                )
+            }
         }
     }
 }
