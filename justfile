@@ -7,7 +7,7 @@ generated_path := app_source_root / "ImageFlowLib" / "Generated"
 post:
     for cmd in 0 1 2; do \
         npx mqtt pub -t 'IoT/device/profile_swap' \
-            -m "{\"cmd\":$cmd}" \
+            -m "{\"device\":\"GalaxyWatch\",\"tag\":\"IoT/device/profile_swap\",\"data\":\"{\\\"cmd\\\":$cmd}\"}" \
             -h mqtt.yannbernard.com \
             -p 443 --protocol wss \
             -u iotdevice -P image-flow; \
@@ -33,4 +33,3 @@ insert_lib:
     mkdir -p {{generated_path}}
     ditto {{image_flow_path / "ios" / "Mobile.xcframework"}} {{frameworks_path / "Mobile.xcframework"}}
     cp {{image_flow_path / "bindings" / "swift" / "image_flow.swift"}} {{generated_path / "image_flow.swift"}} 
-
