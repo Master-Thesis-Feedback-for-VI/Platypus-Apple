@@ -24,7 +24,7 @@ struct CallbackView<Frame: PlatySize>: View {
     @EnvironmentObject private var earconEngine: EarconPlayer
 
     @Namespace private var namespace
-    @State private var lastFlush: ContinuousClock.Instant?
+    @State private var lastHapticFeedback: ContinuousClock.Instant?
 
     // MARK: - View
 
@@ -87,8 +87,8 @@ struct CallbackView<Frame: PlatySize>: View {
             contentMode: contentMode
         )
 
-        guard !detections.inner.isEmpty else { return }
-        guard !Task.isCancelled else {
+        guard !Task.isCancelled else { return }
+        guard !detections.inner.isEmpty else {
             await flushHapticFeedback()
             return
         }
@@ -147,13 +147,12 @@ struct CallbackView<Frame: PlatySize>: View {
     }
 
     private func flushHapticFeedback() async {
-        guard let lastFlush else {
-            lastFlush = ContinuousClock.now
-            return
-        }
-        if lastFlush - ContinuousClock.now <= .milliseconds(700) {
-            return
-        }
+        guard !Task.isCancelled,
+            let lastHapticFeedback,
+            ContinuousClock.now - lastHapticFeedback >= .milliseconds(500)
+        else { return }
+
+        self.lastHapticFeedback = nil
 
         async let pub1 = try? mqttClient.publish(
             to: AvailableTopics.hapticLeft,
@@ -173,6 +172,7 @@ struct CallbackView<Frame: PlatySize>: View {
         groupedDetection: PlatyGroupedDetections,
         selectedGroup: SelectedGrouped?
     ) async {
+        guard !Task.isCancelled else { return }
         guard hapticSettings.switchedOn, !groupedDetection.isEmpty else {
             await flushHapticFeedback()
             return
@@ -187,25 +187,29 @@ struct CallbackView<Frame: PlatySize>: View {
         }
         let (left, right) = bound
 
-        let candidates = [
-            (Double(left), AvailableTopics.hapticLeft, left < 0),
-            (Double(right), AvailableTopics.hapticRight, right > 0),
-        ]
-        let hapticSignals: [(AvailableTopics, Int)] =
-            candidates.compactMap { value, topic, shouldSend in
-                let signalStrength = Int(
-                    (abs(value) * 10.0 * hapticSettings.intensity)
-                        .rounded()
+        let hapticSignals =
+            [
+                (max(-left, 0), AvailableTopics.hapticLeft),
+                (max(right, 0), AvailableTopics.hapticRight),
+            ].map { value, topic in
+                let signalStrength = max(
+                    Int(
+                        (value * 10.0 * hapticSettings.intensity)
+                            .rounded()
+                    ),
+                    0
                 )
 
-                return shouldSend ? (topic, signalStrength) : nil
+                return (topic, PlatyMQTT.SendMessage(increaseDiff: signalStrength))
             }
 
-        for (channel, scale) in hapticSignals {
+        lastHapticFeedback = ContinuousClock.now
+
+        for (channel, msg) in hapticSignals {
             do {
                 try await mqttClient.publish(
                     to: channel,
-                    payload: .init(increaseDiff: scale)
+                    payload: msg
                 )
             } catch {
                 logger.log(
@@ -349,7 +353,7 @@ struct CallbackView<Frame: PlatySize>: View {
             from: detections,
             on: detectionType
         )
-        return groupedDetections.groupedSelection(0.3)  // TODO make this a setting
+        return groupedDetections.groupedSelection(meters: 1)  // TODO make this a setting
     }
 }
 
