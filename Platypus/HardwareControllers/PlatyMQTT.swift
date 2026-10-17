@@ -47,6 +47,7 @@ final class PlatyMQTT: ObservableObject {
                 webSocketURLPath: "/"
             )
         )
+        PlatyLogger.mqttClient = self
     }
 }
 
@@ -109,9 +110,16 @@ extension PlatyMQTT {
         payload: SendMessage,
         qos: MQTTQoS = .atLeastOnce
     ) async throws {
-        let encoder = JSONEncoder()
         let logData = try LogData(device: .iOsApp, tag: topic.rawValue, payload: payload)
-        let data = try encoder.encode(logData)
+        try await publish(to: topic, logData: logData, qos: qos)
+    }
+
+    func publish(
+        to topic: AvailableTopics,
+        logData: LogData,
+        qos: MQTTQoS = .atLeastOnce
+    ) async throws {
+        let data = try JSONEncoder().encode(logData)
         let byteBuffer = ByteBuffer(bytes: data)
 
         try await client.publish(
@@ -200,6 +208,7 @@ extension PlatyMQTT {
 }
 
 enum AvailableTopics: String, CaseIterable {
+    case telemetryReport = "telemetry/report"
     case hapticLeft = "IoT/device/haptic_left"
     case hapticRight = "IoT/device/haptic_right"
     case profileSwap = "IoT/device/profile_swap"
