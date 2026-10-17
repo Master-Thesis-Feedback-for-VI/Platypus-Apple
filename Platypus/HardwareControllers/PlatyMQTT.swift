@@ -110,7 +110,8 @@ extension PlatyMQTT {
         qos: MQTTQoS = .atLeastOnce
     ) async throws {
         let encoder = JSONEncoder()
-        let data = try encoder.encode(payload)
+        let logData = try LogData(device: .iOsApp, tag: topic.rawValue, payload: payload)
+        let data = try encoder.encode(logData)
         let byteBuffer = ByteBuffer(bytes: data)
 
         try await client.publish(
@@ -168,10 +169,8 @@ extension PlatyMQTT {
                     guard let data = msgStr.data(using: .utf8) else { continue }
 
                     do {
-                        let msg = try decoder.decode(
-                            RecMessage.self,
-                            from: data
-                        )
+                        let logData = try decoder.decode(LogData.self, from: data)
+                        let msg = try logData.decodePayload(RecMessage.self)
                         lastRecMessage = msg
 
                         subsToCallbacks[topic]?.values.joined().forEach {
