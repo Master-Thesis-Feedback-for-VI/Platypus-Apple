@@ -48,7 +48,7 @@ extension PlatyGroupedDetections {
         self.inner.closestWihtin(distanceInMetersDiff)
     }
 
-    func groupedSelection(_ distanceInMetersDiff: Float = 0.5)
+    func groupedSelection(meters distanceInMetersDiff: Float = 0.5)
         -> SelectedGrouped?
     {
         guard let closest = self.closestDetection,
