@@ -49,10 +49,15 @@ struct CallbackView<Frame: PlatySize>: View {
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
+                let cb: (PlatyMQTT.RecMessage) -> Void = { msg in
+                    logger.log("Received msg: \(msg)")
+                    ProfileManager.swapProfile(msg: msg, pm: profileManager, earconEngine: earconEngine)
+                }
+                
                 mqttClient.addCallback(
                     topic: topic,
                     namespace: namespace,
-                    cb: swapProfile
+                    cb: cb
                 )
             }
             .onDisappear {
@@ -318,22 +323,6 @@ struct CallbackView<Frame: PlatySize>: View {
         }
 
         tts.speak(name, volume, speed: ttsSetting.speed)
-    }
-
-    // MARK: - Callbacks Sub
-
-    private func swapProfile(msg: PlatyMQTT.RecMessage) {
-        Task { @MainActor in
-            logger.log("Received: \(msg)")
-
-            switch msg.cmd {
-            case .next:
-                try? profileManager.next(earconEngine)
-            case .prev:
-                try? profileManager.prev(earconEngine)
-            case .empty: return
-            }
-        }
     }
 
     // MARK: - Utils
