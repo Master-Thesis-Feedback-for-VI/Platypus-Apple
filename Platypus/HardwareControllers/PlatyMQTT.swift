@@ -64,6 +64,16 @@ extension PlatyMQTT {
 
     struct SendMessage: Codable {
         let increaseDiff: Int
+        
+        init(_ increaseDiff: Int) {
+            self.increaseDiff = increaseDiff
+        }
+        
+        init(_ increaseDiff: Double) {
+            self.increaseDiff = Int(
+                increaseDiff.rounded()
+            )
+        }
     }
 }
 

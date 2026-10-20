@@ -440,7 +440,11 @@ struct SoundSettingsRows: View {
                     s.volume = volume
                     sound = .tts(s)
 
-                    tts.speak(language.localized("Sound"), volume, speed: s.speed)
+                    tts.speak(
+                        language.localized("Sound"),
+                        volume,
+                        speed: s.speed
+                    )
 
                 case .off:
                     break
@@ -511,6 +515,8 @@ struct SoundSettingsRows: View {
 
 struct HapticSettingsRows: View {
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
+    @EnvironmentObject private var mqttClient: PlatyMQTT
+
     let detectionName: String
     @Binding var haptic: HapticSettings
     var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
@@ -543,7 +549,7 @@ struct HapticSettingsRows: View {
                     "%@ haptic intensity",
                     detectionName
                 ),
-                value: $haptic.intensity,
+                value: intensityBinding,
                 minIcon: "circle",
                 maxIcon: "circle.fill"
             )
@@ -565,6 +571,32 @@ struct HapticSettingsRows: View {
             set: { newValue in
                 haptic.switchedOn = newValue
                 restoreFocus()
+            }
+        )
+    }
+
+    private var intensityBinding: Binding<Double> {
+        Binding(
+            get: {
+                haptic.intensity
+            },
+            set: { newValue in
+                let intensity = newValue
+
+                guard haptic.intensity != intensity else { return }
+                haptic.intensity = intensity
+
+                Task { @MainActor in
+                    async let fut1 = try? mqttClient.publish(
+                        to: .hapticLeft,
+                        payload: .init(intensity * 10)
+                    )
+                    async let fut2 = try? mqttClient.publish(
+                        to: .hapticRight,
+                        payload: .init(intensity * 10)
+                    )
+                    let _ = await (fut1, fut2)
+                }
             }
         )
     }
