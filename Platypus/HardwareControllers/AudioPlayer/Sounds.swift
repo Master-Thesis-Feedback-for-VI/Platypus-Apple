@@ -51,12 +51,17 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
         synthesizer.delegate = self
     }
 
-    func speak(_ text: String, _ volume: Float = 1.0) {
+    func speak(
+        _ text: String,
+        _ volume: Float = 1.0,
+        speed: Float = AVSpeechUtteranceDefaultSpeechRate
+    ) {
         guard currentUtterance == nil else { return }
 
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: AppLanguage.current.speechLanguage)
         utterance.volume = min(1.0, max(0.0, volume))
+        utterance.rate = min(AVSpeechUtteranceMaximumSpeechRate, max(AVSpeechUtteranceMinimumSpeechRate, speed))
         currentUtterance = utterance
         synthesizer.speak(utterance)
     }

@@ -26,8 +26,26 @@ struct TtsSetting: SpecificSoundSetting {
     var volume: Float {
         didSet { volume = min(max(volume, 0), 1) }
     }
+    var speed: Float = 0.5 {
+        didSet { speed = min(max(speed, 0), 1) }
+    }
     var enableDirectionControl: Bool = false
     var enableDistanceEstimation: Bool = false
+
+    private enum CodingKeys: String, CodingKey {
+        case description, volume, speed, enableDirectionControl, enableDistanceEstimation
+    }
+}
+
+extension TtsSetting {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        description = try container.decode(String.self, forKey: .description)
+        volume = try container.decode(Float.self, forKey: .volume)
+        speed = min(max(try container.decodeIfPresent(Float.self, forKey: .speed) ?? 0.5, 0), 1)
+        enableDirectionControl = try container.decode(Bool.self, forKey: .enableDirectionControl)
+        enableDistanceEstimation = try container.decode(Bool.self, forKey: .enableDistanceEstimation)
+    }
 }
 
 enum SoundVariant: Codable, Equatable {

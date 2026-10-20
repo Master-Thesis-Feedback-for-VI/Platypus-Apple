@@ -169,12 +169,13 @@ struct ProfileDetectionSettingsView: View {
                         language.localized(detectionType.rawValue.capitalized)
                     ) {
                         SoundSettingsRows(
+                            detectionType: detectionType,
                             detectionName: language.localized(
                                 detectionType.rawValue
                             ),
-                            sound: binding.sound,
                             focus: $a11yFocus,
-                            focusID: .sound(detectionType)
+                            focusID: .sound(detectionType),
+                            sound: binding.sound
                         )
                         HapticSettingsRows(
                             detectionName: language.localized(
@@ -243,11 +244,16 @@ struct ProfileDetectionSettingsView: View {
 
 struct SoundSettingsRows: View {
     private var language: AppLanguage { .current }
-    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
+    let detectionType: PlatyDetectionType
     let detectionName: String
-    @Binding var sound: SoundVariant
     var focus: AccessibilityFocusState<SettingsA11yFocus?>.Binding
     let focusID: SettingsA11yFocus
+
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverOn
+    @EnvironmentObject private var earconEngine: EarconPlayer
+
+    @Binding var sound: SoundVariant
+    @State private var tts = Speaker()
 
     var body: some View {
         Picker(selection: nameBinding) {
@@ -301,6 +307,17 @@ struct SoundSettingsRows: View {
             )
 
             if case .tts = sound {
+                SliderRow(
+                    label: "Speech speed",
+                    accessibilityName: language.format(
+                        "%@ speech speed",
+                        detectionName
+                    ),
+                    value: speedBinding,
+                    minIcon: "tortoise.fill",
+                    maxIcon: "hare.fill"
+                )
+
                 Toggle(isOn: directionControlBinding) {
                     VStack(alignment: .leading, spacing: 2) {
                         Label(
@@ -401,17 +418,56 @@ struct SoundSettingsRows: View {
                 case .off: 0
                 }
             },
-            set: { v in
+            set: { newValue in
+                let volume = Float(newValue)
+
                 switch sound {
                 case .earcon(var s):
-                    s.volume = Float(v)
+                    guard s.volume != volume else { return }
+                    s.volume = volume
                     sound = .earcon(s)
+
+                    Task { @MainActor in
+                        await earconEngine.play(
+                            detectionType,
+                            volume: volume,
+                            from: .front
+                        )
+                    }
+
                 case .tts(var s):
-                    s.volume = Float(v)
+                    guard s.volume != volume else { return }
+                    s.volume = volume
                     sound = .tts(s)
+
+                    tts.speak(language.localized("Sound"), volume, speed: s.speed)
+
                 case .off:
                     break
                 }
+            }
+        )
+    }
+
+    private var speedBinding: Binding<Double> {
+        Binding(
+            get: {
+                if case .tts(let s) = sound {
+                    return Double(s.speed)
+                }
+                return 0.5
+            },
+            set: { newValue in
+                guard case .tts(var s) = sound else { return }
+                let speed = Float(newValue)
+                guard s.speed != speed else { return }
+                s.speed = speed
+                sound = .tts(s)
+                tts.speak(
+                    language.localized("Sound"),
+                    s.volume,
+                    speed: s.speed
+                )
             }
         )
     }

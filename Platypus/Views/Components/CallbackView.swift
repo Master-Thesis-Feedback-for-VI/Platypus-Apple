@@ -317,7 +317,7 @@ struct CallbackView<Frame: PlatySize>: View {
             name += ", \(formatedDistance)"
         }
 
-        tts.speak(name, volume)
+        tts.speak(name, volume, speed: ttsSetting.speed)
     }
 
     // MARK: - Callbacks Sub
