@@ -12,6 +12,41 @@ import Testing
 
 struct PlatypusTests {
     @MainActor
+    @Test func ttsSpeedDefaultsForExistingSettings() throws {
+        let data = Data(
+            #"{"description":"tts","volume":0.7,"enableDirectionControl":true,"enableDistanceEstimation":false}"#.utf8
+        )
+        let settings = try JSONDecoder().decode(TtsSetting.self, from: data)
+
+        #expect(settings.speed == 0.5)
+        #expect(settings.volume == 0.7)
+        #expect(settings.enableDirectionControl)
+        #expect(!settings.enableDistanceEstimation)
+    }
+
+    @MainActor
+    @Test func ttsSpeedSurvivesSoundSettingsRoundTrip() throws {
+        let sound = SoundVariant.tts(TtsSetting(volume: 0.7, speed: 0.8))
+        let data = try JSONEncoder().encode(sound)
+
+        #expect(try JSONDecoder().decode(SoundVariant.self, from: data) == sound)
+    }
+
+    @MainActor
+    @Test func ttsSpeedStaysWithinSliderRange() throws {
+        var settings = TtsSetting(volume: 0.5)
+        settings.speed = -1
+        #expect(settings.speed == 0)
+        settings.speed = 2
+        #expect(settings.speed == 1)
+
+        let data = Data(
+            #"{"description":"tts","volume":0.5,"speed":2,"enableDirectionControl":false,"enableDistanceEstimation":false}"#.utf8
+        )
+        #expect(try JSONDecoder().decode(TtsSetting.self, from: data).speed == 1)
+    }
+
+    @MainActor
     @Test func profileNavigationRefreshesProfilesChangedElsewhere() throws {
         let container = try ModelContainer(
             for: Schema([ProfileSettings.self]),

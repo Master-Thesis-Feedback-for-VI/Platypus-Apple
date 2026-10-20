@@ -156,12 +156,12 @@ struct CallbackView<Frame: PlatySize>: View {
 
         async let pub1 = try? mqttClient.publish(
             to: AvailableTopics.hapticLeft,
-            payload: .init(increaseDiff: 0)
+            payload: .init(0)
         )
 
         async let pub2 = try? mqttClient.publish(
             to: AvailableTopics.hapticRight,
-            payload: .init(increaseDiff: 0)
+            payload: .init(0)
         )
 
         let _ = await (pub1, pub2)
@@ -200,7 +200,7 @@ struct CallbackView<Frame: PlatySize>: View {
                     0
                 )
 
-                return (topic, PlatyMQTT.SendMessage(increaseDiff: signalStrength))
+                return (topic, PlatyMQTT.SendMessage(signalStrength))
             }
 
         lastHapticFeedback = ContinuousClock.now
@@ -317,7 +317,7 @@ struct CallbackView<Frame: PlatySize>: View {
             name += ", \(formatedDistance)"
         }
 
-        tts.speak(name, volume)
+        tts.speak(name, volume, speed: ttsSetting.speed)
     }
 
     // MARK: - Callbacks Sub
