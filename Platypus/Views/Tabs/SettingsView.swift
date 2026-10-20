@@ -11,7 +11,10 @@ import UIKit
 
 struct SettingsView: View {
     private var language: AppLanguage { .current }
+
     @EnvironmentObject private var earconEngine: EarconPlayer
+    @EnvironmentObject private var mqttClient: PlatyMQTT
+    @Namespace private var namespace
 
     @Environment(ProfileManager.self) private var profileManager
     @Environment(\.scenePhase) private var scenePhase
@@ -26,6 +29,21 @@ struct SettingsView: View {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background { try? profileManager.purgeTrash() }
                 }
+        }
+        .onAppear {
+            let topic = AvailableTopics.profileSwap
+            let cb: (PlatyMQTT.RecMessage) -> Void = { msg in
+                logger.log("Received msg: \(msg)")
+                ProfileManager.swapProfile(msg: msg, pm: profileManager, earconEngine: earconEngine)
+            }
+            
+            mqttClient.addCallback(
+                topic: topic,
+                namespace: namespace,
+                cb: cb
+            )
+        }.onDisappear {
+            mqttClient.flushCallbacks(namespace: namespace)
         }
     }
 
@@ -59,17 +77,29 @@ struct SettingsView: View {
                         isOn: activeBinding(for: profile, in: manager)
                     )
                     .labelsHidden()
-                    .accessibilityLabel(Text(verbatim: language.format("Profile %@", profile.name)))
+                    .accessibilityLabel(
+                        Text(
+                            verbatim: language.format(
+                                "Profile %@",
+                                profile.name
+                            )
+                        )
+                    )
                     .accessibilityValue(
-                        Text(verbatim: language.localized(profile.isActive ? "Active" : "Inactive"))
+                        Text(
+                            verbatim: language.localized(
+                                profile.isActive ? "Active" : "Inactive"
+                            )
+                        )
                     )
                     .accessibilityHint(
-                        Text(verbatim:
-                            language.localized(
-                                profile.isActive
-                                    ? "Choose another profile to make it active."
-                                    : "Makes this the active profile."
-                            )
+                        Text(
+                            verbatim:
+                                language.localized(
+                                    profile.isActive
+                                        ? "Choose another profile to make it active."
+                                        : "Makes this the active profile."
+                                )
                         )
                     )
                     .disabled(profile.isActive || profiles.count <= 1)
@@ -81,16 +111,25 @@ struct SettingsView: View {
                             profile: profile
                         )
                     }
-                    .accessibilityLabel(Text(verbatim: language.format("Edit %@", profile.name)))
+                    .accessibilityLabel(
+                        Text(verbatim: language.format("Edit %@", profile.name))
+                    )
                     .accessibilityValue(
-                        Text(verbatim:
-                            language.localized(
-                                profile.isActive
-                                    ? "Active profile" : "Inactive profile"
+                        Text(
+                            verbatim:
+                                language.localized(
+                                    profile.isActive
+                                        ? "Active profile" : "Inactive profile"
+                                )
+                        )
+                    )
+                    .accessibilityHint(
+                        Text(
+                            verbatim: language.localized(
+                                "Opens this profile's settings."
                             )
                         )
                     )
-                    .accessibilityHint(Text(verbatim: language.localized("Opens this profile's settings.")))
                 }
                 .deleteDisabled(profiles.count <= 1)
             }
@@ -129,10 +168,21 @@ struct SettingsView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button(action: profileManager.undoDelete) {
-                Label(language.localized("Undo"), systemImage: "arrow.uturn.backward")
+                Label(
+                    language.localized("Undo"),
+                    systemImage: "arrow.uturn.backward"
+                )
             }
-            .accessibilityLabel(Text(verbatim: language.localized("Undo profile deletion")))
-            .accessibilityHint(Text(verbatim: language.localized("Restores the most recently deleted profile.")))
+            .accessibilityLabel(
+                Text(verbatim: language.localized("Undo profile deletion"))
+            )
+            .accessibilityHint(
+                Text(
+                    verbatim: language.localized(
+                        "Restores the most recently deleted profile."
+                    )
+                )
+            )
             .buttonStyle(HighContrastButtonStyle(isToolbarButton: true))
             .disabled(profileManager.trashed.isEmpty)
 
@@ -141,8 +191,12 @@ struct SettingsView: View {
                 systemImage: "plus",
                 action: { try? profileManager.addProfile() }
             )
-            .accessibilityLabel(Text(verbatim: language.localized("Add profile")))
-            .accessibilityHint(Text(verbatim: language.localized("Creates a new profile.")))
+            .accessibilityLabel(
+                Text(verbatim: language.localized("Add profile"))
+            )
+            .accessibilityHint(
+                Text(verbatim: language.localized("Creates a new profile."))
+            )
             .buttonStyle(HighContrastButtonStyle(isToolbarButton: true))
         }
         .sharedBackgroundVisibility(.hidden)
@@ -160,4 +214,17 @@ struct SettingsView: View {
         )
     }
 
+//    private func swapProfile(msg: PlatyMQTT.RecMessage) {
+//        Task { @MainActor in
+//            logger.log("Received: \(msg)")
+//
+//            switch msg.cmd {
+//            case .next:
+//                try? profileManager.next(earconEngine)
+//            case .prev:
+//                try? profileManager.prev(earconEngine)
+//            case .empty: return
+//            }
+//        }
+//    }
 }

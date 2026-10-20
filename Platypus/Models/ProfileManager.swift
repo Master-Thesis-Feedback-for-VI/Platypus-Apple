@@ -20,6 +20,7 @@ final class ProfileManager {
     private let ctx: ModelContext
     private(set) var profiles: [ProfileSettings] = []
     private(set) var trashed: [ProfileSettings] = []
+    private let logger = PlatyLogger(tag: "ProfileManager")
 
     init(context: ModelContext) {
         self.ctx = context
@@ -78,9 +79,13 @@ extension ProfileManager {
             (currentProfileIndex - 1 + profiles.count)
             % profiles.count
         try swapActive(toActivate: target)
-        
+
         Task {
-            await earconPlayer.play(PlatyMQTT.RecMessageVariants.prev, volume: 0.5, from: .front)
+            await earconPlayer.play(
+                PlatyMQTT.RecMessageVariants.prev,
+                volume: 0.5,
+                from: .front
+            )
         }
     }
 
@@ -90,9 +95,13 @@ extension ProfileManager {
 
         let target = (currentProfileIndex + 1) % profiles.count
         try swapActive(toActivate: target)
-        
+
         Task {
-            await earconPlayer.play(PlatyMQTT.RecMessageVariants.next, volume: 0.5, from: .front)
+            await earconPlayer.play(
+                PlatyMQTT.RecMessageVariants.next,
+                volume: 0.5,
+                from: .front
+            )
         }
     }
 
@@ -141,6 +150,18 @@ extension ProfileManager {
         var i = 1
         while names.contains("\(base) - \(i)") { i += 1 }
         return "\(base) - \(i)"
+    }
+
+    static func swapProfile(msg: PlatyMQTT.RecMessage, pm: ProfileManager, earconEngine: EarconPlayer) {
+        Task { @MainActor in
+            switch msg.cmd {
+            case .next:
+                try? pm.next(earconEngine)
+            case .prev:
+                try? pm.prev(earconEngine)
+            case .empty: return
+            }
+        }
     }
 
     private func swapActive(toActivate: Int) throws {
