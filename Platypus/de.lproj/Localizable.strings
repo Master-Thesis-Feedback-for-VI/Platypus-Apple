@@ -40,12 +40,15 @@
 "%@ detection settings" = "Erkennungseinstellungen für %@";
 "Sound" = "Ton";
 "Off" = "Aus";
+"Sound" = "Ton";
 "Earcon" = "Signalton";
 "Text to speech" = "Sprachausgabe";
 "%@ sound" = "%@: Ton";
 "Choose off, earcon, or text to speech." = "Wähle Aus, Signalton oder Sprachausgabe.";
 "Volume" = "Lautstärke";
 "%@ volume" = "%@: Lautstärke";
+"Speech speed" = "Sprechgeschwindigkeit";
+"%@ speech speed" = "%@: Sprechgeschwindigkeit";
 "Direction Control" = "Richtungsansage";
 "Announces where the detection is relative to you." = "Sagt an, in welcher Richtung sich das erkannte Objekt befindet.";
 "%@ direction announcements" = "%@: Richtungsansagen";

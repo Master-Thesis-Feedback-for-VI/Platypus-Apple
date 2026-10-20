@@ -1,7 +1,7 @@
 import AVFoundation
 import Combine
 
-// MARK: - Directions (16 steps of 22.5°, 0° = front, 90° = right)
+// MARK: - Directions (16 steps of 22.5, 0 = front, 90 = right)
 
 enum Direction: Double, CaseIterable {
     case front = 0
@@ -166,13 +166,15 @@ private final class EarconBackend {
             print("Earcon not loaded: \(file.fileName)")
             return
         }
+
         guard playing[file] == nil else { return }
-        let now = ContinuousClock.now
+
         if let previous = lastPlayed[file],
-            now - previous < .milliseconds(400)
+            ContinuousClock.now - previous < .milliseconds(400)
         {
             return
         }
+
         voice.node.volume = volume
         voice.node.position = .polar(
             azimuth: azimuth,
@@ -196,7 +198,7 @@ private final class EarconBackend {
             if !voice.node.isPlaying {
                 try voice.node.playAudio()
             }
-            lastPlayed[file] = now
+            lastPlayed[file] = ContinuousClock.now
         } catch {
             playing.removeValue(forKey: file)
             voice.node.stop()
@@ -231,7 +233,8 @@ final class EarconPlayer: ObservableObject {
     private(set) var isReady = false
 
     init(earcons: [any Earconable]) {
-        files = earcons
+        files =
+            earcons
             .map(\.soundFile)
             .filter { !$0.skip }
     }
