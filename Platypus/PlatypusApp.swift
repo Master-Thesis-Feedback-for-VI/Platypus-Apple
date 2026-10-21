@@ -12,6 +12,14 @@ let DOMAIN = "com.github.yannbernard.Platypus"
 
 @main
 struct PlatypusApp: App {
+    static var isUITesting: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--ui-testing")
+        #else
+        false
+        #endif
+    }
+
     init() {
         AppTheme.configureAppearance()
     }
@@ -20,7 +28,7 @@ struct PlatypusApp: App {
         let schema = Schema([ProfileSettings.self])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false
+            isStoredInMemoryOnly: Self.isUITesting
         )
 
         do {
@@ -76,6 +84,7 @@ struct PlatypusApp: App {
                 .onChange(of: scenePhase) { _, newPhase in
                     switch newPhase {
                     case .active:
+                        guard !Self.isUITesting else { return }
                         guard !didConnect else { return }
                         didConnect = true
 //                        let _ = enableTracing(rustLog: .debug)

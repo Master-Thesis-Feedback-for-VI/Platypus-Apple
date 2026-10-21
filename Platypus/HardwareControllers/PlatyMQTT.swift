@@ -49,6 +49,11 @@ final class PlatyMQTT: ObservableObject {
         )
         PlatyLogger.mqttClient = self
     }
+
+    deinit {
+        loopTask?.cancel()
+        client.shutdown { _ in }
+    }
 }
 
 extension PlatyMQTT {
