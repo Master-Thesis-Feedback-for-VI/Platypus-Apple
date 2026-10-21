@@ -62,7 +62,7 @@ extension PlatyMQTT {
         let cmd: RecMessageVariants
     }
 
-    struct SendMessage: Codable {
+    nonisolated struct SendMessage: Codable, Sendable {
         let increaseDiff: Int
         
         init(_ increaseDiff: Int) {
@@ -117,7 +117,7 @@ extension PlatyMQTT {
 
     func publish(
         to topic: AvailableTopics,
-        payload: SendMessage,
+        payload: some Encodable,
         qos: MQTTQoS = .atLeastOnce
     ) async throws {
         let logData = try LogData(device: .iOsApp, tag: topic.rawValue, payload: payload)

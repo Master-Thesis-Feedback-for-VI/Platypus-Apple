@@ -20,7 +20,7 @@ struct ActiveProfileView: View {
                     name: "arrowshape.left",
                     accessibilityLabel: "Previous profile"
                 ) {
-                    try? profileManager.prev(earconEngine)
+                    try? profileManager.prev()
                 }
 
                 let profileText = Text(verbatim:
@@ -50,7 +50,7 @@ struct ActiveProfileView: View {
                     name: "arrowshape.right",
                     accessibilityLabel: "Next profile"
                 ) {
-                    try? profileManager.next(earconEngine)
+                    try? profileManager.next()
                 }
             }
         }
@@ -66,7 +66,7 @@ struct ActiveProfileView: View {
         guard profileManager.profiles.count > 1 else { return }
 
         do {
-            try profileManager.next(earconEngine)
+            try profileManager.next()
             UIAccessibility.post(
                 notification: .announcement,
                 argument:

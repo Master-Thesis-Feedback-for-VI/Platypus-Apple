@@ -5,6 +5,7 @@
 //  Created by Yann Bernard on 07.08.26.
 //
 
+import CoreGraphics
 import Foundation
 import SwiftData
 import Testing
@@ -12,15 +13,69 @@ import Testing
 
 struct PlatypusTests {
     @MainActor
-    @Test func ttsSpeedDefaultsForExistingSettings() throws {
-        let data = Data(
-            #"{"description":"tts","volume":0.7,"enableDirectionControl":true,"enableDistanceEstimation":false}"#.utf8
+    @Test func centralOnlySettingsRoundTrip() throws {
+        let original = ProfileDetectionSettings(
+            sound: .earcon(EarconSetting(volume: 0.5)),
+            haptic: HapticSettings(switchedOn: true, intensity: 0.5)
         )
-        let settings = try JSONDecoder().decode(TtsSetting.self, from: data)
+        #expect(!original.soundOnlyTriggerIfCentral)
+        #expect(!original.hapticOnlyTriggerIfCentral)
+
+        var enabled = original
+        enabled.soundOnlyTriggerIfCentral = true
+        #expect(
+            try JSONDecoder().decode(
+                ProfileDetectionSettings.self,
+                from: JSONEncoder().encode(enabled)
+            ) == enabled
+        )
+    }
+
+    @MainActor
+    @Test func centralOnlyFiltersBeforeSelectingClosestObject() {
+        func detection(x: CGFloat, distance: Float) -> PlatyDetection {
+            PlatyDetection(
+                confidence: 1,
+                detectionType: .person,
+                distance: distance,
+                rect: CGRect(x: x - 10, y: 0, width: 20, height: 20),
+                viewportSize: CGSize(width: 300, height: 300)
+            )
+        }
+
+        let central = detection(x: 150, distance: 5)
+        let left = detection(x: 50, distance: 1)
+        let right = detection(x: 250, distance: 2)
+        #expect(central.isCentral)
+        #expect(!left.isCentral)
+        #expect(!right.isCentral)
+        #expect(detection(x: 100, distance: 1).isCentral)
+        #expect(detection(x: 200, distance: 1).isCentral)
+
+        let detections = PlatyDetections(inner: [left, right, central])
+        var settings = ProfileDetectionSettings.defaults()
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).inner.count == 3)
+        settings[.person]?.soundOnlyTriggerIfCentral = true
+        let filtered = detections.filteredForFeedback(settings: settings, channel: .sound)
+        #expect(filtered.inner == [central])
+        #expect(filtered.closestDetection == central)
+        #expect(PlatyDetections(inner: [left, right]).filteredForFeedback(settings: settings, channel: .sound).inner.isEmpty)
+        #expect(detections.filteredForFeedback(settings: settings, channel: .haptic).closestDetection == left)
+        settings[.person]?.soundOnlyTriggerIfCentral = false
+        settings[.person]?.hapticOnlyTriggerIfCentral = true
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).closestDetection == left)
+        #expect(detections.filteredForFeedback(settings: settings, channel: .haptic).inner == [central])
+        settings[.person]?.soundOnlyTriggerIfCentral = true
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).inner == [central])
+    }
+
+    @MainActor
+    @Test func ttsSpeedDefaultsForNewSettings() {
+        let settings = TtsSetting(volume: 0.7)
 
         #expect(settings.speed == 0.5)
         #expect(settings.volume == 0.7)
-        #expect(settings.enableDirectionControl)
+        #expect(!settings.enableDirectionControl)
         #expect(!settings.enableDistanceEstimation)
     }
 
@@ -33,17 +88,13 @@ struct PlatypusTests {
     }
 
     @MainActor
-    @Test func ttsSpeedStaysWithinSliderRange() throws {
+    @Test func ttsSpeedStaysWithinSliderRange() {
         var settings = TtsSetting(volume: 0.5)
         settings.speed = -1
         #expect(settings.speed == 0)
         settings.speed = 2
         #expect(settings.speed == 1)
 
-        let data = Data(
-            #"{"description":"tts","volume":0.5,"speed":2,"enableDirectionControl":false,"enableDistanceEstimation":false}"#.utf8
-        )
-        #expect(try JSONDecoder().decode(TtsSetting.self, from: data).speed == 1)
     }
 
     @MainActor

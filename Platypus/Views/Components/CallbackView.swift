@@ -51,9 +51,12 @@ struct CallbackView<Frame: PlatySize>: View {
                 let topic = AvailableTopics.profileSwap
                 let cb: (PlatyMQTT.RecMessage) -> Void = { msg in
                     logger.log("Received msg: \(msg)")
-                    ProfileManager.swapProfile(msg: msg, pm: profileManager, earconEngine: earconEngine)
+                    ProfileManager.swapProfile(
+                        msg: msg,
+                        pm: profileManager
+                    )
                 }
-                
+
                 mqttClient.addCallback(
                     topic: topic,
                     namespace: namespace,
@@ -92,9 +95,27 @@ struct CallbackView<Frame: PlatySize>: View {
             contentMode: contentMode
         )
 
+        async let soundFeedback: Void = feedbackReact(
+            detections: detections, settings: settings, channel: .sound
+        )
+        async let hapticFeedback: Void = feedbackReact(
+            detections: detections, settings: settings, channel: .haptic
+        )
+        let _ = await (soundFeedback, hapticFeedback)
+    }
+
+    private func feedbackReact(
+        detections: PlatyDetections,
+        settings: ProfileSingularSettings,
+        channel: FeedbackChannel
+    ) async {
+        let detections = detections.filteredForFeedback(
+            settings: settings.detectionSettings, channel: channel
+        )
+
         guard !Task.isCancelled else { return }
         guard !detections.inner.isEmpty else {
-            await flushHapticFeedback()
+            if case .haptic = channel { await flushHapticFeedback() }
             return
         }
         let closestCategory = detections.closestDetection!
@@ -108,7 +129,7 @@ struct CallbackView<Frame: PlatySize>: View {
                 detType
             ], !detectionsInCat.isEmpty
         else {
-            await flushHapticFeedback()
+            if case .haptic = channel { await flushHapticFeedback() }
             return
         }
 
@@ -120,16 +141,14 @@ struct CallbackView<Frame: PlatySize>: View {
                 )
             } else { nil }
 
-        // Haptic settings and callback
-        let hapticSettings = setting.haptic
-        async let hapticFeedbackFut = hapticFeedbackReact(
-            hapticSettings: hapticSettings,
-            groupedDetection: detectionsInCat,
-            selectedGroup: selectedGroup
-        )
-
-        // Sound Settings and callback
-        let handle = Task {
+        switch channel {
+        case .haptic:
+            await hapticFeedbackReact(
+                hapticSettings: setting.haptic,
+                groupedDetection: detectionsInCat,
+                selectedGroup: selectedGroup
+            )
+        case .sound:
             let soundSettings = setting.sound
             switch soundSettings {
             case .off: break
@@ -148,7 +167,6 @@ struct CallbackView<Frame: PlatySize>: View {
             }
         }
 
-        let _ = await (handle, hapticFeedbackFut)
     }
 
     private func flushHapticFeedback() async {
@@ -159,14 +177,15 @@ struct CallbackView<Frame: PlatySize>: View {
 
         self.lastHapticFeedback = nil
 
+        let flushMsg = PlatyMQTT.SendMessage(0)
         async let pub1 = try? mqttClient.publish(
             to: AvailableTopics.hapticLeft,
-            payload: .init(0)
+            payload: flushMsg
         )
 
         async let pub2 = try? mqttClient.publish(
             to: AvailableTopics.hapticRight,
-            payload: .init(0)
+            payload: flushMsg
         )
 
         let _ = await (pub1, pub2)
@@ -342,7 +361,7 @@ struct CallbackView<Frame: PlatySize>: View {
             from: detections,
             on: detectionType
         )
-        return groupedDetections.groupedSelection(meters: 1)  // TODO make this a setting
+        return groupedDetections.groupedSelection(meters: 2)
     }
 }
 
