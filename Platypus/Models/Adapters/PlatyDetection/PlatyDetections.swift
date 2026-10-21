@@ -41,6 +41,20 @@ extension PlatyDetections {
 }
 
 extension PlatyDetections {
+    func filteredForFeedback(
+        settings: [PlatyDetectionType: ProfileDetectionSettings],
+        channel: FeedbackChannel
+    ) -> PlatyDetections {
+        inner.filter { detection in
+            guard let setting = settings[detection.detectionType] else { return false }
+            let centralOnly = switch channel {
+            case .sound: setting.soundOnlyTriggerIfCentral
+            case .haptic: setting.hapticOnlyTriggerIfCentral
+            }
+            return !centralOnly || detection.isCentral
+        }.collect()
+    }
+
     var closestDetection: PlatyDetection? {
         self.inner.min { det1, det2 in
             det1.distance < det2.distance
