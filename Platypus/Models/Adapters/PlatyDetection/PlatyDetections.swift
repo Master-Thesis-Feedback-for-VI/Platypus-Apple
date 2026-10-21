@@ -13,12 +13,6 @@ struct PlatyDetections {
 }
 
 extension PlatyDetections {
-    init(
-        detection: PlatyDetection
-    ) {
-        self.inner = [detection]
-    }
-
     init<Frame: PlatySize, D: Sequence>(
         detections: D,
         frameSize: Frame,

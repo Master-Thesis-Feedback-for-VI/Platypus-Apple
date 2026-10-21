@@ -11,7 +11,7 @@ struct ActiveProfileView: View {
     let logger = PlatyLogger(tag: "ActiveProfileView")
 
     @Environment(ProfileManager.self) private var profileManager
-    @EnvironmentObject private var earconEngine: EarconPlayer
+//    @EnvironmentObject private var earconEngine: EarconPlayer
 
     var body: some View {
         GlassEffectContainer {

@@ -8,20 +8,19 @@
 import Foundation
 import AVFoundation
 
-public protocol PlatySize: Sendable {
+protocol PlatySize: Sendable {
     var pixelHeight: Int { get }
     var pixelWidth: Int { get }
 }
 
-public extension PlatySize {
-    var center: CGPoint {
-        let heightCenter = Double(self.pixelHeight) / 2.0
-        let widthCenter = Double(self.pixelWidth) / 2.0
-        
-        return CGPoint(x: widthCenter, y: heightCenter)
-    }
-}
-
+//extension PlatySize {
+//    var center: CGPoint {
+//        let heightCenter = Double(self.pixelHeight) / 2.0
+//        let widthCenter = Double(self.pixelWidth) / 2.0
+//        
+//        return CGPoint(x: widthCenter, y: heightCenter)
+//    }
+//}
 
 extension CGSize: PlatySize {
     public var pixelWidth: Int {

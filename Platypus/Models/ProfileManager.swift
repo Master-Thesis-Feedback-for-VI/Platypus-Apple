@@ -28,7 +28,6 @@ final class ProfileManager {
 
     private(set) var profiles: [ProfileSettings] = []
     private(set) var trashed: [ProfileSettings] = []
-    private let logger = PlatyLogger(tag: "ProfileManager")
 
     private let mqttClient: PlatyMQTT
     private let soundEngine: EarconPlayer

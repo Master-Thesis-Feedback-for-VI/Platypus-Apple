@@ -239,10 +239,6 @@ final class EarconPlayer: ObservableObject {
             .filter { !$0.skip }
     }
 
-    convenience init<E: Earconable & CaseIterable>(_ type: E.Type) {
-        self.init(earcons: Array(E.allCases))
-    }
-
     func waitUntilReady() async {
         if setupTask == nil {
             let backend = backend
