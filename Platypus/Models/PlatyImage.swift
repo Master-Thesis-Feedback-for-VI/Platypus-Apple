@@ -62,17 +62,17 @@ extension PlatyImage {
         try await save(to: documentPath)
         return documentPath
     }
-
-    func saveImage() async throws -> URL {
-        let fileManager = FileManager.default
-        let documentPath = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString).appendingPathExtension(
-                "jpg"
-            )
-
-        try await save(to: documentPath)
-        return documentPath
-    }
+//
+//    func saveImage() async throws -> URL {
+//        let fileManager = FileManager.default
+//        let documentPath = fileManager.temporaryDirectory
+//            .appendingPathComponent(UUID().uuidString).appendingPathExtension(
+//                "jpg"
+//            )
+//
+//        try await save(to: documentPath)
+//        return documentPath
+//    }
 
     private func save(to url: URL) async throws {
         var data = img
