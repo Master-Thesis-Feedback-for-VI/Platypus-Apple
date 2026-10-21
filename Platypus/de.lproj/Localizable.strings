@@ -58,6 +58,8 @@
 "%@ distance announcements" = "%@: Entfernungsansagen";
 "Speaks the detection's distance." = "Sagt die Entfernung des erkannten Objekts an.";
 "Haptics" = "Haptik";
+"Central objects only" = "Nur mittige Objekte";
+"Ignores objects outside the middle third of the view." = "Ignoriert Objekte außerhalb des mittleren Bilddrittels.";
 "%@ haptics" = "%@: Haptik";
 "Intensity" = "Intensität";
 "%@ haptic intensity" = "%@: Haptikintensität";

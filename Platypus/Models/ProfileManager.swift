@@ -16,14 +16,30 @@ final class ProfileManager {
         let profileID: PersistentIdentifier
         let settings: ProfileSingularSettings
     }
+    
+    private nonisolated enum ActionProfileSwap: String, Codable, Sendable {
+        case prev, next, manual
+    }
 
-    private let ctx: ModelContext
+    private nonisolated struct CurrentProfileSend: Codable, Sendable {
+        let name: String
+        let action: ActionProfileSwap
+    }
+
     private(set) var profiles: [ProfileSettings] = []
     private(set) var trashed: [ProfileSettings] = []
     private let logger = PlatyLogger(tag: "ProfileManager")
 
-    init(context: ModelContext) {
+    private let mqttClient: PlatyMQTT
+    private let soundEngine: EarconPlayer
+    private let ctx: ModelContext
+
+    init(context: ModelContext, platyMQTT: PlatyMQTT, soundEngine: EarconPlayer)
+    {
         self.ctx = context
+        self.mqttClient = platyMQTT
+        self.soundEngine = soundEngine
+
         reload()
     }
 }
@@ -68,40 +84,58 @@ extension ProfileManager {
         guard let target = profiles.firstIndex(where: { $0 === profile }),
             target != currentProfileIndex
         else { return }
-        try swapActive(toActivate: target)
+        let currentProfile = try swapActive(toActivate: target)
+
+        Task {
+            try? await self.mqttClient.publish(
+                to: .telemetryReport,
+                payload: CurrentProfileSend(name: currentProfile.name, action: .manual)
+            )
+        }
     }
 
-    func prev(_ earconPlayer: EarconPlayer) throws {
+    func prev() throws {
         reload()
         if profiles.count == 1 { return }
 
         let target =
             (currentProfileIndex - 1 + profiles.count)
             % profiles.count
-        try swapActive(toActivate: target)
+        let currentProfile = try swapActive(toActivate: target)
 
         Task {
-            await earconPlayer.play(
+            async let fut1 = self.soundEngine.play(
                 PlatyMQTT.RecMessageVariants.prev,
                 volume: 0.5,
                 from: .front
             )
+            async let fut2 = try? self.mqttClient.publish(
+                to: .telemetryReport,
+                payload: CurrentProfileSend(name: currentProfile.name, action: .prev)
+            )
+            let _ = await (fut1, fut2)
         }
     }
 
-    func next(_ earconPlayer: EarconPlayer) throws {
+    func next() throws {
         reload()
         if profiles.count == 1 { return }
 
         let target = (currentProfileIndex + 1) % profiles.count
-        try swapActive(toActivate: target)
+        let currentProfile = try swapActive(toActivate: target)
 
         Task {
-            await earconPlayer.play(
+            async let fut1 = self.soundEngine.play(
                 PlatyMQTT.RecMessageVariants.next,
                 volume: 0.5,
                 from: .front
             )
+            async let fut2 = try? self.mqttClient.publish(
+                to: .telemetryReport,
+                payload: CurrentProfileSend(name: currentProfile.name, action: .next)
+            )
+
+            let _ = await (fut1, fut2)
         }
     }
 
@@ -152,19 +186,20 @@ extension ProfileManager {
         return "\(base) - \(i)"
     }
 
-    static func swapProfile(msg: PlatyMQTT.RecMessage, pm: ProfileManager, earconEngine: EarconPlayer) {
-        Task { @MainActor in
-            switch msg.cmd {
-            case .next:
-                try? pm.next(earconEngine)
-            case .prev:
-                try? pm.prev(earconEngine)
-            case .empty: return
-            }
+    static func swapProfile(
+        msg: PlatyMQTT.RecMessage,
+        pm: ProfileManager,
+    ) {
+        switch msg.cmd {
+        case .next:
+            try? pm.next()
+        case .prev:
+            try? pm.prev()
+        case .empty: return
         }
     }
 
-    private func swapActive(toActivate: Int) throws {
+    private func swapActive(toActivate: Int) throws -> ProfileSettings {
         let toDeactivate = currentProfileIndex
 
         profiles[toDeactivate].isActive = false
@@ -172,6 +207,7 @@ extension ProfileManager {
 
         do {
             try ctx.save()
+            return profiles[toActivate]
         } catch {
             profiles[toActivate].isActive = false
             profiles[toDeactivate].isActive = true

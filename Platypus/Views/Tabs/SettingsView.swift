@@ -34,9 +34,12 @@ struct SettingsView: View {
             let topic = AvailableTopics.profileSwap
             let cb: (PlatyMQTT.RecMessage) -> Void = { msg in
                 logger.log("Received msg: \(msg)")
-                ProfileManager.swapProfile(msg: msg, pm: profileManager, earconEngine: earconEngine)
+                ProfileManager.swapProfile(
+                    msg: msg,
+                    pm: profileManager
+                )
             }
-            
+
             mqttClient.addCallback(
                 topic: topic,
                 namespace: namespace,
@@ -150,7 +153,7 @@ struct SettingsView: View {
     private func switchToNextProfile() {
         guard profileManager.profiles.count > 1 else { return }
         do {
-            try withAnimation { try profileManager.next(earconEngine) }
+            try withAnimation { try profileManager.next() }
             UIAccessibility.post(
                 notification: .announcement,
                 argument:
@@ -214,17 +217,17 @@ struct SettingsView: View {
         )
     }
 
-//    private func swapProfile(msg: PlatyMQTT.RecMessage) {
-//        Task { @MainActor in
-//            logger.log("Received: \(msg)")
-//
-//            switch msg.cmd {
-//            case .next:
-//                try? profileManager.next(earconEngine)
-//            case .prev:
-//                try? profileManager.prev(earconEngine)
-//            case .empty: return
-//            }
-//        }
-//    }
+    //    private func swapProfile(msg: PlatyMQTT.RecMessage) {
+    //        Task { @MainActor in
+    //            logger.log("Received: \(msg)")
+    //
+    //            switch msg.cmd {
+    //            case .next:
+    //                try? profileManager.next(earconEngine)
+    //            case .prev:
+    //                try? profileManager.prev(earconEngine)
+    //            case .empty: return
+    //            }
+    //        }
+    //    }
 }
