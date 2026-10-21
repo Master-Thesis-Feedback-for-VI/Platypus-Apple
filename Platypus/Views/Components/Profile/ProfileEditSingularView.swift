@@ -177,6 +177,12 @@ struct ProfileDetectionSettingsView: View {
                             focusID: .sound(detectionType),
                             sound: binding.sound
                         )
+                        if !binding.sound.wrappedValue.isOff {
+                            CentralOnlyToggle(
+                                isOn: binding.soundOnlyTriggerIfCentral,
+                                accessibilityName: language.format("%@ sound", language.localized(detectionType.rawValue))
+                            )
+                        }
                         HapticSettingsRows(
                             detectionName: language.localized(
                                 detectionType.rawValue
@@ -185,6 +191,12 @@ struct ProfileDetectionSettingsView: View {
                             focus: $a11yFocus,
                             focusID: .haptic(detectionType)
                         )
+                        if binding.haptic.switchedOn.wrappedValue {
+                            CentralOnlyToggle(
+                                isOn: binding.hapticOnlyTriggerIfCentral,
+                                accessibilityName: language.format("%@ haptics", language.localized(detectionType.rawValue))
+                            )
+                        }
 
                         if binding.haptic.switchedOn.wrappedValue
                             || !binding.sound.wrappedValue.isOff
@@ -587,13 +599,14 @@ struct HapticSettingsRows: View {
                 haptic.intensity = intensity
 
                 Task { @MainActor in
+                    let msgToSend = PlatyMQTT.SendMessage(intensity * 10)
                     async let fut1 = try? mqttClient.publish(
                         to: .hapticLeft,
-                        payload: .init(intensity * 10)
+                        payload: msgToSend
                     )
                     async let fut2 = try? mqttClient.publish(
                         to: .hapticRight,
-                        payload: .init(intensity * 10)
+                        payload: msgToSend
                     )
                     let _ = await (fut1, fut2)
                 }
@@ -603,6 +616,31 @@ struct HapticSettingsRows: View {
 }
 
 // MARK: - Shared
+
+private struct CentralOnlyToggle: View {
+    @Binding var isOn: Bool
+    let accessibilityName: String
+    private var language: AppLanguage { .current }
+
+    var body: some View {
+        Toggle(isOn: $isOn) {
+            VStack(alignment: .leading, spacing: 2) {
+                Label(
+                    language.localized("Central objects only"),
+                    systemImage: "scope"
+                )
+                Text(verbatim: language.localized(
+                    "Ignores objects outside the middle third of the view."
+                ))
+                .font(.body)
+                .foregroundStyle(AppTheme.secondaryText)
+            }
+        }
+        .accessibilityLabel(Text(verbatim:
+            "\(accessibilityName): \(language.localized("Central objects only"))"
+        ))
+    }
+}
 
 struct SliderRow<V>: View
 where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {

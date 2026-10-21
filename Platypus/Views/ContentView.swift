@@ -13,6 +13,8 @@ struct ContentView: View {
 
     @EnvironmentObject var cameraManager: CameraManager
     @EnvironmentObject var imageRecognizerStore: ImageRecognizerStore
+    @EnvironmentObject private var mqttClient: PlatyMQTT
+    @EnvironmentObject private var earconEngine: EarconPlayer
 
     @State private var selection: Tab = .settings
     @State private var profileManager: ProfileManager?
@@ -46,7 +48,9 @@ struct ContentView: View {
                 SettingsView()
                     .tabItem {
                         Image(systemName: "gearshape.fill")
-                        Text(verbatim: AppLanguage.current.localized("Settings"))
+                        Text(
+                            verbatim: AppLanguage.current.localized("Settings")
+                        )
                     }
                     .tag(Tab.settings)
 
@@ -70,7 +74,11 @@ struct ContentView: View {
             }
         } else {
             Color.clear.task {
-                profileManager = ProfileManager(context: modelContext)
+                profileManager = ProfileManager(
+                    context: modelContext,
+                    platyMQTT: mqttClient,
+                    soundEngine: earconEngine
+                )
             }
         }
     }

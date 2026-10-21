@@ -56,7 +56,20 @@ extension PlatyDetection {
     }
 
     // MARK: - Math functions
-    
+
+    /// The object's center lies within the middle third of the visible width.
+    var isCentral: Bool {
+        guard viewportSize.width > 0 else { return false }
+        
+        let centralMinX = viewportSize.width / 3
+        let centralMaxX = viewportSize.width * 2 / 3
+        
+        let inset = rect.width * 0.1
+        let leftBound = rect.minX + inset
+        let rightBound = rect.maxX - inset
+
+        return leftBound <= centralMaxX && rightBound >= centralMinX
+    }
 
     public func yFromCenter() -> (Double, Double) {
         return (
@@ -78,7 +91,9 @@ extension PlatyDetection {
     }
 }  // End PlatyDetection extension
 
-func azimuth(_ normalizable: some Normalizable, _ horizontalFOV: Double = 65) -> Float {
+func azimuth(_ normalizable: some Normalizable, _ horizontalFOV: Double = 65)
+    -> Float
+{
     let x = normalizable.normVector.x
     let halfFOV = horizontalFOV * .pi / 180 / 2
 
