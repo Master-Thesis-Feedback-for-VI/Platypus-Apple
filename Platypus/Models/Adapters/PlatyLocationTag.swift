@@ -30,12 +30,3 @@ extension PlatyLocationTag {
         return categories.first
     }
 }
-
-private let SUPPORTED_TAGS: Set<LocationTag> = [
-    .inside,
-    .outside,
-    .forest,
-    .street,
-    .parking,
-    .railway,
-]

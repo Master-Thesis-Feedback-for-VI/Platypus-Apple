@@ -49,6 +49,11 @@ final class PlatyMQTT: ObservableObject {
         )
         PlatyLogger.mqttClient = self
     }
+
+    deinit {
+        loopTask?.cancel()
+        client.shutdown { _ in }
+    }
 }
 
 extension PlatyMQTT {
@@ -86,7 +91,7 @@ extension PlatyMQTT {
 extension PlatyMQTT {
     func subscribeToTopics(to topics: AvailableTopics..., qos: MQTTQoS = .atMostOnce) async throws {
         for topic in topics {
-            self.subscribe(to: topic, qos: .atLeastOnce)
+            self.subscribe(to: topic, qos: qos)
         }
 
         self.connectionStatus = .establishing
@@ -161,10 +166,6 @@ extension PlatyMQTT {
                 subsToCallbacks[topic] = nil
             }
         }
-    }
-
-    func flushAllCallbacks() {
-        subsToCallbacks = [:]
     }
 
     private func mainLoop() async throws {

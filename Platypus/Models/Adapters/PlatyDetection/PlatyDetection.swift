@@ -9,10 +9,10 @@ import Foundation
 import SwiftUI
 
 struct PlatyDetection {
-    public var confidence: Float
-    public var detectionType: PlatyDetectionType
-    public var distance: Float
-    public var rect: CGRect
+    var confidence: Float
+    var detectionType: PlatyDetectionType
+    var distance: Float
+    var rect: CGRect
 
     let viewportSize: CGSize
 }
@@ -113,7 +113,6 @@ enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
     case bench = "bench"
 
     var id: Self { self }
-    var key: String { "settings.detection.\(rawValue.lowercased())" }
 }
 
 extension PlatyDetectionType {

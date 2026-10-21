@@ -2,12 +2,23 @@ import Foundation
 import Testing
 @testable import Platypus
 
+@MainActor
 struct LogDataTests {
+    @Test func releasesUnconnectedMQTTClient() {
+        weak var releasedClient: PlatyMQTT?
+        do {
+            let client = PlatyMQTT(userName: "", passwd: "", hostname: "localhost")
+            releasedClient = client
+            #expect(releasedClient != nil)
+        }
+        #expect(releasedClient == nil)
+    }
+
     @Test func encodesPayloadAsJSONString() throws {
         let log = try LogData(
             device: .iOsApp,
             tag: AvailableTopics.hapticLeft.rawValue,
-            payload: PlatyMQTT.SendMessage(increaseDiff: 5)
+            payload: PlatyMQTT.SendMessage(5)
         )
         let encoded = try JSONEncoder().encode(log)
         let object = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])

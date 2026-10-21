@@ -104,7 +104,7 @@ struct PlatypusTests {
             configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
         )
         let context = container.mainContext
-        let manager = ProfileManager(context: context)
+        let manager = makeProfileManager(context: context)
         let original = manager.currentProfile
 
         let added = ProfileSettings(name: "TTS")
@@ -140,7 +140,7 @@ struct PlatypusTests {
             configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
         )
         let context = container.mainContext
-        let manager = ProfileManager(context: context)
+        let manager = makeProfileManager(context: context)
         let profile = manager.currentProfile
 
         #expect(profile.enabledLocations.isEmpty)
@@ -167,9 +167,18 @@ struct PlatypusTests {
         #expect(manager.settings(for: .forest)?.settings == defaults)
         try context.save()
 
-        let reopened = ProfileManager(context: ModelContext(container))
+        let reopened = makeProfileManager(context: ModelContext(container))
         #expect(reopened.settings(for: .forest)?.settings == defaults)
         reopened.currentProfile.setLocation(.forest, enabled: true)
         #expect(reopened.settings(for: .forest)?.settings == override)
+    }
+
+    @MainActor
+    private func makeProfileManager(context: ModelContext) -> ProfileManager {
+        ProfileManager(
+            context: context,
+            platyMQTT: PlatyMQTT(userName: "", passwd: "", hostname: "localhost"),
+            soundEngine: EarconPlayer(earcons: [])
+        )
     }
 }

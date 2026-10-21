@@ -28,7 +28,6 @@ final class ProfileManager {
 
     private(set) var profiles: [ProfileSettings] = []
     private(set) var trashed: [ProfileSettings] = []
-    private let logger = PlatyLogger(tag: "ProfileManager")
 
     private let mqttClient: PlatyMQTT
     private let soundEngine: EarconPlayer
@@ -85,11 +84,12 @@ extension ProfileManager {
             target != currentProfileIndex
         else { return }
         let currentProfile = try swapActive(toActivate: target)
+        let payload = CurrentProfileSend(name: currentProfile.name, action: .manual)
 
         Task {
             try? await self.mqttClient.publish(
                 to: .telemetryReport,
-                payload: CurrentProfileSend(name: currentProfile.name, action: .manual)
+                payload: payload
             )
         }
     }
@@ -102,6 +102,7 @@ extension ProfileManager {
             (currentProfileIndex - 1 + profiles.count)
             % profiles.count
         let currentProfile = try swapActive(toActivate: target)
+        let payload = CurrentProfileSend(name: currentProfile.name, action: .prev)
 
         Task {
             async let fut1 = self.soundEngine.play(
@@ -111,7 +112,7 @@ extension ProfileManager {
             )
             async let fut2 = try? self.mqttClient.publish(
                 to: .telemetryReport,
-                payload: CurrentProfileSend(name: currentProfile.name, action: .prev)
+                payload: payload
             )
             let _ = await (fut1, fut2)
         }
@@ -123,6 +124,7 @@ extension ProfileManager {
 
         let target = (currentProfileIndex + 1) % profiles.count
         let currentProfile = try swapActive(toActivate: target)
+        let payload = CurrentProfileSend(name: currentProfile.name, action: .next)
 
         Task {
             async let fut1 = self.soundEngine.play(
@@ -132,7 +134,7 @@ extension ProfileManager {
             )
             async let fut2 = try? self.mqttClient.publish(
                 to: .telemetryReport,
-                payload: CurrentProfileSend(name: currentProfile.name, action: .next)
+                payload: payload
             )
 
             let _ = await (fut1, fut2)

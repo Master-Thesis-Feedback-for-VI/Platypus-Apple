@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import Platypus
 
+@MainActor
 struct ErrorLogReportTests {
     @Test func encodesErrorInMQTTEnvelope() throws {
         let report = LogData(

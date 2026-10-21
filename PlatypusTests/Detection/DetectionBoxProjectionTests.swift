@@ -3,11 +3,12 @@ import CoreGraphics
 import SwiftUI
 import Testing
 
+@MainActor
 struct DetectionBoxProjectionTests {
     private let box = BoundingBox(x1: 100, x2: 200, y1: 50, y2: 150)
 
-    @Test func aspectFillAccountsForCrop() {
-        let rect = DetectionBoxProjection.rect(
+    @Test func aspectFillAccountsForCrop() throws {
+        let rect = try projectedRect(
             for: box,
             imageSize: CGSize(width: 400, height: 300),
             viewportSize: CGSize(width: 200, height: 300),
@@ -18,8 +19,8 @@ struct DetectionBoxProjectionTests {
         #expect(rect == CGRect(x: 0, y: 50, width: 100, height: 100))
     }
 
-    @Test func aspectFitAccountsForLetterboxing() {
-        let rect = DetectionBoxProjection.rect(
+    @Test func aspectFitAccountsForLetterboxing() throws {
+        let rect = try projectedRect(
             for: box,
             imageSize: CGSize(width: 400, height: 300),
             viewportSize: CGSize(width: 200, height: 300),
@@ -30,8 +31,8 @@ struct DetectionBoxProjectionTests {
         #expect(rect == CGRect(x: 50, y: 100, width: 50, height: 50))
     }
 
-    @Test func rotationProjectsRawPixelCoordinates() {
-        let rect = DetectionBoxProjection.rect(
+    @Test func rotationProjectsRawPixelCoordinates() throws {
+        let rect = try projectedRect(
             for: box,
             imageSize: CGSize(width: 400, height: 300),
             viewportSize: CGSize(width: 300, height: 400),
@@ -41,4 +42,29 @@ struct DetectionBoxProjectionTests {
 
         #expect(rect == CGRect(x: 150, y: 100, width: 100, height: 100))
     }
+
+    private func projectedRect(
+        for box: BoundingBox,
+        imageSize: CGSize,
+        viewportSize: CGSize,
+        transform: CGAffineTransform,
+        contentMode: ContentMode
+    ) throws -> CGRect {
+        let detection = try #require(PlatyDetection(
+            detection: Detection(name: .person, xyxy: box, distance: 0, confidence: 0.8),
+            frameSize: ProjectionImageSize(
+                pixelHeight: Int(imageSize.height),
+                pixelWidth: Int(imageSize.width)
+            ),
+            viewportSize: viewportSize,
+            imageTransform: transform,
+            contentMode: contentMode
+        ))
+        return detection.rect
+    }
+}
+
+private struct ProjectionImageSize: PlatySize {
+    let pixelHeight: Int
+    let pixelWidth: Int
 }

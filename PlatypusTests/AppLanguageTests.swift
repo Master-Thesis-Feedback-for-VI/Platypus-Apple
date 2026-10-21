@@ -116,7 +116,7 @@ struct AppLanguageTests {
     }
 
     @Test func localizationDoesNotChangePersistedIdentifiers() {
-        #expect(PlatyDetectionType.car.rawValue == "Car")
+        #expect(PlatyDetectionType.car.rawValue == "car")
         #expect(PlatyLocationTag.outside.rawValue == "Outside")
     }
 }
