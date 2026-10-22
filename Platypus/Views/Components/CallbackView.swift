@@ -46,6 +46,7 @@ struct CallbackView<Frame: PlatySize>: View {
                     for: detectedObjects,
                     settings: settings?.settings
                 )
+                try? await mqttClient.publish(to: .telemetryReport, payload: uniqueLocationTag)
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
@@ -96,12 +97,21 @@ struct CallbackView<Frame: PlatySize>: View {
         )
 
         async let soundFeedback: Void = feedbackReact(
-            detections: detections, settings: settings, channel: .sound
+            detections: detections,
+            settings: settings,
+            channel: .sound
         )
         async let hapticFeedback: Void = feedbackReact(
-            detections: detections, settings: settings, channel: .haptic
+            detections: detections,
+            settings: settings,
+            channel: .haptic
         )
-        let _ = await (soundFeedback, hapticFeedback)
+        async let telemetryDetection = try? mqttClient.publish(
+            to: .telemetryReport,
+            payload: detections
+        )
+        
+        let _ = await (soundFeedback, hapticFeedback, telemetryDetection)
     }
 
     private func feedbackReact(
@@ -110,7 +120,8 @@ struct CallbackView<Frame: PlatySize>: View {
         channel: FeedbackChannel
     ) async {
         let detections = detections.filteredForFeedback(
-            settings: settings.detectionSettings, channel: channel
+            settings: settings.detectionSettings,
+            channel: channel
         )
 
         guard !Task.isCancelled else { return }
