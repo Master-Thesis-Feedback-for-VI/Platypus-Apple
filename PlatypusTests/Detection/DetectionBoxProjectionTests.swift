@@ -1,4 +1,5 @@
 import CoreGraphics
+import ImageIO
 @testable import Platypus
 import SwiftUI
 import Testing
@@ -41,6 +42,52 @@ struct DetectionBoxProjectionTests {
         )
 
         #expect(rect == CGRect(x: 150, y: 100, width: 100, height: 100))
+    }
+
+    @Test(arguments: 1...8)
+    func photoDimensionsMatchOrientedInference(orientation: Int) throws {
+        let image = try photo(orientation: orientation)
+        let expectedSize = (5...8).contains(orientation)
+            ? CGSize(width: 300, height: 400)
+            : CGSize(width: 400, height: 300)
+
+        #expect(image.pixelSize == expectedSize)
+    }
+
+    @Test func portraitPhotoBoxesAreNotRotatedTwice() throws {
+        let image = try photo(orientation: 6)
+        let size = try #require(image.pixelSize)
+        let rect = try projectedRect(
+            for: box,
+            imageSize: size,
+            viewportSize: CGSize(width: 300, height: 600),
+            transform: .identity,
+            contentMode: .fill
+        )
+
+        #expect(rect == CGRect(x: 75, y: 75, width: 150, height: 150))
+    }
+
+    private func photo(orientation: Int) throws -> PlatyImage {
+        let context = try #require(CGContext(
+            data: nil,
+            width: 400,
+            height: 300,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ))
+        let pixels = try #require(context.makeImage())
+        let data = NSMutableData()
+        let destination = try #require(CGImageDestinationCreateWithData(
+            data, "public.jpeg" as CFString, 1, nil
+        ))
+        CGImageDestinationAddImage(destination, pixels, [
+            kCGImagePropertyOrientation: orientation
+        ] as CFDictionary)
+        #expect(CGImageDestinationFinalize(destination))
+        return PlatyImage(img: data as Data)
     }
 
     private func projectedRect(

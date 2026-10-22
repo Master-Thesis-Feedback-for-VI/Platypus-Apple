@@ -46,7 +46,10 @@ struct CallbackView<Frame: PlatySize>: View {
                     for: detectedObjects,
                     settings: settings?.settings
                 )
-                try? await mqttClient.publish(to: .telemetryReport, payload: uniqueLocationTag)
+                try? await mqttClient.publish(
+                    to: .telemetryReport,
+                    payload: uniqueLocationTag
+                )
             }
             .onAppear {
                 let topic = AvailableTopics.profileSwap
@@ -110,7 +113,7 @@ struct CallbackView<Frame: PlatySize>: View {
             to: .telemetryReport,
             payload: detections
         )
-        
+
         let _ = await (soundFeedback, hapticFeedback, telemetryDetection)
     }
 

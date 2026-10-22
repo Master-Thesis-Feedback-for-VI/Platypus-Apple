@@ -25,31 +25,16 @@ extension PlatyImage {
         return properties
     }
 
-    // The Rust image decoder reads the JPEG's raw pixels, without applying EXIF orientation.
     var pixelSize: CGSize? {
         guard let properties = imageProperties,
             let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
             let height = properties[kCGImagePropertyPixelHeight] as? CGFloat
         else { return nil }
-        return CGSize(width: width, height: height)
-    }
-
-    var detectionTransform: CGAffineTransform {
-        guard let size = pixelSize else { return .identity }
-        let width = size.width
-        let height = size.height
-        let orientation = (imageProperties?[kCGImagePropertyOrientation] as? NSNumber)?.intValue ?? 1
-
-        switch orientation {
-        case 2: return CGAffineTransform(a: -1, b: 0, c: 0, d: 1, tx: width, ty: 0)
-        case 3: return CGAffineTransform(a: -1, b: 0, c: 0, d: -1, tx: width, ty: height)
-        case 4: return CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: height)
-        case 5: return CGAffineTransform(a: 0, b: 1, c: 1, d: 0, tx: 0, ty: 0)
-        case 6: return CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: height, ty: 0)
-        case 7: return CGAffineTransform(a: 0, b: -1, c: -1, d: 0, tx: height, ty: width)
-        case 8: return CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: 0, ty: width)
-        default: return .identity
+        let orientation = (properties[kCGImagePropertyOrientation] as? NSNumber)?.intValue ?? 1
+        if (5...8).contains(orientation) {
+            return CGSize(width: height, height: width)
         }
+        return CGSize(width: width, height: height)
     }
 
     func saveImage(name named: String) async throws -> URL {
