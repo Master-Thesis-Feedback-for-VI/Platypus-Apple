@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct PlatyDetections {
+nonisolated struct PlatyDetections: Codable {
     let inner: [PlatyDetection]
 }
 

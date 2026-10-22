@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct PlatyDetection {
+nonisolated struct PlatyDetection: Codable {
     var confidence: Float
     var detectionType: PlatyDetectionType
     var distance: Float
