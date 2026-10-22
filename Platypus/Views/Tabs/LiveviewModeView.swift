@@ -50,7 +50,6 @@ struct CameraActiveLiveView: View {
     @State private var progress: ProgressStatus = .switchedOff
 
     @State private var videoDimensions: CGSize = .zero
-    @State private var detectionTransform: CGAffineTransform = .identity
 
     private let auth = AuthToHost(
         overpassUrl: infoValue("OVERPASS_URL"),
@@ -72,7 +71,7 @@ struct CameraActiveLiveView: View {
                 detectedObjects: detectedObjects,
                 uniqueLocationTags: uniqueLocationTags,
                 frameSize: videoDimensions,
-                imageTransform: detectionTransform,
+                imageTransform: .identity,
                 contentMode: .fill
             )
 
@@ -115,11 +114,6 @@ struct CameraActiveLiveView: View {
                         continue
                     }
 
-                    if let dimensions = img.pixelSize {
-                        videoDimensions = dimensions
-                        detectionTransform = img.detectionTransform
-                    }
-
                     let cord = Coordinate(
                         lat: location.latitude,
                         lon: location.longitude
@@ -155,6 +149,7 @@ struct CameraActiveLiveView: View {
                             amount: amountDominantColor,
                         )
 
+                        videoDimensions = img.pixelSize ?? .zero
                         detectedObjects = imageFlowData.imageDetections()
                         uniqueLocationTags = imageFlowData.locationTags()
 
