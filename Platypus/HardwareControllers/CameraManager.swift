@@ -11,10 +11,27 @@ import AVFoundation
 import Combine
 import Foundation
 
-enum CameraError: Error {
+enum CameraError: LocalizedError {
     case deviceNotFound
     case alreadyRecording
     case bundleNotCreated
+    case microphoneAccessDenied
+    case microphoneUnavailable
+
+    var errorDescription: String? {
+        switch self {
+        case .deviceNotFound:
+            return "No camera is available."
+        case .alreadyRecording:
+            return "A recording is already in progress."
+        case .bundleNotCreated:
+            return "The recording bundle could not be created."
+        case .microphoneAccessDenied:
+            return "Allow microphone access in Settings to record video with sound."
+        case .microphoneUnavailable:
+            return "The microphone could not be added to the recording."
+        }
+    }
 }
 
 /// Owns the `AVCaptureSession` and every AVFoundation call.
@@ -91,12 +108,37 @@ actor CameraSessionActor {
     }
 
     // MARK: - Video Capture
+    private func configureAudio() throws {
+        if !session.inputs.contains(where: { input in
+            input.ports.contains { $0.mediaType == .audio }
+        }) {
+            guard let microphone = AVCaptureDevice.default(for: .audio) else {
+                throw CameraError.microphoneUnavailable
+            }
+            let audioInput = try AVCaptureDeviceInput(device: microphone)
+
+            session.beginConfiguration()
+            defer { session.commitConfiguration() }
+            guard session.canAddInput(audioInput) else {
+                throw CameraError.microphoneUnavailable
+            }
+            session.addInput(audioInput)
+        }
+
+        guard let audioConnection = videoOutput.connection(with: .audio) else {
+            throw CameraError.microphoneUnavailable
+        }
+        audioConnection.isEnabled = true
+    }
+
     /// Suspends until AVFoundation finishes writing the file, then
     /// resumes with the output URL or throws whatever error AVFoundation reported.
     func startRecording() async throws -> RecordingResult {
         guard !videoOutput.isRecording else {
             throw CameraError.alreadyRecording
         }
+
+        try configureAudio()
 
         enum MessageSnapshot {
             case cancel
@@ -352,7 +394,22 @@ final class CameraManager: ObservableObject {
         bundledRecordingURL = nil
         isRecording = true
 
-        let recordingTask = Task { try await cameraActor.startRecording() }
+        let recordingTask = Task {
+            let microphoneGranted: Bool
+            switch AVCaptureDevice.authorizationStatus(for: .audio) {
+            case .authorized:
+                microphoneGranted = true
+            case .notDetermined:
+                microphoneGranted = await AVCaptureDevice.requestAccess(for: .audio)
+            default:
+                microphoneGranted = false
+            }
+            guard microphoneGranted else {
+                throw CameraError.microphoneAccessDenied
+            }
+            try Task.checkCancellation()
+            return try await cameraActor.startRecording()
+        }
         activeRecordingTask = recordingTask
         defer {
             activeRecordingTask = nil
@@ -371,6 +428,7 @@ final class CameraManager: ObservableObject {
 
     func stopRecording() async {
         let recordingTask = activeRecordingTask
+        recordingTask?.cancel()
         await cameraActor.stopRecording()
         _ = try? await recordingTask?.value
     }

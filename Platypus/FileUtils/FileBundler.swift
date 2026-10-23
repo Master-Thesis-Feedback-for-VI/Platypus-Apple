@@ -29,6 +29,7 @@ nonisolated struct FileBundler {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[
             0
         ]
+        .appendingPathComponent("recordings", isDirectory: true)
         .appendingPathComponent(self.dirName)
         .appendingPathExtension("zip")
     }
@@ -62,6 +63,12 @@ nonisolated struct FileBundler {
     func saveBundled() throws -> URL {
         let fileManager = FileManager.default
         let targetPath = self.archiveFile
+
+        try fileManager.createDirectory(
+            at: targetPath.deletingLastPathComponent(),
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
 
         if fileManager.fileExists(atPath: targetPath.path) {
             try fileManager.removeItem(at: targetPath)
