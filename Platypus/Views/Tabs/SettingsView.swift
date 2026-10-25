@@ -227,19 +227,23 @@ struct SettingsView: View {
     private func importProfiles() async throws {
         let imported = IMPORTED.withLock { $0 }
         if imported { return }
-        defer { IMPORTED.withLock { $0.toggle() } }
 
         let fm = FileManager.default
         let importDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("import_dir", isDirectory: true)
         try fm.createDirectory(at: importDir, withIntermediateDirectories: true)
 
-        let jsonFiles = try fm.contentsOfDirectory(
+        var jsonFiles = try fm.contentsOfDirectory(
             at: importDir,
             includingPropertiesForKeys: nil
         ).filter {
             $0.pathExtension.lowercased() == "json"
         }
+        let defaultJsonFiles = Bundle.main.urls(
+            forResourcesWithExtension: "json", subdirectory: "DefaultProfiles"
+        ) ?? []
+        
+        jsonFiles += defaultJsonFiles
 
         let decoder = JSONDecoder()
         for jsonFile in jsonFiles {
@@ -252,5 +256,7 @@ struct SettingsView: View {
                 try profileManager.insertProfile(profile)
             }
         }
+        
+        IMPORTED.withLock { $0.toggle() }
     }
 }

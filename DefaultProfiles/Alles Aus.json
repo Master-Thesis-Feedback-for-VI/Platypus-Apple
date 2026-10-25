@@ -1,0 +1,100 @@
+{
+  "created" : 814619733.525578,
+  "defaultSettings" : {
+    "detectionSettings" : [
+      "person",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "cyclist",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bicycle",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bench",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      }
+    ]
+  },
+  "enabledLocations" : [
+
+  ],
+  "isActive" : false,
+  "name" : "Alles Aus",
+  "settings" : [
+
+  ]
+}
