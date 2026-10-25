@@ -13,6 +13,71 @@ import Testing
 
 struct PlatypusTests {
     @MainActor
+    @Test func distanceLimitsDefaultToUnlimitedAndRoundTrip() throws {
+        var settings = ProfileDetectionSettings.defaults()[.person]!
+        #expect(settings.soundMaximumDistance == nil)
+        #expect(settings.hapticMaximumDistance == nil)
+        settings.soundMaximumDistance = 0.5
+        settings.hapticMaximumDistance = 20
+
+        #expect(
+            try JSONDecoder().decode(
+                ProfileDetectionSettings.self,
+                from: JSONEncoder().encode(settings)
+            ) == settings
+        )
+
+        settings.soundMaximumDistance = nil
+        settings.hapticMaximumDistance = nil
+        #expect(
+            try JSONDecoder().decode(
+                ProfileDetectionSettings.self,
+                from: JSONEncoder().encode(settings)
+            ) == settings
+        )
+    }
+
+    @MainActor
+    @Test func distanceLimitsFilterEachChannelAndDetectionTypeIndependently() {
+        func detection(_ distance: Float, type: PlatyDetectionType = .person) -> PlatyDetection {
+            PlatyDetection(
+                confidence: 1,
+                detectionType: type,
+                distance: distance,
+                rect: CGRect(x: 140, y: 0, width: 20, height: 20),
+                viewportSize: CGSize(width: 300, height: 300)
+            )
+        }
+
+        let near = detection(0.25)
+        let boundary = detection(0.5)
+        let far = detection(2)
+        let veryFar = detection(1000)
+        let car = detection(3, type: .car)
+        let detections = PlatyDetections(inner: [near, boundary, far, veryFar, car])
+        var settings = ProfileDetectionSettings.defaults()
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).inner == detections.inner)
+
+        settings[.person]?.soundMaximumDistance = 0.5
+        settings[.person]?.hapticMaximumDistance = 2
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).inner == [near, boundary, car])
+        #expect(detections.filteredForFeedback(settings: settings, channel: .haptic).inner == [near, boundary, far, car])
+
+        settings[.person]?.soundMaximumDistance = nil
+        #expect(detections.filteredForFeedback(settings: settings, channel: .sound).inner == detections.inner)
+        #expect(PlatyDetections(inner: [veryFar]).filteredForFeedback(settings: settings, channel: .haptic).inner.isEmpty)
+
+        settings[.person]?.soundOnlyTriggerIfCentral = true
+        settings[.person]?.soundMaximumDistance = 0.5
+        var offCenter = near
+        offCenter.rect.origin.x = 0
+        let mixed = PlatyDetections(inner: [offCenter, boundary, far])
+        let filtered = mixed.filteredForFeedback(settings: settings, channel: .sound)
+        #expect(filtered.inner == [boundary])
+        #expect(filtered.closestDetection == boundary)
+    }
+
+    @MainActor
     @Test func centralOnlySettingsRoundTrip() throws {
         let original = ProfileDetectionSettings(
             sound: .earcon(EarconSetting(volume: 0.5)),

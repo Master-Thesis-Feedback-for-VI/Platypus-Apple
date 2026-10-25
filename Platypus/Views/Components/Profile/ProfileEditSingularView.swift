@@ -178,6 +178,10 @@ struct ProfileDetectionSettingsView: View {
                             sound: binding.sound
                         )
                         if !binding.sound.wrappedValue.isOff {
+                            DistanceSliderRow(
+                                maximumDistance: binding.soundMaximumDistance,
+                                accessibilityName: language.format("%@ sound", language.localized(detectionType.rawValue))
+                            )
                             CentralOnlyToggle(
                                 isOn: binding.soundOnlyTriggerIfCentral,
                                 accessibilityName: language.format("%@ sound", language.localized(detectionType.rawValue))
@@ -192,6 +196,10 @@ struct ProfileDetectionSettingsView: View {
                             focusID: .haptic(detectionType)
                         )
                         if binding.haptic.switchedOn.wrappedValue {
+                            DistanceSliderRow(
+                                maximumDistance: binding.hapticMaximumDistance,
+                                accessibilityName: language.format("%@ haptics", language.localized(detectionType.rawValue))
+                            )
                             CentralOnlyToggle(
                                 isOn: binding.hapticOnlyTriggerIfCentral,
                                 accessibilityName: language.format("%@ haptics", language.localized(detectionType.rawValue))
@@ -616,6 +624,62 @@ struct HapticSettingsRows: View {
 }
 
 // MARK: - Shared
+
+private struct DistanceSliderRow: View {
+    @Binding var maximumDistance: Double?
+    let accessibilityName: String
+    private var language: AppLanguage { .current }
+
+    // Half-meter steps through 20 m, followed by an unlimited endpoint.
+    private let unlimitedEndpoint = 20.5
+
+    private var sliderBinding: Binding<Double> {
+        Binding(
+            get: { maximumDistance ?? unlimitedEndpoint },
+            set: { maximumDistance = $0 >= unlimitedEndpoint ? nil : $0 }
+        )
+    }
+
+    private var distanceDescription: String {
+        if let maximumDistance {
+            language.format("%.1f meters", maximumDistance)
+        } else {
+            language.localized("Unlimited")
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(verbatim: language.localized("Distance"))
+                Spacer()
+                Text(verbatim: distanceDescription)
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .monospacedDigit()
+            }
+            .accessibilityHidden(true)
+
+            Slider(value: sliderBinding, in: 0.5...unlimitedEndpoint, step: 0.5) {
+                Text(verbatim: language.localized("Distance"))
+            } minimumValueLabel: {
+                Text("0.5")
+                    .accessibilityHidden(true)
+            } maximumValueLabel: {
+                Text("∞")
+                    .accessibilityHidden(true)
+            }
+            .foregroundStyle(AppTheme.secondaryText)
+            .accessibilityLabel(Text(verbatim:
+                "\(accessibilityName): \(language.localized("Distance"))"
+            ))
+            .accessibilityValue(Text(verbatim: distanceDescription))
+            .accessibilityHint(Text(verbatim: language.localized(
+                "Ignores detections beyond this distance. Move to the maximum for unlimited distance."
+            )))
+        }
+        .padding(.vertical, 2)
+    }
+}
 
 private struct CentralOnlyToggle: View {
     @Binding var isOn: Bool
