@@ -225,6 +225,9 @@ struct SettingsView: View {
     }
 
     private func importProfiles() async throws {
+        // UI tests start with a single profile, independent of bundled or local imports.
+        guard !PlatypusApp.isUITesting else { return }
+
         let imported = IMPORTED.withLock { $0 }
         if imported { return }
 
@@ -239,10 +242,12 @@ struct SettingsView: View {
         ).filter {
             $0.pathExtension.lowercased() == "json"
         }
-        let defaultJsonFiles = Bundle.main.urls(
-            forResourcesWithExtension: "json", subdirectory: "DefaultProfiles"
-        ) ?? []
-        
+        let defaultJsonFiles =
+            Bundle.main.urls(
+                forResourcesWithExtension: "json",
+                subdirectory: "DefaultProfiles"
+            ) ?? []
+
         jsonFiles += defaultJsonFiles
 
         let decoder = JSONDecoder()
@@ -256,7 +261,7 @@ struct SettingsView: View {
                 try profileManager.insertProfile(profile)
             }
         }
-        
+
         IMPORTED.withLock { $0.toggle() }
     }
 }

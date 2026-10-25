@@ -86,7 +86,8 @@ struct ProfileEditView: View {
             withIntermediateDirectories: true,
         )
 
-        let filePath = exportDir
+        let filePath =
+            exportDir
             .appendingPathComponent(profileName)
             .appendingPathExtension("json")
 
