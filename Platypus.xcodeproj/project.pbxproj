@@ -88,6 +88,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B027BF23308E48450083D898 /* Replays */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Replays;
+			sourceTree = "<group>";
+		};
 		B09126A830260A5E000E2487 /* Platypus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -141,6 +146,7 @@
 				B0F3377F305C21050054C68F /* Secrets.xcconfig */,
 				B09A4B893074EC9400F9A39B /* Sounds */,
 				B0974689308E251200282C9A /* DefaultProfiles */,
+				B027BF23308E48450083D898 /* Replays */,
 			);
 			sourceTree = "<group>";
 		};
@@ -172,6 +178,7 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
+				B027BF23308E48450083D898 /* Replays */,
 				B09126A830260A5E000E2487 /* Platypus */,
 			);
 			name = Platypus;
