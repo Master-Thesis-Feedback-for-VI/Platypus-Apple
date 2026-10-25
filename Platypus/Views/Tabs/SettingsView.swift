@@ -7,7 +7,10 @@
 
 import SwiftData
 import SwiftUI
+import Synchronization
 import UIKit
+
+let IMPORTED = Mutex(false)
 
 struct SettingsView: View {
     private var language: AppLanguage { .current }
@@ -31,6 +34,10 @@ struct SettingsView: View {
                 }
         }
         .onAppear {
+            Task {
+                try? await importProfiles()
+            }
+
             let topic = AvailableTopics.profileSwap
             let cb: (PlatyMQTT.RecMessage) -> Void = { msg in
                 logger.log("Received msg: \(msg)")
@@ -217,17 +224,39 @@ struct SettingsView: View {
         )
     }
 
-    //    private func swapProfile(msg: PlatyMQTT.RecMessage) {
-    //        Task { @MainActor in
-    //            logger.log("Received: \(msg)")
-    //
-    //            switch msg.cmd {
-    //            case .next:
-    //                try? profileManager.next(earconEngine)
-    //            case .prev:
-    //                try? profileManager.prev(earconEngine)
-    //            case .empty: return
-    //            }
-    //        }
-    //    }
+    private func importProfiles() async throws {
+        let imported = IMPORTED.withLock { $0 }
+        if imported { return }
+
+        let fm = FileManager.default
+        let importDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("import_dir", isDirectory: true)
+        try fm.createDirectory(at: importDir, withIntermediateDirectories: true)
+
+        var jsonFiles = try fm.contentsOfDirectory(
+            at: importDir,
+            includingPropertiesForKeys: nil
+        ).filter {
+            $0.pathExtension.lowercased() == "json"
+        }
+        let defaultJsonFiles = Bundle.main.urls(
+            forResourcesWithExtension: "json", subdirectory: "DefaultProfiles"
+        ) ?? []
+        
+        jsonFiles += defaultJsonFiles
+
+        let decoder = JSONDecoder()
+        for jsonFile in jsonFiles {
+            do {
+                let data = try Data(contentsOf: jsonFile)
+                let profile = try decoder.decode(
+                    ProfileSettings.self,
+                    from: data
+                )
+                try profileManager.insertProfile(profile)
+            }
+        }
+        
+        IMPORTED.withLock { $0.toggle() }
+    }
 }

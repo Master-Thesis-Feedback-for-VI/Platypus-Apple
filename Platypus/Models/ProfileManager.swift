@@ -16,7 +16,7 @@ final class ProfileManager {
         let profileID: PersistentIdentifier
         let settings: ProfileSingularSettings
     }
-    
+
     private nonisolated enum ActionProfileSwap: String, Codable, Sendable {
         case prev, next, manual
     }
@@ -84,7 +84,10 @@ extension ProfileManager {
             target != currentProfileIndex
         else { return }
         let currentProfile = try swapActive(toActivate: target)
-        let payload = CurrentProfileSend(name: currentProfile.name, action: .manual)
+        let payload = CurrentProfileSend(
+            name: currentProfile.name,
+            action: .manual
+        )
 
         Task {
             try? await self.mqttClient.publish(
@@ -102,7 +105,10 @@ extension ProfileManager {
             (currentProfileIndex - 1 + profiles.count)
             % profiles.count
         let currentProfile = try swapActive(toActivate: target)
-        let payload = CurrentProfileSend(name: currentProfile.name, action: .prev)
+        let payload = CurrentProfileSend(
+            name: currentProfile.name,
+            action: .prev
+        )
 
         Task {
             async let fut1 = self.soundEngine.play(
@@ -124,7 +130,10 @@ extension ProfileManager {
 
         let target = (currentProfileIndex + 1) % profiles.count
         let currentProfile = try swapActive(toActivate: target)
-        let payload = CurrentProfileSend(name: currentProfile.name, action: .next)
+        let payload = CurrentProfileSend(
+            name: currentProfile.name,
+            action: .next
+        )
 
         Task {
             async let fut1 = self.soundEngine.play(
@@ -142,7 +151,12 @@ extension ProfileManager {
     }
 
     func addProfile() throws {
-        ctx.insert(ProfileSettings(name: uniqueName(from: "Profile")))
+        let profile = ProfileSettings(name: uniqueName(from: "Profile"))
+        try insertProfile(profile)
+    }
+
+    func insertProfile(_ profile: ProfileSettings) throws {
+        ctx.insert(profile)
         try ctx.save()
         reload()
     }
