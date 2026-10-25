@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-let ENABLE_EXPORT = true
+let ENABLE_EXPORT = false
 
 struct ProfileEditView: View {
     private var language: AppLanguage { .current }
