@@ -19,6 +19,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		B027BF24308E48450083D898 /* Replays in Resources */ = {isa = PBXBuildFile; fileRef = B027BF23308E48450083D898 /* Replays */; };
 		B0300EB63080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
 		B0300EB73080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
 		B0300EB83080FA5D0002AA15 /* cyclist.wav in Resources */ = {isa = PBXBuildFile; fileRef = B0300EB53080FA5D0002AA15 /* cyclist.wav */; };
@@ -63,6 +64,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B027BF23308E48450083D898 /* Replays */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Replays; sourceTree = "<group>"; };
 		B0300EB53080FA5D0002AA15 /* cyclist.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = cyclist.wav; sourceTree = "<group>"; };
 		B0378814307A753F000DD50F /* next_profile.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = next_profile.wav; sourceTree = "<group>"; };
 		B0378815307A753F000DD50F /* prev_profile.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = prev_profile.wav; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				B0F3377F305C21050054C68F /* Secrets.xcconfig */,
 				B09A4B893074EC9400F9A39B /* Sounds */,
 				B0974689308E251200282C9A /* DefaultProfiles */,
+				B027BF23308E48450083D898 /* Replays */,
 			);
 			sourceTree = "<group>";
 		};
@@ -282,6 +285,7 @@
 		B09126A430260A5E000E2487 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				B027BF24308E48450083D898 /* Replays in Resources */,
 				B037881A307A753F000DD50F /* prev_profile.wav in Resources */,
 				B037881B307A753F000DD50F /* next_profile.wav in Resources */,
 				B09A4B8A3074EC9400F9A39B /* person.wav in Resources */,

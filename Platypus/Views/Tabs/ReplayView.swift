@@ -37,8 +37,8 @@ struct ReplayView: View {
     func loadReplayItems() async {
         let items = await Task.detached(priority: .userInitiated) {
             [logger] () -> [ReplayItem] in
-            let fileManager = FileManager.default
-            let documentsUrl = fileManager.urls(
+            let fm = FileManager.default
+            let documentsUrl = fm.urls(
                 for: .documentDirectory,
                 in: .userDomainMask
             )
@@ -51,7 +51,7 @@ struct ReplayView: View {
             do {
                 try await ensureDirectoryExists(at: documentsUrl)
 
-                let filteredFiles = try fileManager.contentsOfDirectory(
+                var filteredFiles = try fm.contentsOfDirectory(
                     at: documentsUrl,
                     includingPropertiesForKeys: [
                         .isRegularFileKey
@@ -63,10 +63,20 @@ struct ReplayView: View {
                         == .orderedSame
                 }
 
+                if await !PlatypusApp.isUITesting {
+                    let defaultReplays =
+                        Bundle.main.urls(
+                            forResourcesWithExtension: "zip",
+                            subdirectory: "Replays"
+                        ) ?? []
+                    filteredFiles += defaultReplays
+                }
+
                 var results: [ReplayItem] = []
                 for url in filteredFiles {
                     await results.append(ReplayItem(path: url))
                 }
+
                 return results
 
             } catch {
@@ -93,7 +103,7 @@ struct FileItemView: View {
             Task {
                 isLoading = true
                 defer { isLoading = false }
-                
+
                 do {
                     evaluationData = try await replayItem.intoVideoPlayback()
                 } catch {
