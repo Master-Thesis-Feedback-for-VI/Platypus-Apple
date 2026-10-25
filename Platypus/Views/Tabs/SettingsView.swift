@@ -216,18 +216,4 @@ struct SettingsView: View {
             }
         )
     }
-
-    //    private func swapProfile(msg: PlatyMQTT.RecMessage) {
-    //        Task { @MainActor in
-    //            logger.log("Received: \(msg)")
-    //
-    //            switch msg.cmd {
-    //            case .next:
-    //                try? profileManager.next(earconEngine)
-    //            case .prev:
-    //                try? profileManager.prev(earconEngine)
-    //            case .empty: return
-    //            }
-    //        }
-    //    }
 }
