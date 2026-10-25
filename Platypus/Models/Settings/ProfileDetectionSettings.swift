@@ -90,6 +90,9 @@ struct ProfileDetectionSettings: Codable, Equatable {
     var groupFeedback: Bool = false
     var soundOnlyTriggerIfCentral: Bool = false
     var hapticOnlyTriggerIfCentral: Bool = false
+    // Distances are in meters; nil means unlimited.
+    var soundMaximumDistance: Double? = nil
+    var hapticMaximumDistance: Double? = nil
 
     static func defaults() -> [PlatyDetectionType: ProfileDetectionSettings] {
         var settings: [PlatyDetectionType: ProfileDetectionSettings] = [:]
