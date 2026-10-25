@@ -1,0 +1,110 @@
+{
+  "created" : 814621253.315689,
+  "defaultSettings" : {
+    "detectionSettings" : [
+      "cyclist",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 0.6
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "person",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 0.4
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "bicycle",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 0.2
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 1
+            }
+          }
+        },
+        "soundMaximumDistance" : 14,
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bench",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 0.2
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      }
+    ]
+  },
+  "enabledLocations" : [
+
+  ],
+  "isActive" : false,
+  "name" : "Nur Ton",
+  "settings" : [
+
+  ]
+}

@@ -54,3 +54,51 @@ extension ProfileSettings {
         }
     }
 }
+
+extension ProfileSettings: Codable {
+    enum CodingKeys: String, CodingKey {
+        case name
+        case deletedAt
+        case isActive
+        case defaultSettings
+        case enabledLocations
+        case settings
+        case created
+    }
+
+    convenience init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+
+        let name = try c.decode(String.self, forKey: .name)
+        let isActive = try c.decode(Bool.self, forKey: .isActive)
+
+        self.init(name: name, isActive: isActive)
+
+        deletedAt = try c.decodeIfPresent(Date.self, forKey: .deletedAt)
+        defaultSettings = try c.decode(
+            ProfileSingularSettings.self,
+            forKey: .defaultSettings
+        )
+        enabledLocations = try c.decode(
+            [PlatyLocationTag].self,
+            forKey: .enabledLocations
+        )
+        settings = try c.decode(
+            [PlatyLocationTag: ProfileSingularSettings].self,
+            forKey: .settings
+        )
+        created = try c.decode(Date.self, forKey: .created)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+
+        try c.encode(name, forKey: .name)
+        try c.encodeIfPresent(deletedAt, forKey: .deletedAt)
+        try c.encode(isActive, forKey: .isActive)
+        try c.encode(defaultSettings, forKey: .defaultSettings)
+        try c.encode(enabledLocations, forKey: .enabledLocations)
+        try c.encode(settings, forKey: .settings)
+        try c.encode(created, forKey: .created)
+    }
+}

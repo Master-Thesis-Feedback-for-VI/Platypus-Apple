@@ -1,0 +1,105 @@
+{
+  "created" : 814620974.726042,
+  "defaultSettings" : {
+    "detectionSettings" : [
+      "bench",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.30000000000000004,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : true,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "cyclist",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : true,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "person",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bicycle",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.30000000000000004,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : true,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      }
+    ]
+  },
+  "enabledLocations" : [
+
+  ],
+  "isActive" : false,
+  "name" : "Nur Vibration",
+  "settings" : [
+
+  ]
+}

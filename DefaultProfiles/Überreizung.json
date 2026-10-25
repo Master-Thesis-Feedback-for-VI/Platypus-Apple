@@ -1,0 +1,120 @@
+{
+  "created" : 814617988.889872,
+  "defaultSettings" : {
+    "detectionSettings" : [
+      "cyclist",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 1,
+              "volume" : 1
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bicycle",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 1,
+              "volume" : 1
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bench",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 1,
+              "volume" : 1
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 1,
+              "volume" : 1
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "person",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 1,
+          "switchedOn" : true
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 1,
+              "volume" : 1
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      }
+    ]
+  },
+  "enabledLocations" : [
+
+  ],
+  "isActive" : true,
+  "name" : "Überreizung",
+  "settings" : [
+
+  ]
+}
