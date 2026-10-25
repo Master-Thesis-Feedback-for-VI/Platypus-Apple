@@ -45,6 +45,13 @@ extension PlatyDetections {
             case .sound: setting.soundOnlyTriggerIfCentral
             case .haptic: setting.hapticOnlyTriggerIfCentral
             }
+            let maximumDistance = switch channel {
+            case .sound: setting.soundMaximumDistance
+            case .haptic: setting.hapticMaximumDistance
+            }
+            if let maximumDistance, Double(detection.distance) > maximumDistance {
+                return false
+            }
             return !centralOnly || detection.isCentral
         }.collect()
     }
