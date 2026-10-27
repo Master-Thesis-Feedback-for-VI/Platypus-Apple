@@ -54,8 +54,13 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     func speak(
         _ text: String,
         _ volume: Float = 1.0,
-        speed: Float = AVSpeechUtteranceDefaultSpeechRate
+        speed: Float = AVSpeechUtteranceDefaultSpeechRate,
+        interrupt: Bool = false
     ) {
+        if interrupt {
+            synthesizer.stopSpeaking(at: .immediate)
+            currentUtterance = nil
+        }
         guard currentUtterance == nil else { return }
 
         let utterance = AVSpeechUtterance(string: text)
