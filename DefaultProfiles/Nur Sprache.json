@@ -2,29 +2,7 @@
   "created" : 814621446.574541,
   "defaultSettings" : {
     "detectionSettings" : [
-      "car",
-      {
-        "groupFeedback" : false,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : false
-        },
-        "hapticOnlyTriggerIfCentral" : false,
-        "sound" : {
-          "tts" : {
-            "_0" : {
-              "description" : "tts",
-              "enableDirectionControl" : true,
-              "enableDistanceEstimation" : true,
-              "speed" : 0.7,
-              "volume" : 0.9
-            }
-          }
-        },
-        "soundMaximumDistance" : 14,
-        "soundOnlyTriggerIfCentral" : false
-      },
-      "person",
+      "bench",
       {
         "groupFeedback" : true,
         "haptic" : {
@@ -37,31 +15,9 @@
             "_0" : {
               "description" : "tts",
               "enableDirectionControl" : true,
-              "enableDistanceEstimation" : true,
+              "enableDistanceEstimation" : false,
               "speed" : 0.7,
-              "volume" : 0.5
-            }
-          }
-        },
-        "soundMaximumDistance" : 10,
-        "soundOnlyTriggerIfCentral" : true
-      },
-      "cyclist",
-      {
-        "groupFeedback" : true,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : false
-        },
-        "hapticOnlyTriggerIfCentral" : false,
-        "sound" : {
-          "tts" : {
-            "_0" : {
-              "description" : "tts",
-              "enableDirectionControl" : true,
-              "enableDistanceEstimation" : true,
-              "speed" : 0.7,
-              "volume" : 0.8
+              "volume" : 0.3
             }
           }
         },
@@ -90,7 +46,7 @@
         "soundMaximumDistance" : 10,
         "soundOnlyTriggerIfCentral" : true
       },
-      "bench",
+      "person",
       {
         "groupFeedback" : true,
         "haptic" : {
@@ -103,9 +59,53 @@
             "_0" : {
               "description" : "tts",
               "enableDirectionControl" : true,
-              "enableDistanceEstimation" : false,
+              "enableDistanceEstimation" : true,
               "speed" : 0.7,
-              "volume" : 0.3
+              "volume" : 0.6
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 0.7,
+              "volume" : 0.9
+            }
+          }
+        },
+        "soundMaximumDistance" : 14,
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "cyclist",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : true,
+              "speed" : 0.7,
+              "volume" : 0.8
             }
           }
         },
@@ -117,34 +117,12 @@
   "enabledLocations" : [
     "Inside"
   ],
-  "isActive" : false,
+  "isActive" : true,
   "name" : "Nur Sprache",
   "settings" : [
     "Inside",
     {
       "detectionSettings" : [
-        "person",
-        {
-          "groupFeedback" : true,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : false
-          },
-          "hapticOnlyTriggerIfCentral" : false,
-          "sound" : {
-            "tts" : {
-              "_0" : {
-                "description" : "tts",
-                "enableDirectionControl" : true,
-                "enableDistanceEstimation" : false,
-                "speed" : 0.7,
-                "volume" : 0.4
-              }
-            }
-          },
-          "soundMaximumDistance" : 10,
-          "soundOnlyTriggerIfCentral" : true
-        },
         "bench",
         {
           "groupFeedback" : true,
@@ -161,6 +139,28 @@
                 "enableDistanceEstimation" : false,
                 "speed" : 0.7,
                 "volume" : 0.3
+              }
+            }
+          },
+          "soundMaximumDistance" : 10,
+          "soundOnlyTriggerIfCentral" : true
+        },
+        "cyclist",
+        {
+          "groupFeedback" : true,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : false
+          },
+          "hapticOnlyTriggerIfCentral" : false,
+          "sound" : {
+            "tts" : {
+              "_0" : {
+                "description" : "tts",
+                "enableDirectionControl" : true,
+                "enableDistanceEstimation" : true,
+                "speed" : 0.7,
+                "volume" : 0.8
               }
             }
           },
@@ -211,7 +211,7 @@
           "soundMaximumDistance" : 10,
           "soundOnlyTriggerIfCentral" : true
         },
-        "cyclist",
+        "person",
         {
           "groupFeedback" : true,
           "haptic" : {
@@ -224,9 +224,9 @@
               "_0" : {
                 "description" : "tts",
                 "enableDirectionControl" : true,
-                "enableDistanceEstimation" : true,
+                "enableDistanceEstimation" : false,
                 "speed" : 0.7,
-                "volume" : 0.8
+                "volume" : 0.4
               }
             }
           },

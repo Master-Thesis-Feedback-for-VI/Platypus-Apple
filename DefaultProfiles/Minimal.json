@@ -2,69 +2,6 @@
   "created" : 814620772.898775,
   "defaultSettings" : {
     "detectionSettings" : [
-      "bench",
-      {
-        "groupFeedback" : false,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : false
-        },
-        "hapticOnlyTriggerIfCentral" : false,
-        "sound" : {
-          "off" : {
-            "_0" : {
-              "description" : "off"
-            }
-          }
-        },
-        "soundOnlyTriggerIfCentral" : false
-      },
-      "cyclist",
-      {
-        "groupFeedback" : true,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : true
-        },
-        "hapticMaximumDistance" : 10,
-        "hapticOnlyTriggerIfCentral" : true,
-        "sound" : {
-          "tts" : {
-            "_0" : {
-              "description" : "tts",
-              "enableDirectionControl" : true,
-              "enableDistanceEstimation" : false,
-              "speed" : 0.7,
-              "volume" : 0.5
-            }
-          }
-        },
-        "soundMaximumDistance" : 10,
-        "soundOnlyTriggerIfCentral" : true
-      },
-      "car",
-      {
-        "groupFeedback" : false,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : true
-        },
-        "hapticMaximumDistance" : 10,
-        "hapticOnlyTriggerIfCentral" : true,
-        "sound" : {
-          "tts" : {
-            "_0" : {
-              "description" : "tts",
-              "enableDirectionControl" : true,
-              "enableDistanceEstimation" : false,
-              "speed" : 0.7,
-              "volume" : 0.5
-            }
-          }
-        },
-        "soundMaximumDistance" : 10,
-        "soundOnlyTriggerIfCentral" : true
-      },
       "bicycle",
       {
         "groupFeedback" : false,
@@ -100,6 +37,69 @@
         },
         "soundMaximumDistance" : 10,
         "soundOnlyTriggerIfCentral" : true
+      },
+      "cyclist",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : true,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : false,
+              "speed" : 0.7,
+              "volume" : 0.5
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "bench",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "car",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : true
+        },
+        "hapticMaximumDistance" : 10,
+        "hapticOnlyTriggerIfCentral" : true,
+        "sound" : {
+          "tts" : {
+            "_0" : {
+              "description" : "tts",
+              "enableDirectionControl" : true,
+              "enableDistanceEstimation" : false,
+              "speed" : 0.7,
+              "volume" : 0.5
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
       }
     ]
   },
@@ -110,10 +110,47 @@
   "isActive" : false,
   "name" : "Minimal",
   "settings" : [
-    "Parking",
+    "Street",
     {
       "detectionSettings" : [
         "bicycle",
+        {
+          "groupFeedback" : false,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : false
+          },
+          "hapticOnlyTriggerIfCentral" : false,
+          "sound" : {
+            "off" : {
+              "_0" : {
+                "description" : "off"
+              }
+            }
+          },
+          "soundOnlyTriggerIfCentral" : false
+        },
+        "cyclist",
+        {
+          "groupFeedback" : true,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : true
+          },
+          "hapticMaximumDistance" : 10,
+          "hapticOnlyTriggerIfCentral" : true,
+          "sound" : {
+            "earcon" : {
+              "_0" : {
+                "description" : "earcon",
+                "volume" : 0.5
+              }
+            }
+          },
+          "soundMaximumDistance" : 10,
+          "soundOnlyTriggerIfCentral" : true
+        },
+        "bench",
         {
           "groupFeedback" : false,
           "haptic" : {
@@ -135,89 +172,8 @@
           "groupFeedback" : true,
           "haptic" : {
             "intensity" : 0.6000000000000001,
-            "switchedOn" : true
-          },
-          "hapticMaximumDistance" : 10,
-          "hapticOnlyTriggerIfCentral" : true,
-          "sound" : {
-            "off" : {
-              "_0" : {
-                "description" : "off"
-              }
-            }
-          },
-          "soundMaximumDistance" : 10,
-          "soundOnlyTriggerIfCentral" : true
-        },
-        "car",
-        {
-          "groupFeedback" : false,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : true
-          },
-          "hapticMaximumDistance" : 10,
-          "hapticOnlyTriggerIfCentral" : true,
-          "sound" : {
-            "earcon" : {
-              "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
-              }
-            }
-          },
-          "soundMaximumDistance" : 10,
-          "soundOnlyTriggerIfCentral" : true
-        },
-        "cyclist",
-        {
-          "groupFeedback" : true,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : true
-          },
-          "hapticMaximumDistance" : 10,
-          "hapticOnlyTriggerIfCentral" : true,
-          "sound" : {
-            "earcon" : {
-              "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
-              }
-            }
-          },
-          "soundMaximumDistance" : 10,
-          "soundOnlyTriggerIfCentral" : true
-        },
-        "bench",
-        {
-          "groupFeedback" : false,
-          "haptic" : {
-            "intensity" : 0.5,
             "switchedOn" : false
           },
-          "hapticOnlyTriggerIfCentral" : false,
-          "sound" : {
-            "off" : {
-              "_0" : {
-                "description" : "off"
-              }
-            }
-          },
-          "soundOnlyTriggerIfCentral" : false
-        }
-      ]
-    },
-    "Street",
-    {
-      "detectionSettings" : [
-        "cyclist",
-        {
-          "groupFeedback" : true,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : true
-          },
           "hapticMaximumDistance" : 10,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
@@ -230,23 +186,6 @@
           },
           "soundMaximumDistance" : 10,
           "soundOnlyTriggerIfCentral" : true
-        },
-        "bench",
-        {
-          "groupFeedback" : false,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : false
-          },
-          "hapticOnlyTriggerIfCentral" : false,
-          "sound" : {
-            "off" : {
-              "_0" : {
-                "description" : "off"
-              }
-            }
-          },
-          "soundOnlyTriggerIfCentral" : false
         },
         "car",
         {
@@ -270,50 +209,13 @@
           },
           "soundMaximumDistance" : 10,
           "soundOnlyTriggerIfCentral" : true
-        },
-        "bicycle",
-        {
-          "groupFeedback" : false,
-          "haptic" : {
-            "intensity" : 0.5,
-            "switchedOn" : false
-          },
-          "hapticOnlyTriggerIfCentral" : false,
-          "sound" : {
-            "off" : {
-              "_0" : {
-                "description" : "off"
-              }
-            }
-          },
-          "soundOnlyTriggerIfCentral" : false
-        },
-        "person",
-        {
-          "groupFeedback" : true,
-          "haptic" : {
-            "intensity" : 0.6000000000000001,
-            "switchedOn" : false
-          },
-          "hapticMaximumDistance" : 10,
-          "hapticOnlyTriggerIfCentral" : true,
-          "sound" : {
-            "earcon" : {
-              "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
-              }
-            }
-          },
-          "soundMaximumDistance" : 10,
-          "soundOnlyTriggerIfCentral" : true
         }
       ]
     },
     "Inside",
     {
       "detectionSettings" : [
-        "bicycle",
+        "bench",
         {
           "groupFeedback" : false,
           "haptic" : {
@@ -385,7 +287,7 @@
           },
           "soundOnlyTriggerIfCentral" : false
         },
-        "bench",
+        "bicycle",
         {
           "groupFeedback" : false,
           "haptic" : {
@@ -402,6 +304,104 @@
             }
           },
           "soundOnlyTriggerIfCentral" : false
+        }
+      ]
+    },
+    "Parking",
+    {
+      "detectionSettings" : [
+        "bench",
+        {
+          "groupFeedback" : false,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : false
+          },
+          "hapticOnlyTriggerIfCentral" : false,
+          "sound" : {
+            "off" : {
+              "_0" : {
+                "description" : "off"
+              }
+            }
+          },
+          "soundOnlyTriggerIfCentral" : false
+        },
+        "bicycle",
+        {
+          "groupFeedback" : false,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : false
+          },
+          "hapticOnlyTriggerIfCentral" : false,
+          "sound" : {
+            "off" : {
+              "_0" : {
+                "description" : "off"
+              }
+            }
+          },
+          "soundOnlyTriggerIfCentral" : false
+        },
+        "person",
+        {
+          "groupFeedback" : true,
+          "haptic" : {
+            "intensity" : 0.6000000000000001,
+            "switchedOn" : true
+          },
+          "hapticMaximumDistance" : 10,
+          "hapticOnlyTriggerIfCentral" : true,
+          "sound" : {
+            "off" : {
+              "_0" : {
+                "description" : "off"
+              }
+            }
+          },
+          "soundMaximumDistance" : 10,
+          "soundOnlyTriggerIfCentral" : true
+        },
+        "car",
+        {
+          "groupFeedback" : false,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : true
+          },
+          "hapticMaximumDistance" : 10,
+          "hapticOnlyTriggerIfCentral" : true,
+          "sound" : {
+            "earcon" : {
+              "_0" : {
+                "description" : "earcon",
+                "volume" : 0.5
+              }
+            }
+          },
+          "soundMaximumDistance" : 10,
+          "soundOnlyTriggerIfCentral" : true
+        },
+        "cyclist",
+        {
+          "groupFeedback" : true,
+          "haptic" : {
+            "intensity" : 0.5,
+            "switchedOn" : true
+          },
+          "hapticMaximumDistance" : 10,
+          "hapticOnlyTriggerIfCentral" : true,
+          "sound" : {
+            "earcon" : {
+              "_0" : {
+                "description" : "earcon",
+                "volume" : 0.5
+              }
+            }
+          },
+          "soundMaximumDistance" : 10,
+          "soundOnlyTriggerIfCentral" : true
         }
       ]
     }
