@@ -19,6 +19,10 @@ enum PlatyLocationTag: String, Identifiable, Codable, CaseIterable {
 }
 
 extension PlatyLocationTag {
+    func localizedName(in language: AppLanguage) -> String {
+        language.localized(rawValue)
+    }
+
     static func from(uniqueLocationTags: UniqueLocationTags) -> Self? {
         let categories = sortLocationTags(
             categories: Array(uniqueLocationTags.categories)

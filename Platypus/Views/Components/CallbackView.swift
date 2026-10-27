@@ -29,12 +29,19 @@ struct CallbackView<Frame: PlatySize>: View {
     // MARK: - View
 
     var body: some View {
-        let settings = PlatyLocationTag.from(
+        let locationTag = PlatyLocationTag.from(
             uniqueLocationTags: uniqueLocationTag
         )
-        .flatMap { profileManager.settings(for: $0) }
+        let settings = locationTag.flatMap { profileManager.settings(for: $0) }
 
         Color.clear
+            .onChange(of: locationTag, initial: true) { _, newTag in
+                guard let newTag else { return }
+                tts.speak(
+                    newTag.localizedName(in: AppLanguage.current),
+                    interrupt: true
+                )
+            }
             .task(
                 id: HardwareInput(
                     detectedObjects: detectedObjects,
