@@ -28,6 +28,9 @@ struct SettingsView: View {
         NavigationStack {
             profileList(profileManager)
                 .navigationTitle(language.localized("Available Profiles"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(AppTheme.background, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
                 .toolbar { toolbarContent }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .background { try? profileManager.purgeTrash() }
@@ -176,6 +179,13 @@ struct SettingsView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            Text(verbatim: language.localized("Available Profiles"))
+                .font(.headline)
+                .foregroundStyle(AppTheme.text)
+                .accessibilityAddTraits(.isHeader)
+        }
+
         ToolbarItemGroup(placement: .primaryAction) {
             Button(action: profileManager.undoDelete) {
                 Label(

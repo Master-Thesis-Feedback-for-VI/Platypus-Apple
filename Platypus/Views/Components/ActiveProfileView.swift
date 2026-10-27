@@ -11,7 +11,8 @@ struct ActiveProfileView: View {
     let logger = PlatyLogger(tag: "ActiveProfileView")
 
     @Environment(ProfileManager.self) private var profileManager
-//    @EnvironmentObject private var earconEngine: EarconPlayer
+    @AccessibilityFocusState(for: .voiceOver) private var focusedArrow: String?
+    @State private var activatedArrow: String?
 
     var body: some View {
         GlassEffectContainer {
@@ -34,6 +35,9 @@ struct ActiveProfileView: View {
                 .padding(.vertical, 8)
                 .foregroundStyle(AppTheme.text)
                 .background(AppTheme.background, in: Capsule())
+                .accessibilityLabel(Text(verbatim: AppLanguage.current.format(
+                    "Active profile: %@", profileManager.currentProfile.name
+                )))
                 .accessibilityAction(.magicTap) {}
 
                 let profiles = profileManager.profiles
@@ -55,11 +59,22 @@ struct ActiveProfileView: View {
             }
         }
         .padding()
-        .onChange(of: profileManager.currentProfile.name) { _, newName in
-            AccessibilityNotification.Announcement(
-                AppLanguage.current.format("Active profile: %@", newName)
-            ).post()
+        .onChange(of: focusedArrow) { _, newFocus in
+            if activatedArrow != newFocus {
+                activatedArrow = nil
+            }
         }
+    }
+
+    private func announceActiveProfile() {
+        let announcement = AppLanguage.current.format(
+            "Active profile: %@", profileManager.currentProfile.name
+        )
+        let spokenAnnouncement = NSAttributedString(
+            string: announcement,
+            attributes: [.accessibilitySpeechQueueAnnouncement: false]
+        )
+        UIAccessibility.post(notification: .announcement, argument: spokenAnnouncement)
     }
 
     private func switchToNextProfile() {
@@ -67,11 +82,7 @@ struct ActiveProfileView: View {
 
         do {
             try profileManager.next()
-            UIAccessibility.post(
-                notification: .announcement,
-                argument:
-                    AppLanguage.current.format("Active profile: %@", profileManager.currentProfile.name)
-            )
+            announceActiveProfile()
         } catch {
             logger.log("Could not switch profile: \(error)", level: .error)
         }
@@ -84,10 +95,14 @@ struct ActiveProfileView: View {
     ) -> some View {
         Button {
             perform()
+            activatedArrow = name
         } label: {
             Image(systemName: name)
         }
-        .accessibilityLabel(Text(verbatim: AppLanguage.current.localized(accessibilityLabel)))
+        .accessibilityLabel(Text(verbatim: activatedArrow == name
+            ? AppLanguage.current.format("Active profile: %@", profileManager.currentProfile.name)
+            : AppLanguage.current.localized(accessibilityLabel)))
+        .accessibilityFocused($focusedArrow, equals: name)
         .font(.title2)
         .buttonStyle(HighContrastButtonStyle())
     }
