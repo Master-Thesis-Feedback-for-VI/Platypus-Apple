@@ -298,9 +298,7 @@ struct CallbackView<Frame: PlatySize>: View {
         let volume = ttsSetting.volume
         let language = AppLanguage.current
 
-        var name = language.localized(
-            groupedDetection.containedType.rawValue
-        )
+        var name = groupedDetection.containedType.localizedName(in: language)
         if let selectedGroup {
             name = "\(selectedGroup.detections.inner.count) \(name)"
         }

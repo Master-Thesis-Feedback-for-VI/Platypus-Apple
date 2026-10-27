@@ -122,6 +122,20 @@ struct AppLanguageTests {
         #expect(AppLanguage.german.format("%.1f m", 1.5) == "1,5 m")
     }
 
+    @Test func translatesSpokenDetectionNames() {
+        let translations: [PlatyDetectionType: String] = [
+            .person: "Person",
+            .car: "Auto",
+            .cyclist: "Radfahrer",
+            .bicycle: "Fahrrad",
+            .bench: "Bank",
+        ]
+        for type in PlatyDetectionType.allCases {
+            #expect(type.localizedName(in: .german) == translations[type])
+            #expect(type.localizedName(in: .english) == type.rawValue.capitalized)
+        }
+    }
+
     @Test func localizationDoesNotChangePersistedIdentifiers() {
         #expect(PlatyDetectionType.car.rawValue == "car")
         #expect(PlatyLocationTag.outside.rawValue == "Outside")

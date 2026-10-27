@@ -116,6 +116,10 @@ enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
 }
 
 extension PlatyDetectionType {
+    func localizedName(in language: AppLanguage) -> String {
+        language.localized(rawValue.capitalized)
+    }
+
     init?(detectionType: DetectionType) {
         let description = String(describing: detectionType)
         if let platyType = PlatyDetectionType(rawValue: description) {

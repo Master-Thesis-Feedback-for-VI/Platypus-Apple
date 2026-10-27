@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 import SwiftData
+import UIKit
 
 @MainActor
 @Observable
@@ -213,6 +214,7 @@ extension ProfileManager {
         msg: PlatyMQTT.RecMessage,
         pm: ProfileManager,
     ) {
+        let previousProfileID = pm.currentProfile.persistentModelID
         switch msg.cmd {
         case .next:
             try? pm.next()
@@ -220,6 +222,12 @@ extension ProfileManager {
             try? pm.prev()
         case .empty: return
         }
+        guard pm.currentProfile.persistentModelID != previousProfileID else { return }
+        let announcement = NSAttributedString(
+            string: AppLanguage.current.format("Active profile: %@", pm.currentProfile.name),
+            attributes: [.accessibilitySpeechQueueAnnouncement: false]
+        )
+        UIAccessibility.post(notification: .announcement, argument: announcement)
     }
 
     private func swapActive(toActivate: Int) throws -> ProfileSettings {

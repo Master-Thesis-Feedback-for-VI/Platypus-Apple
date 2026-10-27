@@ -25,6 +25,17 @@ struct ReplayView: View {
             }
             .background(AppTheme.background)
             .navigationTitle(AppLanguage.current.localized("Available Videos"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppTheme.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(verbatim: AppLanguage.current.localized("Available Videos"))
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.text)
+                        .accessibilityAddTraits(.isHeader)
+                }
+            }
             .task {
                 await loadReplayItems()
             }
