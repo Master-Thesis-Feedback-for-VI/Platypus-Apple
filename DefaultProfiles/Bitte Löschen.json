@@ -19,7 +19,24 @@
         },
         "soundOnlyTriggerIfCentral" : false
       },
-      "cyclist",
+      "bicycle",
+      {
+        "groupFeedback" : false,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "off" : {
+            "_0" : {
+              "description" : "off"
+            }
+          }
+        },
+        "soundOnlyTriggerIfCentral" : false
+      },
+      "bench",
       {
         "groupFeedback" : false,
         "haptic" : {
@@ -53,24 +70,7 @@
         },
         "soundOnlyTriggerIfCentral" : false
       },
-      "bicycle",
-      {
-        "groupFeedback" : false,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : false
-        },
-        "hapticOnlyTriggerIfCentral" : false,
-        "sound" : {
-          "off" : {
-            "_0" : {
-              "description" : "off"
-            }
-          }
-        },
-        "soundOnlyTriggerIfCentral" : false
-      },
-      "bench",
+      "cyclist",
       {
         "groupFeedback" : false,
         "haptic" : {

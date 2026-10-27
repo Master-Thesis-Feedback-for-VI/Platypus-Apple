@@ -2,7 +2,7 @@
   "created" : 814621253.315689,
   "defaultSettings" : {
     "detectionSettings" : [
-      "cyclist",
+      "bicycle",
       {
         "groupFeedback" : true,
         "haptic" : {
@@ -14,7 +14,7 @@
           "earcon" : {
             "_0" : {
               "description" : "earcon",
-              "volume" : 0.6
+              "volume" : 0.2
             }
           }
         },
@@ -40,7 +40,26 @@
         "soundMaximumDistance" : 10,
         "soundOnlyTriggerIfCentral" : true
       },
-      "bicycle",
+      "cyclist",
+      {
+        "groupFeedback" : true,
+        "haptic" : {
+          "intensity" : 0.5,
+          "switchedOn" : false
+        },
+        "hapticOnlyTriggerIfCentral" : false,
+        "sound" : {
+          "earcon" : {
+            "_0" : {
+              "description" : "earcon",
+              "volume" : 0.6
+            }
+          }
+        },
+        "soundMaximumDistance" : 10,
+        "soundOnlyTriggerIfCentral" : true
+      },
+      "bench",
       {
         "groupFeedback" : true,
         "haptic" : {
@@ -77,25 +96,6 @@
         },
         "soundMaximumDistance" : 14,
         "soundOnlyTriggerIfCentral" : false
-      },
-      "bench",
-      {
-        "groupFeedback" : true,
-        "haptic" : {
-          "intensity" : 0.5,
-          "switchedOn" : false
-        },
-        "hapticOnlyTriggerIfCentral" : false,
-        "sound" : {
-          "earcon" : {
-            "_0" : {
-              "description" : "earcon",
-              "volume" : 0.2
-            }
-          }
-        },
-        "soundMaximumDistance" : 10,
-        "soundOnlyTriggerIfCentral" : true
       }
     ]
   },
