@@ -163,6 +163,29 @@ struct PlatypusTests {
     }
 
     @MainActor
+    @Test func newProfilesUseLocalizedNumberedNames() throws {
+        let container = try ModelContainer(
+            for: Schema([ProfileSettings.self]),
+            configurations: [ModelConfiguration(isStoredInMemoryOnly: true)]
+        )
+        let manager = makeProfileManager(context: container.mainContext)
+        let base = AppLanguage.current.localized("New Profile")
+
+        #expect(manager.currentProfile.name == "\(base) - 1")
+        try manager.addProfile()
+        #expect(manager.profiles.map(\.name) == ["\(base) - 2", "\(base) - 1"])
+
+        try manager.insertProfile(ProfileSettings(name: "\(base) - 3"))
+        try manager.addProfile()
+        #expect(manager.profiles.first?.name == "\(base) - 4")
+        manager.reload()
+        #expect(manager.profiles.map(\.name) == [
+            "\(base) - 4", "\(base) - 3", "\(base) - 2", "\(base) - 1",
+        ])
+        #expect(manager.uniqueName(from: "Custom") == "Custom")
+    }
+
+    @MainActor
     @Test func profileNavigationRefreshesProfilesChangedElsewhere() throws {
         let container = try ModelContainer(
             for: Schema([ProfileSettings.self]),
