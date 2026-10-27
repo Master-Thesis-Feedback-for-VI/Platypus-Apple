@@ -1,4 +1,5 @@
 "Available Profiles" = "Verfügbare Profile";
+"New Profile" = "Neues Profil";
 "Live" = "Live";
 "Record" = "Aufnehmen";
 "Replay" = "Wiedergabe";
@@ -82,6 +83,7 @@
 "Traffic Light" = "Ampel";
 "Car" = "Auto";
 "Bicycle" = "Fahrrad";
+"Cyclist" = "Radfahrer";
 "Bench" = "Bank";
 "Chair" = "Stuhl";
 "Dining Table" = "Esstisch";

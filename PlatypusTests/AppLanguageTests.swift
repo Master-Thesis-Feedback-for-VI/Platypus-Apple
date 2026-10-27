@@ -21,6 +21,8 @@ struct AppLanguageTests {
         #expect(AppLanguage.german.localized("Car") == "Auto")
         #expect(AppLanguage.german.localized("Outside") == "Draußen")
         #expect(AppLanguage.english.localized("Car") == "Car")
+        #expect(AppLanguage.german.localized("Cyclist") == "Radfahrer")
+        #expect(AppLanguage.english.localized("Cyclist") == "Cyclist")
         #expect(AppLanguage.german.format("Active profile: %@", "Test") == "Aktives Profil: Test")
         #expect(AppLanguage.german.format("%.1f meters", 1.5) == "1,5 Meter")
     }
@@ -34,6 +36,11 @@ struct AppLanguageTests {
         )
         #expect(AppLanguage.english.localized("Profile name") == "Profile name")
         #expect(AppLanguage.english.localized(hint) == hint)
+    }
+
+    @Test func localizesNewProfileName() {
+        #expect(AppLanguage.german.localized("New Profile") == "Neues Profil")
+        #expect(AppLanguage.english.localized("New Profile") == "New Profile")
     }
 
     @Test func translatesProfileControlsAndHints() {

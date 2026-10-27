@@ -47,7 +47,7 @@ extension ProfileManager {
     func reload() {
         let descriptor = FetchDescriptor<ProfileSettings>(
             predicate: #Predicate { $0.deletedAt == nil },
-            sortBy: [SortDescriptor(\.created)]
+            sortBy: [SortDescriptor(\.created, order: .reverse)]
         )
         profiles = (try? ctx.fetch(descriptor)) ?? []
 
@@ -151,7 +151,7 @@ extension ProfileManager {
     }
 
     func addProfile() throws {
-        let profile = ProfileSettings(name: uniqueName(from: "Profile"))
+        let profile = ProfileSettings(name: newProfileName())
         try insertProfile(profile)
     }
 
@@ -194,12 +194,19 @@ extension ProfileManager {
         reload()
     }
 
-    func uniqueName(from base: String) -> String {
+    func uniqueName(from base: String, alwaysNumbered: Bool = false) -> String {
         let names = Set(profiles.map(\.name))
-        guard names.contains(base) else { return base }
+        if !alwaysNumbered && !names.contains(base) { return base }
         var i = 1
         while names.contains("\(base) - \(i)") { i += 1 }
         return "\(base) - \(i)"
+    }
+
+    private func newProfileName() -> String {
+        uniqueName(
+            from: AppLanguage.current.localized("New Profile"),
+            alwaysNumbered: true
+        )
     }
 
     static func swapProfile(
@@ -233,7 +240,7 @@ extension ProfileManager {
 
     private func ensureAtLeastOneProfile() {
         if profiles.isEmpty {
-            let profile = ProfileSettings(name: uniqueName(from: "Profile"))
+            let profile = ProfileSettings(name: newProfileName())
             profile.isActive = true
             ctx.insert(profile)
             try? ctx.save()
