@@ -20,7 +20,6 @@ struct VideoPlaybackView: View {
     @State private var currentSeconds: Double = 0
     @State private var timeObserverToken: Any?
     @State private var videoDimensions: CGSize = .zero
-    @State private var videoTransform: CGAffineTransform = .identity
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
@@ -46,7 +45,7 @@ struct VideoPlaybackView: View {
                     detectedObjects: imageDetections,
                     uniqueLocationTags: uniqueLocationTags,
                     frameSize: videoDimensions,
-                    imageTransform: videoTransform,
+                    imageTransform: .identity,
                     contentMode: .fit
                 )
 
@@ -81,8 +80,8 @@ struct VideoPlaybackView: View {
                     if let track = try? await asset.loadTracks(withMediaType: .video).first,
                         let size = try? await track.load(.naturalSize),
                         let transform = try? await track.load(.preferredTransform) {
-                        videoDimensions = size
-                        videoTransform = transform
+                        videoDimensions = CGRect(origin: .zero, size: size)
+                            .applying(transform).size
                     }
                     logger.log("Video size: \(videoDimensions)")
                 }
