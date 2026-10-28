@@ -5,10 +5,11 @@
 //  Created by Yann Bernard on 30.09.26.
 //
 
+import Combine
 import SwiftData
 import SwiftUI
 
-let ENABLE_EXPORT = true
+let ENABLE_EXPORT = false
 
 struct ProfileEditView: View {
     private var language: AppLanguage { .current }
@@ -108,6 +109,17 @@ struct TitleRenameFieldView: View {
 
     var body: some View {
         TextField(language.localized("Profile name"), text: $draftName)
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UITextField.textDidBeginEditingNotification
+                )
+            ) { notification in
+                guard let textField = notification.object as? UITextField
+                else { return }
+                DispatchQueue.main.async {
+                    textField.selectAll(nil)
+                }
+            }
             .accessibilityLabel(
                 Text(verbatim: language.localized("Profile name"))
             )
@@ -122,9 +134,7 @@ struct TitleRenameFieldView: View {
                 let trimmed = draftName.trimmingCharacters(
                     in: .whitespacesAndNewlines
                 )
-                let taken = allOtherProfileNames.contains { otherName in
-                    trimmed == otherName
-                }
+                let taken = allOtherProfileNames.contains { $0 == trimmed }
 
                 if !trimmed.isEmpty && !taken {
                     profile.name = trimmed
