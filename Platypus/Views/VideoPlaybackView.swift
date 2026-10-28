@@ -8,6 +8,8 @@
 import AVKit
 import SwiftUI
 
+let defaultProfilename = "Volle Information"
+
 struct VideoPlaybackView: View {
     var videoPlayback: VideoPlayback
 
@@ -24,6 +26,8 @@ struct VideoPlaybackView: View {
         categories: [],
     )
     @State private var imageDetections = ImageDetections(detections: [])
+    
+    @Environment(ProfileManager.self) private var profileManager
 
     init(playback: VideoPlayback) {
         videoPlayback = playback
@@ -66,6 +70,7 @@ struct VideoPlaybackView: View {
             .onAppear {
                 player.play()
                 addTimeObserver()
+                try? profileManager.activate(name: defaultProfilename)
 
             }
             .onDisappear {
