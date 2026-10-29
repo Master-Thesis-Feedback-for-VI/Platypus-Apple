@@ -17,6 +17,9 @@ struct ProfileEditView: View {
 
     @Bindable var profile: ProfileSettings
 
+    @Environment(ProfileManager.self) private var profileManager
+    @Environment(\.dismiss) private var dismiss
+
     @State private var draftName = ""
     @State private var rejectedName = ""
     @State private var showAlert = false
@@ -36,6 +39,11 @@ struct ProfileEditView: View {
                         profile: profile
                     )
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    deleteButton
+                }
+                .sharedBackgroundVisibility(.hidden)
 
                 if ENABLE_EXPORT {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -72,6 +80,43 @@ struct ProfileEditView: View {
                         )
                 )
             }
+    }
+
+    private var canDelete: Bool {
+        profileManager.profiles.count > 1
+    }
+
+    private var deleteButton: some View {
+        Button {
+            deleteProfile()
+        } label: {
+            Image(systemName: "trash")
+                .font(.body)
+                .foregroundStyle(AppTheme.text)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(AppTheme.background, in: Capsule())
+                .overlay(Capsule().stroke(AppTheme.text, lineWidth: 2))
+                .opacity(canDelete ? 1 : 0.4)
+        }
+        .buttonStyle(.plain)
+        .disabled(!canDelete)
+        .accessibilityLabel(
+            Text(verbatim: language.localized("Delete profile"))
+        )
+        .accessibilityHint(
+            Text(verbatim: language.localized("Deletes this profile."))
+        )
+    }
+
+    private func deleteProfile() {
+        guard
+            let index = profileManager.profiles.firstIndex(where: {
+                $0 === profile
+            })
+        else { return }
+        try? profileManager.deleteProfiles(at: IndexSet(integer: index))
+        dismiss()
     }
 
     private func exportProfile(_ data: Data, _ profileName: String) throws {
