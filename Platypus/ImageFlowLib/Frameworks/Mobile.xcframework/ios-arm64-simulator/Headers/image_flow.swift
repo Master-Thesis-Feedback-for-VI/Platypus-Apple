@@ -2088,10 +2088,10 @@ public func FfiConverterTypeImageFlowError_lower(_ value: ImageFlowError) -> Rus
 public enum LocationTag: Equatable, Hashable {
     
     case railway
-    case street
     case parking
-    case intersection
+    case street
     case pedestrian
+    case intersection
     case forest
     case outside
     case inside
@@ -2119,13 +2119,13 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
         
         case 1: return .railway
         
-        case 2: return .street
+        case 2: return .parking
         
-        case 3: return .parking
+        case 3: return .street
         
-        case 4: return .intersection
+        case 4: return .pedestrian
         
-        case 5: return .pedestrian
+        case 5: return .intersection
         
         case 6: return .forest
         
@@ -2147,19 +2147,19 @@ public struct FfiConverterTypeLocationTag: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
         
         
-        case .street:
+        case .parking:
             writeInt(&buf, Int32(2))
         
         
-        case .parking:
+        case .street:
             writeInt(&buf, Int32(3))
         
         
-        case .intersection:
+        case .pedestrian:
             writeInt(&buf, Int32(4))
         
         
-        case .pedestrian:
+        case .intersection:
             writeInt(&buf, Int32(5))
         
         
