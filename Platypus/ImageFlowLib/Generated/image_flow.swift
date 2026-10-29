@@ -2515,11 +2515,11 @@ public func enableTracing(rustLog: FilterLevel?) -> Bool  {
  * # Errors
  * TODO
  */
-public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath: String, imageRecognizer: ImageRecognizer, amount: UInt32)async throws  -> ImageFlowEvaluation  {
+public func imageFlowEvaluation(location: Coordinate, auth: AuthToHost?, imgPath: String, imageRecognizer: ImageRecognizer, amount: UInt32, confidenceLimit: Float)async throws  -> ImageFlowEvaluation  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_image_flow_evaluation(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterUInt32.lower(amount)
+                uniffi_image_flow_fn_func_image_flow_evaluation(FfiConverterTypeCoordinate_lower(location),FfiConverterOptionTypeAuthToHost.lower(auth),FfiConverterString.lower(imgPath),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterUInt32.lower(amount),FfiConverterFloat.lower(confidenceLimit)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_u64,
@@ -2587,11 +2587,11 @@ public func recognizeLocationTags(location: Coordinate, auth: AuthToHost?, imgPa
  * # Errors
  * TODO
  */
-public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecognizer)async throws  -> ImageDetections  {
+public func recognizeObjectsInImage(path: String, imageRecognizer: ImageRecognizer, confidenceLimit: Float)async throws  -> ImageDetections  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
-                uniffi_image_flow_fn_func_recognize_objects_in_image(FfiConverterString.lower(path),FfiConverterTypeImageRecognizer_lower(imageRecognizer)
+                uniffi_image_flow_fn_func_recognize_objects_in_image(FfiConverterString.lower(path),FfiConverterTypeImageRecognizer_lower(imageRecognizer),FfiConverterFloat.lower(confidenceLimit)
                 )
             },
             pollFunc: ffi_image_flow_rust_future_poll_rust_buffer,
@@ -2628,7 +2628,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_enable_tracing() != 62385) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 27644) {
+    if (uniffi_image_flow_checksum_func_image_flow_evaluation() != 56024) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_image_flow_evaluation_read_from_json() != 20888) {
@@ -2640,7 +2640,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_image_flow_checksum_func_recognize_location_tags() != 53088) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 53568) {
+    if (uniffi_image_flow_checksum_func_recognize_objects_in_image() != 58719) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_image_flow_checksum_func_sort_location_tags() != 16255) {
