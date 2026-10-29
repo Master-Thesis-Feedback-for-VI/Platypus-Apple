@@ -54,6 +54,26 @@ struct DetectionBoxProjectionTests {
         #expect(image.pixelSize == expectedSize)
     }
 
+    @Test(arguments: [
+        CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 1920, ty: 0),
+        CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: 0, ty: 1080)
+    ])
+    func uprightVideoBoxesAreNotRotatedTwice(trackTransform: CGAffineTransform) throws {
+        let naturalSize = CGSize(width: 1920, height: 1080)
+        let uprightSize = CGRect(origin: .zero, size: naturalSize)
+            .applying(trackTransform).size
+        let rect = try projectedRect(
+            for: BoundingBox(x1: 720, x2: 990, y1: 480, y2: 1440),
+            imageSize: uprightSize,
+            viewportSize: CGSize(width: 360, height: 640),
+            transform: .identity,
+            contentMode: .fit
+        )
+
+        #expect(uprightSize == CGSize(width: 1080, height: 1920))
+        #expect(rect == CGRect(x: 240, y: 160, width: 90, height: 320))
+    }
+
     @Test func portraitPhotoBoxesAreNotRotatedTwice() throws {
         let image = try photo(orientation: 6)
         let size = try #require(image.pixelSize)

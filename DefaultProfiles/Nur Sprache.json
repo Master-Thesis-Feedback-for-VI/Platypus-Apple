@@ -17,7 +17,7 @@
               "enableDirectionControl" : true,
               "enableDistanceEstimation" : false,
               "speed" : 0.7,
-              "volume" : 0.3
+              "volume" : 0.4
             }
           }
         },
@@ -39,7 +39,7 @@
               "enableDirectionControl" : true,
               "enableDistanceEstimation" : false,
               "speed" : 0.7,
-              "volume" : 0.3
+              "volume" : 0.4
             }
           }
         },
@@ -138,7 +138,7 @@
                 "enableDirectionControl" : true,
                 "enableDistanceEstimation" : false,
                 "speed" : 0.7,
-                "volume" : 0.3
+                "volume" : 0.4
               }
             }
           },
@@ -204,7 +204,7 @@
                 "enableDirectionControl" : true,
                 "enableDistanceEstimation" : false,
                 "speed" : 0.7,
-                "volume" : 0.3
+                "volume" : 0.4
               }
             }
           },

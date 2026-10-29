@@ -17,6 +17,8 @@
 "Undo" = "Rückgängig";
 "Undo profile deletion" = "Löschen des Profils rückgängig machen";
 "Restores the most recently deleted profile." = "Stellt das zuletzt gelöschte Profil wieder her.";
+"Delete profile" = "Profil löschen";
+"Deletes this profile." = "Löscht dieses Profil.";
 "Add" = "Hinzufügen";
 "Add profile" = "Profil hinzufügen";
 "Creates a new profile." = "Erstellt ein neues Profil.";

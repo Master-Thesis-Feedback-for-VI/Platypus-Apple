@@ -5,16 +5,20 @@
 //  Created by Yann Bernard on 30.09.26.
 //
 
+import Combine
 import SwiftData
 import SwiftUI
 
-let ENABLE_EXPORT = true
+let ENABLE_EXPORT = false
 
 struct ProfileEditView: View {
     private var language: AppLanguage { .current }
     let allOtherProfileNames: [String]
 
     @Bindable var profile: ProfileSettings
+
+    @Environment(ProfileManager.self) private var profileManager
+    @Environment(\.dismiss) private var dismiss
 
     @State private var draftName = ""
     @State private var rejectedName = ""
@@ -35,6 +39,11 @@ struct ProfileEditView: View {
                         profile: profile
                     )
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    deleteButton
+                }
+                .sharedBackgroundVisibility(.hidden)
 
                 if ENABLE_EXPORT {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -73,6 +82,43 @@ struct ProfileEditView: View {
             }
     }
 
+    private var canDelete: Bool {
+        profileManager.profiles.count > 1
+    }
+
+    private var deleteButton: some View {
+        Button {
+            deleteProfile()
+        } label: {
+            Image(systemName: "trash")
+                .font(.body)
+                .foregroundStyle(AppTheme.text)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(AppTheme.background, in: Capsule())
+                .overlay(Capsule().stroke(AppTheme.text, lineWidth: 2))
+                .opacity(canDelete ? 1 : 0.4)
+        }
+        .buttonStyle(.plain)
+        .disabled(!canDelete)
+        .accessibilityLabel(
+            Text(verbatim: language.localized("Delete profile"))
+        )
+        .accessibilityHint(
+            Text(verbatim: language.localized("Deletes this profile."))
+        )
+    }
+
+    private func deleteProfile() {
+        guard
+            let index = profileManager.profiles.firstIndex(where: {
+                $0 === profile
+            })
+        else { return }
+        try? profileManager.deleteProfiles(at: IndexSet(integer: index))
+        dismiss()
+    }
+
     private func exportProfile(_ data: Data, _ profileName: String) throws {
         let fm = FileManager.default
         let userDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -108,6 +154,17 @@ struct TitleRenameFieldView: View {
 
     var body: some View {
         TextField(language.localized("Profile name"), text: $draftName)
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UITextField.textDidBeginEditingNotification
+                )
+            ) { notification in
+                guard let textField = notification.object as? UITextField
+                else { return }
+                DispatchQueue.main.async {
+                    textField.selectAll(nil)
+                }
+            }
             .accessibilityLabel(
                 Text(verbatim: language.localized("Profile name"))
             )
@@ -122,9 +179,7 @@ struct TitleRenameFieldView: View {
                 let trimmed = draftName.trimmingCharacters(
                     in: .whitespacesAndNewlines
                 )
-                let taken = allOtherProfileNames.contains { otherName in
-                    trimmed == otherName
-                }
+                let taken = allOtherProfileNames.contains { $0 == trimmed }
 
                 if !trimmed.isEmpty && !taken {
                     profile.name = trimmed

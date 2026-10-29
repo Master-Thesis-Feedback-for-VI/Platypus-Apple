@@ -22,8 +22,16 @@ struct LiveviewModeView: View {
                     .environmentObject(locationRecorder)
             } else {
                 VStack(spacing: 10) {
-                    Text(verbatim: AppLanguage.current.localized("Camera not authorized")).font(.title2)
-                    Text(verbatim: AppLanguage.current.localized("Please go to Settings and allow camera access"))
+                    Text(
+                        verbatim: AppLanguage.current.localized(
+                            "Camera not authorized"
+                        )
+                    ).font(.title2)
+                    Text(
+                        verbatim: AppLanguage.current.localized(
+                            "Please go to Settings and allow camera access"
+                        )
+                    )
                 }
             }
 
@@ -147,6 +155,7 @@ struct CameraActiveLiveView: View {
                             imgPath: imgPath,
                             imageRecognizer: imgRecognizer,
                             amount: amountDominantColor,
+                            confidenceLimit: 0.4,
                         )
 
                         videoDimensions = img.pixelSize ?? .zero

@@ -85,17 +85,26 @@ extension ProfileManager {
             target != currentProfileIndex
         else { return }
         let currentProfile = try swapActive(toActivate: target)
-        let payload = CurrentProfileSend(
-            name: currentProfile.name,
-            action: .manual
-        )
 
         Task {
+            let payload = CurrentProfileSend(
+                name: currentProfile.name,
+                action: .manual
+            )
+            
             try? await self.mqttClient.publish(
                 to: .telemetryReport,
                 payload: payload
             )
         }
+    }
+
+    func activate(name: String) throws {
+        let name = name.lowercased()
+        guard let profile = profiles.first(where: { $0.name.lowercased() == name })
+        else { return }
+        try activate(profile)
+
     }
 
     func prev() throws {
@@ -222,12 +231,20 @@ extension ProfileManager {
             try? pm.prev()
         case .empty: return
         }
-        guard pm.currentProfile.persistentModelID != previousProfileID else { return }
+        guard pm.currentProfile.persistentModelID != previousProfileID else {
+            return
+        }
         let announcement = NSAttributedString(
-            string: AppLanguage.current.format("Active profile: %@", pm.currentProfile.name),
+            string: AppLanguage.current.format(
+                "Active profile: %@",
+                pm.currentProfile.name
+            ),
             attributes: [.accessibilitySpeechQueueAnnouncement: false]
         )
-        UIAccessibility.post(notification: .announcement, argument: announcement)
+        UIAccessibility.post(
+            notification: .announcement,
+            argument: announcement
+        )
     }
 
     private func swapActive(toActivate: Int) throws -> ProfileSettings {

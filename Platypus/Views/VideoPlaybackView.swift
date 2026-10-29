@@ -8,6 +8,8 @@
 import AVKit
 import SwiftUI
 
+let defaultProfilename = "Volle Information"
+
 struct VideoPlaybackView: View {
     var videoPlayback: VideoPlayback
 
@@ -18,12 +20,13 @@ struct VideoPlaybackView: View {
     @State private var currentSeconds: Double = 0
     @State private var timeObserverToken: Any?
     @State private var videoDimensions: CGSize = .zero
-    @State private var videoTransform: CGAffineTransform = .identity
 
     @State private var uniqueLocationTags = UniqueLocationTags(
         categories: [],
     )
     @State private var imageDetections = ImageDetections(detections: [])
+    
+    @Environment(ProfileManager.self) private var profileManager
 
     init(playback: VideoPlayback) {
         videoPlayback = playback
@@ -42,7 +45,7 @@ struct VideoPlaybackView: View {
                     detectedObjects: imageDetections,
                     uniqueLocationTags: uniqueLocationTags,
                     frameSize: videoDimensions,
-                    imageTransform: videoTransform,
+                    imageTransform: .identity,
                     contentMode: .fit
                 )
 
@@ -66,6 +69,7 @@ struct VideoPlaybackView: View {
             .onAppear {
                 player.play()
                 addTimeObserver()
+                try? profileManager.activate(name: defaultProfilename)
 
             }
             .onDisappear {
@@ -76,8 +80,8 @@ struct VideoPlaybackView: View {
                     if let track = try? await asset.loadTracks(withMediaType: .video).first,
                         let size = try? await track.load(.naturalSize),
                         let transform = try? await track.load(.preferredTransform) {
-                        videoDimensions = size
-                        videoTransform = transform
+                        videoDimensions = CGRect(origin: .zero, size: size)
+                            .applying(transform).size
                     }
                     logger.log("Video size: \(videoDimensions)")
                 }
