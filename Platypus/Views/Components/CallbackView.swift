@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import MQTTNIO
 
 struct CallbackView<Frame: PlatySize>: View {
     let detectedObjects: ImageDetections
@@ -206,7 +207,8 @@ struct CallbackView<Frame: PlatySize>: View {
 
         async let pub2 = try? mqttClient.publish(
             to: AvailableTopics.hapticRight,
-            payload: flushMsg
+            payload: flushMsg,
+            qos: .exactlyOnce
         )
 
         let _ = await (pub1, pub2)
@@ -223,27 +225,30 @@ struct CallbackView<Frame: PlatySize>: View {
             return
         }
 
-        var bound: (Double, Double)
+        let bound: (Double, Double)
+        let isCentral: Bool
         if let selectedGroup {
             bound = selectedGroup.xFromCenter
+            isCentral = selectedGroup.detections.inner.contains { $0.isCentral }
         } else {
             let detection = groupedDetection.closestDetection!
             bound = detection.xFromCenter()
+            isCentral = detection.isCentral
         }
         let (left, right) = bound
 
         let hapticSignals =
             [
-                (max(-left, 0), AvailableTopics.hapticLeft),
-                (max(right, 0), AvailableTopics.hapticRight),
+                (isCentral ? 1.0 : max(-left, 0), AvailableTopics.hapticLeft),
+                (isCentral ? 1.0 : max(right, 0), AvailableTopics.hapticRight),
             ].map { value, topic in
-                let signalStrength = max(
-                    Int(
-                        (value * 10.0 * hapticSettings.intensity)
-                            .rounded()
-                    ),
-                    0
-                )
+                let signalStrength =
+                    if value > 0, hapticSettings.intensity > 0 {
+                        max(
+                            Int((value * 10.0 * hapticSettings.intensity).rounded()),
+                            1
+                        )
+                    } else { 0 }
 
                 return (topic, PlatyMQTT.SendMessage(signalStrength))
             }
@@ -254,7 +259,8 @@ struct CallbackView<Frame: PlatySize>: View {
             do {
                 try await mqttClient.publish(
                     to: channel,
-                    payload: msg
+                    payload: msg,
+                    qos: .atMostOnce
                 )
             } catch {
                 logger.log(
