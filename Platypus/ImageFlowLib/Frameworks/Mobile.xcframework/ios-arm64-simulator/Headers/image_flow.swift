@@ -1738,7 +1738,6 @@ public enum DetectionType: Equatable, Hashable {
     
     case bench
     case bicycle
-    case car
     case chair
     case cup
     case diningTable
@@ -1749,6 +1748,10 @@ public enum DetectionType: Equatable, Hashable {
     case tv
     case keyboard
     case cyclist
+    case car
+    case truck
+    case motorcycle
+    case bus
     case unknown(String
     )
 
@@ -1776,29 +1779,35 @@ public struct FfiConverterTypeDetectionType: FfiConverterRustBuffer {
         
         case 2: return .bicycle
         
-        case 3: return .car
+        case 3: return .chair
         
-        case 4: return .chair
+        case 4: return .cup
         
-        case 5: return .cup
+        case 5: return .diningTable
         
-        case 6: return .diningTable
+        case 6: return .handbag
         
-        case 7: return .handbag
+        case 7: return .laptop
         
-        case 8: return .laptop
+        case 8: return .person
         
-        case 9: return .person
+        case 9: return .trafficLight
         
-        case 10: return .trafficLight
+        case 10: return .tv
         
-        case 11: return .tv
+        case 11: return .keyboard
         
-        case 12: return .keyboard
+        case 12: return .cyclist
         
-        case 13: return .cyclist
+        case 13: return .car
         
-        case 14: return .unknown(try FfiConverterString.read(from: &buf)
+        case 14: return .truck
+        
+        case 15: return .motorcycle
+        
+        case 16: return .bus
+        
+        case 17: return .unknown(try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -1817,52 +1826,64 @@ public struct FfiConverterTypeDetectionType: FfiConverterRustBuffer {
             writeInt(&buf, Int32(2))
         
         
-        case .car:
+        case .chair:
             writeInt(&buf, Int32(3))
         
         
-        case .chair:
+        case .cup:
             writeInt(&buf, Int32(4))
         
         
-        case .cup:
+        case .diningTable:
             writeInt(&buf, Int32(5))
         
         
-        case .diningTable:
+        case .handbag:
             writeInt(&buf, Int32(6))
         
         
-        case .handbag:
+        case .laptop:
             writeInt(&buf, Int32(7))
         
         
-        case .laptop:
+        case .person:
             writeInt(&buf, Int32(8))
         
         
-        case .person:
+        case .trafficLight:
             writeInt(&buf, Int32(9))
         
         
-        case .trafficLight:
+        case .tv:
             writeInt(&buf, Int32(10))
         
         
-        case .tv:
+        case .keyboard:
             writeInt(&buf, Int32(11))
         
         
-        case .keyboard:
+        case .cyclist:
             writeInt(&buf, Int32(12))
         
         
-        case .cyclist:
+        case .car:
             writeInt(&buf, Int32(13))
         
         
-        case let .unknown(v1):
+        case .truck:
             writeInt(&buf, Int32(14))
+        
+        
+        case .motorcycle:
+            writeInt(&buf, Int32(15))
+        
+        
+        case .bus:
+            writeInt(&buf, Int32(16))
+        
+        
+        case let .unknown(v1):
+            writeInt(&buf, Int32(17))
             FfiConverterString.write(v1, into: &buf)
             
         }
