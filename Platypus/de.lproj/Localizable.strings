@@ -114,3 +114,4 @@
 "Distance" = "Entfernung";
 "Unlimited" = "Unbegrenzt";
 "Ignores detections beyond this distance. Move to the maximum for unlimited distance." = "Ignoriert Erkennungen jenseits dieser Entfernung. Wähle den Höchstwert für eine unbegrenzte Entfernung.";
+"Vehicle" = "Fahrzeug";

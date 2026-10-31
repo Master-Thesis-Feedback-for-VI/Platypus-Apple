@@ -60,10 +60,10 @@ extension PlatyDetection {
     /// The object's center lies within the middle third of the visible width.
     var isCentral: Bool {
         guard viewportSize.width > 0 else { return false }
-        
+
         let centralMinX = viewportSize.width / 3
         let centralMaxX = viewportSize.width * 2 / 3
-        
+
         let inset = rect.width * 0.1
         let leftBound = rect.minX + inset
         let rightBound = rect.maxX - inset
@@ -107,7 +107,7 @@ extension PlatyDetection: Equatable {}
 
 enum PlatyDetectionType: String, Codable, CaseIterable, Identifiable {
     case person = "person"
-    case car = "car"
+    case vehicle = "vehicle"
     case cyclist = "cyclist"
     case bicycle = "bicycle"
     case bench = "bench"
@@ -121,11 +121,42 @@ extension PlatyDetectionType {
     }
 
     init?(detectionType: DetectionType) {
-        let description = String(describing: detectionType)
+        let description =
+            switch detectionType {
+            case .car, .truck, .motorcycle, .bus: "vehicle"
+            default: String(describing: detectionType)
+            }
+
         if let platyType = PlatyDetectionType(rawValue: description) {
             self = platyType
         } else {
             return nil
+        }
+    }
+}
+
+extension PlatyDetectionType: DisplayableProto {
+    var displayName: String {
+        AppLanguage.current.localized(englishName)
+    }
+    
+    private var englishName: String {
+        switch self {
+        case .person: return "Person"
+        case .bicycle: return "Bicycle"
+        case .bench: return "Bench"
+        case .cyclist: return "Cyclist"
+        case .vehicle: return "Vehicle"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .person: return "person.fill"
+        case .bicycle: return "bicycle"
+        case .bench: return "chair.lounge.fill"
+        case .cyclist: return "figure.outdoor.cycle"
+        case .vehicle: return "car.fill"
         }
     }
 }

@@ -26,6 +26,9 @@ extension Detection: DisplayableProto {
         case .keyboard: return "Keyboard"
         case .unknown: return "Unknown"
         case .cyclist: return "Cyclist"
+        case .truck: return "Truck"
+        case .motorcycle: return "Motorcycle"
+        case .bus: return "Bus"
         }
     }
 
@@ -45,6 +48,9 @@ extension Detection: DisplayableProto {
         case .keyboard: return "keyboard.fill"
         case .unknown: return "questionmark.square.fill"
         case .cyclist: return "figure.outdoor.cycle"
+        case .truck: return "truck.box.fill"
+        case .bus: return "bus.fill"
+        case .motorcycle: return "motorcycle.fill"
         }
     }
 }

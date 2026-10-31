@@ -9,8 +9,9 @@ import Foundation
 
 extension ImageDetections {
     var summaries: [DetectionSummary] {
+        let detectionTypes = self.asPlatyDetectionTypes()
         let grouped = Dictionary(
-            grouping: detections,
+            grouping: detectionTypes,
             by: { detection in
                 "\(detection.displayName)-\(detection.symbolName)"
             }
@@ -31,6 +32,14 @@ extension ImageDetections {
                 $0.displayName.localizedStandardCompare($1.displayName)
                     == .orderedAscending
             }
+    }
+    
+    func asPlatyDetectionTypes() -> [PlatyDetectionType] {
+        let detectionTypes = self.detections.compactMap {
+            let detectionType = $0.name
+            return PlatyDetectionType(detectionType: detectionType)
+        }
+        return detectionTypes
     }
 }
 
