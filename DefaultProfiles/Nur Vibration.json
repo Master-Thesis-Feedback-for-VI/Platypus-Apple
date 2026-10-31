@@ -20,7 +20,7 @@
         },
         "soundOnlyTriggerIfCentral" : false
       },
-      "car",
+      "vehicle",
       {
         "groupFeedback" : false,
         "haptic" : {

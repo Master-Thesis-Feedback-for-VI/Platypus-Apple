@@ -2,7 +2,7 @@
   "created" : 814619733.525578,
   "defaultSettings" : {
     "detectionSettings" : [
-      "car",
+      "vehicle",
       {
         "groupFeedback" : false,
         "haptic" : {

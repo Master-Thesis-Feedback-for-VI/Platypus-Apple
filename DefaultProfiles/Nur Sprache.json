@@ -68,7 +68,7 @@
         "soundMaximumDistance" : 10,
         "soundOnlyTriggerIfCentral" : true
       },
-      "car",
+      "vehicle",
       {
         "groupFeedback" : false,
         "haptic" : {
@@ -167,7 +167,7 @@
           "soundMaximumDistance" : 10,
           "soundOnlyTriggerIfCentral" : true
         },
-        "car",
+        "vehicle",
         {
           "groupFeedback" : false,
           "haptic" : {
