@@ -19,11 +19,7 @@ enum PlatyLocationTag: String, Identifiable, Codable, CaseIterable {
 }
 
 extension PlatyLocationTag {
-    func localizedName(in language: AppLanguage) -> String {
-        language.localized(rawValue)
-    }
-
-    static func from(uniqueLocationTags: UniqueLocationTags) -> Self? {
+    init?(from uniqueLocationTags: UniqueLocationTags) {
         let categories = sortLocationTags(
             categories: Array(uniqueLocationTags.categories)
         ).compactMap { tag in
@@ -31,6 +27,51 @@ extension PlatyLocationTag {
             return PlatyLocationTag(rawValue: desc)
         }
 
-        return categories.first
+        guard let category = categories.first else { return nil }
+        self = category
+    }
+
+    func localizedName(in language: AppLanguage) -> String {
+        language.localized(rawValue)
+    }
+}
+
+extension PlatyLocationTag: DisplayableProto {
+    var displayName: String {
+        AppLanguage.current.localized(englishName)
+    }
+
+    private var englishName: String {
+        switch self {
+        case .forest: return "Forest"
+        case .outside: return "Outside"
+        case .inside: return "Inside"
+        case .street: return "Street"
+        case .parking: return "Parking"
+        case .railway: return "Railway"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .forest: return "tree.fill"
+        case .outside: return "sun.max.fill"
+        case .inside: return "house.fill"
+        case .street: return "road.lanes"
+        case .parking: return "parkingsign.square.fill"
+        case .railway: return "lightrail"
+        }
+    }
+}
+
+extension UniqueLocationTags {
+    func asPlatyLocationTags() -> [PlatyLocationTag] {
+        let items = sortLocationTags(
+            categories: Array(self.categories)
+        )
+        return items.compactMap { tag in
+            let desc = String(describing: tag).capitalized
+            return PlatyLocationTag(rawValue: desc)
+        }
     }
 }

@@ -8,12 +8,20 @@
 import SwiftUI
 
 struct CategoryOverlayView: View {
-    let uniqueLocationTags: UniqueLocationTags
+    let platyLocationTags: [PlatyLocationTag]
     let imageDetections: ImageDetections
+
+    init(
+        uniqueLocationTags: UniqueLocationTags,
+        imageDetections: ImageDetections
+    ) {
+        self.platyLocationTags = uniqueLocationTags.asPlatyLocationTags()
+        self.imageDetections = imageDetections
+    }
 
     var body: some View {
         VStack {
-            HorizontalItems(collection: uniqueLocationTags)
+            HorizontalItems(collection: platyLocationTags)
             HorizontalItems(collection: imageDetections.summaries)
         }
     }
@@ -78,14 +86,17 @@ where T.Element: Hashable & DisplayableProto {
     }
 
     private var emptyState: some View {
-        Label(AppLanguage.current.localized("Nothing detected"), systemImage: "magnifyingglass")
-            .font(.headline)
-            .foregroundStyle(AppTheme.secondaryText)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(AppTheme.background, in: Capsule())
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, 16)
+        Label(
+            AppLanguage.current.localized("Nothing detected"),
+            systemImage: "magnifyingglass"
+        )
+        .font(.headline)
+        .foregroundStyle(AppTheme.secondaryText)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(AppTheme.background, in: Capsule())
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 16)
     }
 
     private func itemLabel(_ item: T.Element) -> some View {

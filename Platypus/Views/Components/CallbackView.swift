@@ -30,8 +30,8 @@ struct CallbackView<Frame: PlatySize>: View {
     // MARK: - View
 
     var body: some View {
-        let locationTag = PlatyLocationTag.from(
-            uniqueLocationTags: uniqueLocationTag
+        let locationTag = PlatyLocationTag(
+            from: uniqueLocationTag
         )
         let settings = locationTag.flatMap { profileManager.settings(for: $0) }
 
