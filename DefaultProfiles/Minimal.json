@@ -9,7 +9,8 @@
           "intensity" : 0.5,
           "switchedOn" : true
         },
-        "hapticOnlyTriggerIfCentral" : false,
+        "hapticMaximumDistance" : 4,
+        "hapticOnlyTriggerIfCentral" : true,
         "sound" : {
           "off" : {
             "_0" : {
@@ -17,7 +18,7 @@
             }
           }
         },
-        "soundOnlyTriggerIfCentral" : false
+        "soundOnlyTriggerIfCentral" : true
       },
       "person",
       {
@@ -26,13 +27,13 @@
           "intensity" : 0.6000000000000001,
           "switchedOn" : true
         },
-        "hapticMaximumDistance" : 10,
+        "hapticMaximumDistance" : 4,
         "hapticOnlyTriggerIfCentral" : true,
         "sound" : {
           "earcon" : {
             "_0" : {
               "description" : "earcon",
-              "volume" : 0.5
+              "volume" : 0.6
             }
           }
         },
@@ -65,7 +66,8 @@
           "intensity" : 0.5,
           "switchedOn" : true
         },
-        "hapticOnlyTriggerIfCentral" : false,
+        "hapticMaximumDistance" : 4,
+        "hapticOnlyTriggerIfCentral" : true,
         "sound" : {
           "off" : {
             "_0" : {
@@ -73,7 +75,7 @@
             }
           }
         },
-        "soundOnlyTriggerIfCentral" : false
+        "soundOnlyTriggerIfCentral" : true
       },
       "vehicle",
       {
@@ -112,10 +114,11 @@
         {
           "groupFeedback" : false,
           "haptic" : {
-            "intensity" : 0.5,
+            "intensity" : 0.3,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -123,7 +126,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "cyclist",
         {
@@ -135,10 +138,13 @@
           "hapticMaximumDistance" : 10,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
-            "earcon" : {
+            "tts" : {
               "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
+                "description" : "tts",
+                "enableDirectionControl" : true,
+                "enableDistanceEstimation" : true,
+                "speed" : 0.7,
+                "volume" : 0.6
               }
             }
           },
@@ -152,7 +158,8 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -160,7 +167,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "person",
         {
@@ -169,13 +176,13 @@
             "intensity" : 0.6000000000000001,
             "switchedOn" : true
           },
-          "hapticMaximumDistance" : 10,
+          "hapticMaximumDistance" : 4,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
@@ -195,10 +202,10 @@
             "tts" : {
               "_0" : {
                 "description" : "tts",
-                "enableDirectionControl" : true,
+                "enableDirectionControl" : false,
                 "enableDistanceEstimation" : true,
                 "speed" : 0.7,
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
@@ -217,7 +224,8 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -225,7 +233,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "cyclist",
         {
@@ -237,10 +245,13 @@
           "hapticMaximumDistance" : 10,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
-            "earcon" : {
+            "tts" : {
               "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
+                "description" : "tts",
+                "enableDirectionControl" : true,
+                "enableDistanceEstimation" : true,
+                "speed" : 0.7,
+                "volume" : 0.6
               }
             }
           },
@@ -254,7 +265,8 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -262,7 +274,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "person",
         {
@@ -271,13 +283,13 @@
             "intensity" : 0.6000000000000001,
             "switchedOn" : true
           },
-          "hapticMaximumDistance" : 10,
+          "hapticMaximumDistance" : 4,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
@@ -294,9 +306,10 @@
           "hapticMaximumDistance" : 10,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
-            "off" : {
+            "earcon" : {
               "_0" : {
-                "description" : "off"
+                "description" : "earcon",
+                "volume" : 0.6
               }
             }
           },
@@ -315,7 +328,8 @@
             "intensity" : 0.5,
             "switchedOn" : false
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 3,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -323,7 +337,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "person",
         {
@@ -332,16 +346,17 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 3,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "cyclist",
         {
@@ -350,16 +365,16 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "vehicle",
         {
@@ -368,7 +383,7 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -376,16 +391,17 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "bicycle",
         {
           "groupFeedback" : false,
           "haptic" : {
             "intensity" : 0.5,
-            "switchedOn" : false
+            "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 3,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -393,7 +409,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         }
       ]
     },
@@ -407,7 +423,8 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -415,7 +432,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "bicycle",
         {
@@ -424,7 +441,8 @@
             "intensity" : 0.5,
             "switchedOn" : true
           },
-          "hapticOnlyTriggerIfCentral" : false,
+          "hapticMaximumDistance" : 4,
+          "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "off" : {
               "_0" : {
@@ -432,7 +450,7 @@
               }
             }
           },
-          "soundOnlyTriggerIfCentral" : false
+          "soundOnlyTriggerIfCentral" : true
         },
         "person",
         {
@@ -441,13 +459,13 @@
             "intensity" : 0.6000000000000001,
             "switchedOn" : true
           },
-          "hapticMaximumDistance" : 10,
+          "hapticMaximumDistance" : 4,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.5
+                "volume" : 0.6
               }
             }
           },
@@ -467,7 +485,7 @@
             "earcon" : {
               "_0" : {
                 "description" : "earcon",
-                "volume" : 0.7
+                "volume" : 0.9
               }
             }
           },
@@ -484,10 +502,13 @@
           "hapticMaximumDistance" : 10,
           "hapticOnlyTriggerIfCentral" : true,
           "sound" : {
-            "earcon" : {
+            "tts" : {
               "_0" : {
-                "description" : "earcon",
-                "volume" : 0.5
+                "description" : "tts",
+                "enableDirectionControl" : true,
+                "enableDistanceEstimation" : true,
+                "speed" : 0.7,
+                "volume" : 0.6
               }
             }
           },
